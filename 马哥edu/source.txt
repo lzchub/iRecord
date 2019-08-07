@@ -1,0 +1,30 @@
+Linux官网：www.kernel.org
+文档库	 ：www.ibm.com/developerworks
+开原协议：http://www.cnblogs.com/likebeta/archive/2012/06/21/2558180.html
+redis官网：www.redis.io
+apache开源站:www.apache.org
+nginx官网：nginx.org	www.nginx.com
+varnish挂网：www.varnish-cache.org   https://book.varnish-software.com/4.0/
+haproxy官网：
+	http://www.haproxy.org
+	http://www/haproxy.com
+	文档：
+	https://cbonte.github.io/haproxy-dconv/
+zabbix官网：www.zabbix.com
+数据库排行榜：https://db-engines.com/en/
+mysql官网：www.mysql.com
+mariadb官网：mariadb.org/mariadb.com
+ProxySQL：https://proxysql.com/
+NoSQL集合：www.nosql-databases.org
+elasticsearch官网：elastic.co
+git官网：www.git-scm.com
+docker镜像仓库:
+	dockerhub
+	quay.io
+robbitmq官网：https://www.rabbitmq.com/
+robbitmq中文站点：http://rabbitmq.mr-ping.com/description.html
+
+编程语言流行排行榜：www.tiobe.com
+
+推荐书籍：
+《linux内核设计与实现》，《深入理解linux内核》《高级bash编程指南》

@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>linux系统面试题</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+/* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
+/* Author: Nicolas Hery - http://nicolashery.com */
+/* Version: b13fe65ca28d2e568c6ed5d7f06581183df8f2ff */
+/* Source: https://github.com/nicolahery/markdownpad-github */
+
+/* RESET
+=============================================================================*/
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* BODY
+=============================================================================*/
+
+body {
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  background-color: #fff;
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+body>*:first-child {
+  margin-top: 0 !important;
+}
+
+body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* BLOCKS
+=============================================================================*/
+
+p, blockquote, ul, ol, dl, table, pre {
+  margin: 15px 0;
+}
+
+/* HEADERS
+=============================================================================*/
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code, h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code {
+  font-size: inherit;
+}
+
+h1 {
+  font-size: 28px;
+  color: #000;
+}
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+h5 {
+  font-size: 14px;
+}
+
+h6 {
+  color: #777;
+  font-size: 14px;
+}
+
+body>h2:first-child, body>h1:first-child, body>h1:first-child+h2, body>h3:first-child, body>h4:first-child, body>h5:first-child, body>h6:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+  margin-top: 10px;
+}
+
+/* LINKS
+=============================================================================*/
+
+a {
+  color: #4183C4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* LISTS
+=============================================================================*/
+
+ul, ol {
+  padding-left: 30px;
+}
+
+ul li > :first-child, 
+ol li > :first-child, 
+ul li ul:first-of-type, 
+ol li ol:first-of-type, 
+ul li ol:first-of-type, 
+ol li ul:first-of-type {
+  margin-top: 0px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px;
+}
+
+dl dt:first-child {
+  padding: 0;
+}
+
+dl dt>:first-child {
+  margin-top: 0px;
+}
+
+dl dt>:last-child {
+  margin-bottom: 0px;
+}
+
+dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px;
+}
+
+dl dd>:first-child {
+  margin-top: 0px;
+}
+
+dl dd>:last-child {
+  margin-bottom: 0px;
+}
+
+/* CODE
+=============================================================================*/
+
+pre, code, tt {
+  font-size: 12px;
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+code, tt {
+  margin: 0 0px;
+  padding: 0px 0px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+}
+
+pre>code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+pre code, pre tt {
+  background-color: transparent;
+  border: none;
+}
+
+kbd {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #DDDDDD;
+    background-image: linear-gradient(#F1F1F1, #DDDDDD);
+    background-repeat: repeat-x;
+    border-color: #DDDDDD #CCCCCC #CCCCCC #DDDDDD;
+    border-image: none;
+    border-radius: 2px 2px 2px 2px;
+    border-style: solid;
+    border-width: 1px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 10px;
+    padding: 1px 4px;
+}
+
+/* QUOTES
+=============================================================================*/
+
+blockquote {
+  border-left: 4px solid #DDD;
+  padding: 0 15px;
+  color: #777;
+}
+
+blockquote>:first-child {
+  margin-top: 0px;
+}
+
+blockquote>:last-child {
+  margin-bottom: 0px;
+}
+
+/* HORIZONTAL RULES
+=============================================================================*/
+
+hr {
+  clear: both;
+  margin: 15px 0;
+  height: 0px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  border-bottom: 4px solid #ddd;
+  padding: 0;
+}
+
+/* TABLES
+=============================================================================*/
+
+table th {
+  font-weight: bold;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+/* IMAGES
+=============================================================================*/
+
+img {
+  max-width: 100%
+}
+</style>
+<style type="text/css">
+.highlight  { background: #ffffff; }
+.highlight .c { color: #999988; font-style: italic } /* Comment */
+.highlight .err { color: #a61717; background-color: #e3d2d2 } /* Error */
+.highlight .k { font-weight: bold } /* Keyword */
+.highlight .o { font-weight: bold } /* Operator */
+.highlight .cm { color: #999988; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #999999; font-weight: bold } /* Comment.Preproc */
+.highlight .c1 { color: #999988; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #999999; font-weight: bold; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #000000; background-color: #ffdddd } /* Generic.Deleted */
+.highlight .gd .x { color: #000000; background-color: #ffaaaa } /* Generic.Deleted.Specific */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #aa0000 } /* Generic.Error */
+.highlight .gh { color: #999999 } /* Generic.Heading */
+.highlight .gi { color: #000000; background-color: #ddffdd } /* Generic.Inserted */
+.highlight .gi .x { color: #000000; background-color: #aaffaa } /* Generic.Inserted.Specific */
+.highlight .go { color: #888888 } /* Generic.Output */
+.highlight .gp { color: #555555 } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #aaaaaa } /* Generic.Subheading */
+.highlight .gt { color: #aa0000 } /* Generic.Traceback */
+.highlight .kc { font-weight: bold } /* Keyword.Constant */
+.highlight .kd { font-weight: bold } /* Keyword.Declaration */
+.highlight .kp { font-weight: bold } /* Keyword.Pseudo */
+.highlight .kr { font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #445588; font-weight: bold } /* Keyword.Type */
+.highlight .m { color: #009999 } /* Literal.Number */
+.highlight .s { color: #d14 } /* Literal.String */
+.highlight .na { color: #008080 } /* Name.Attribute */
+.highlight .nb { color: #0086B3 } /* Name.Builtin */
+.highlight .nc { color: #445588; font-weight: bold } /* Name.Class */
+.highlight .no { color: #008080 } /* Name.Constant */
+.highlight .ni { color: #800080 } /* Name.Entity */
+.highlight .ne { color: #990000; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #990000; font-weight: bold } /* Name.Function */
+.highlight .nn { color: #555555 } /* Name.Namespace */
+.highlight .nt { color: #000080 } /* Name.Tag */
+.highlight .nv { color: #008080 } /* Name.Variable */
+.highlight .ow { font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mf { color: #009999 } /* Literal.Number.Float */
+.highlight .mh { color: #009999 } /* Literal.Number.Hex */
+.highlight .mi { color: #009999 } /* Literal.Number.Integer */
+.highlight .mo { color: #009999 } /* Literal.Number.Oct */
+.highlight .sb { color: #d14 } /* Literal.String.Backtick */
+.highlight .sc { color: #d14 } /* Literal.String.Char */
+.highlight .sd { color: #d14 } /* Literal.String.Doc */
+.highlight .s2 { color: #d14 } /* Literal.String.Double */
+.highlight .se { color: #d14 } /* Literal.String.Escape */
+.highlight .sh { color: #d14 } /* Literal.String.Heredoc */
+.highlight .si { color: #d14 } /* Literal.String.Interpol */
+.highlight .sx { color: #d14 } /* Literal.String.Other */
+.highlight .sr { color: #009926 } /* Literal.String.Regex */
+.highlight .s1 { color: #d14 } /* Literal.String.Single */
+.highlight .ss { color: #990073 } /* Literal.String.Symbol */
+.highlight .bp { color: #999999 } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #008080 } /* Name.Variable.Class */
+.highlight .vg { color: #008080 } /* Name.Variable.Global */
+.highlight .vi { color: #008080 } /* Name.Variable.Instance */
+.highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
+.pl-c {
+    color: #969896;
+}
+
+.pl-c1,.pl-mdh,.pl-mm,.pl-mp,.pl-mr,.pl-s1 .pl-v,.pl-s3,.pl-sc,.pl-sv {
+    color: #0086b3;
+}
+
+.pl-e,.pl-en {
+    color: #795da3;
+}
+
+.pl-s1 .pl-s2,.pl-smi,.pl-smp,.pl-stj,.pl-vo,.pl-vpf {
+    color: #333;
+}
+
+.pl-ent {
+    color: #63a35c;
+}
+
+.pl-k,.pl-s,.pl-st {
+    color: #a71d5d;
+}
+
+.pl-pds,.pl-s1,.pl-s1 .pl-pse .pl-s2,.pl-sr,.pl-sr .pl-cce,.pl-sr .pl-sra,.pl-sr .pl-sre,.pl-src,.pl-v {
+    color: #df5000;
+}
+
+.pl-id {
+    color: #b52a1d;
+}
+
+.pl-ii {
+    background-color: #b52a1d;
+    color: #f8f8f8;
+}
+
+.pl-sr .pl-cce {
+    color: #63a35c;
+    font-weight: bold;
+}
+
+.pl-ml {
+    color: #693a17;
+}
+
+.pl-mh,.pl-mh .pl-en,.pl-ms {
+    color: #1d3e81;
+    font-weight: bold;
+}
+
+.pl-mq {
+    color: #008080;
+}
+
+.pl-mi {
+    color: #333;
+    font-style: italic;
+}
+
+.pl-mb {
+    color: #333;
+    font-weight: bold;
+}
+
+.pl-md,.pl-mdhf {
+    background-color: #ffecec;
+    color: #bd2c00;
+}
+
+.pl-mdht,.pl-mi1 {
+    background-color: #eaffea;
+    color: #55a532;
+}
+
+.pl-mdr {
+    color: #795da3;
+    font-weight: bold;
+}
+
+.pl-mo {
+    color: #1d3e81;
+}
+.task-list {
+padding-left:10px;
+margin-bottom:0;
+}
+
+.task-list li {
+    margin-left: 20px;
+}
+
+.task-list-item {
+list-style-type:none;
+padding-left:10px;
+}
+
+.task-list-item label {
+font-weight:400;
+}
+
+.task-list-item.enabled label {
+cursor:pointer;
+}
+
+.task-list-item+.task-list-item {
+margin-top:3px;
+}
+
+.task-list-item-checkbox {
+display:inline-block;
+margin-left:-20px;
+margin-right:3px;
+vertical-align:1px;
+}
+</style>
+<script type = "text/javascript" > 
+//create content
+document.addEventListener("DOMContentLoaded", function()
+{
+    toTop();//置顶
+
+    var div1            = document.createElement("div");
+    div1.style.cssText  = "clear:both";
+
+    // create TOC list
+    var outline         = document.createElement("div");
+    outline.setAttribute("id", "outline-list");
+    outline.style.cssText = "border:solid 1px #ccc; background:#eee; min-width:200px;padding:4px 10px;";
+
+    var ele_p           = document.createElement("p");
+    ele_p.style.cssText = "text-align: left; margin: 0;";
+    outline.appendChild(ele_p);
+
+    var ele_span        = document.createElement("span");
+
+    // ele_span.style.cssText = "float: left;";
+    var ele_text        = document.createTextNode("目录");
+    ele_span.appendChild(ele_text);
+
+    var ele_a           = document.createElement("a");
+    ele_a.appendChild(document.createTextNode("[+]"));
+    ele_a.setAttribute("href", "#");
+    ele_a.setAttribute("onclick", "javascript:return openct(this);");
+    ele_a.setAttribute("title", "Click to Open 目录");
+
+    ele_span.appendChild(ele_a);
+    ele_p.appendChild(ele_span);
+
+    var ul_top          = document.createElement("ul"); // 顶级
+    ul_top.style.cssText = "display:none;margin-left:14px;padding-left:14px;line-height:160%;";
+    ul_top.setAttribute("id", "outline_ol");
+    outline.appendChild(ul_top);
+    var div1            = document.createElement("div");
+    div1.style.cssText  = "clear:both";
+
+    document.body.insertBefore(outline, document.body.childNodes[0]);
+
+    // get all the headlines
+    var headers         = document.querySelectorAll('h1,h2,h3,h4,h5,h6');
+
+    if (headers.length < 2)
+        return;
+
+
+    var old_h = 1;
+
+    var ul_array = new Array(7);
+    var ul_current = null;
+    ul_array[1] = ul_top;
+
+    for (var i = 0; i < headers.length; i++)
+    {
+        // get H* and prepare for the ordered list 
+        var header = headers[i];
+
+        //header.setAttribute("id", "t" + i + header.tagName);
+        header.setAttribute("id", header.textContent);
+        var h = parseInt(header.tagName.substr(1), 10);
+
+        // assert  1<=h && h <= 6
+
+        ul_current = 0;
+        if (h < old_h)
+        {
+            for (var j = h+1; j <= 6; j++)
+            {
+                ul_array[j] = null;
+            }
+            ul_current = h;
+        }
+        else if (h == old_h)
+        {
+            ul_current = h;
+        }
+        else if (h > old_h)
+        {
+            ul_current = old_h + 1; /* 是old_h + 1的原因： h如果是old_h + 2 或者 + 3时，
+                                        我们依然按 + 1来做 */
+        }
+
+        if (ul_array[ul_current] == null)
+        {
+            ul_array[ul_current] = document.createElement("ul");
+            if (h>1)
+            {
+                ul_array[h-1].lastChild.appendChild(ul_array[ul_current]);
+            }
+        }
+
+        var elem_li = document.createElement("li");
+        ul_array[ul_current].appendChild(elem_li);
+
+        var a = document.createElement("a");
+
+        // set href for the TOC item 
+        //a.setAttribute("href", "#t" + i + header.tagName);
+        a.setAttribute("href", "#" + header.textContent);
+
+        // TOC item text
+        //a.innerHTML  = "h" + h + header.textContent;
+        a.innerHTML  = header.textContent;
+
+
+        elem_li.appendChild(a);
+
+        old_h = h;
+    }
+});
+function toTop(){
+    var toTop           = document.createElement("div");
+    toTop.style.cssText = "position:fixed;bottom:10px;right:10px;width:20x;height:20px;background:gray;padding:5px;";
+    toTop.innerHTML="^"
+    toTop.setAttribute("id", "toTop");
+    toTop.setAttribute("title", "to top");
+    document.body.insertBefore(toTop, document.body.childNodes[0]);
+
+    // 获取置顶对象
+    var obj = document.getElementById('toTop');
+
+    // 置顶对象点击事件
+    obj.onclick = function() {
+        var timer = setInterval(function() {
+            window.scrollBy(0, -500);
+            if(document.documentElement && document.documentElement.scrollTop) //IE
+            {
+                if(document.documentElement.scrollTop<=0){
+                    clearInterval(timer);
+                }else{
+                    window.scrollBy(0,-500);
+                }
+            }else{ //Chrome不支持documentElement.scrollTop
+                if(document.body.scrollTop<=0){
+                    clearInterval(timer);
+                }else{
+                    window.scrollBy(0,-500);
+                }
+                if (document.body.scrollTop == 0) {
+                    clearInterval(timer);
+                };
+            }
+        }, 2);
+    }
+
+    // 窗口滚动检测
+    //window.onscroll = function() {
+    //    obj.style.display = (document.body.scrollTop >= 300) ? "block" : "none";
+    //}
+}
+// 
+function openct(e)
+{
+    if (e.innerHTML == '[+]')
+    {
+        // createTextNode
+        e.setAttribute('title', 'collapse');
+        e.innerHTML         = '[-]';
+        var             element = document.getElementById("outline_ol");
+
+        element.style.cssText = "margin-left:14px;padding-left:14px;line-height:160%;";
+    }
+    else 
+    {
+        e.setAttribute('title', 'expand');
+        e.innerHTML         = '[+]';
+        var             element = document.getElementById("outline_ol");
+
+        element.style.cssText = "display:none;margin-left:14px;padding-left:14px;line-height:160%;";
+    }
+
+    e.blur();
+    return false;
+}
+
+
+</script>
+
+</head>
+<body>
+<h1 id="-">自我介绍一下</h1>
+<pre><code>各位面试官好，我叫刘子川，是西华大学2015级本科计算机科学与技术专业的学生，将于今年六月份毕业。我在2018年的9月至11月底这近三个月，曾在亚信科技有限公司实习，
+当时应聘的是linux运维实习生，在近三个月的实习中，主要的工作有三点：
+1.负责测试环境的代码发布
+    jenkins配置好代码路径（SVN或GIT），然后拉代码，打tag。
+    需要编译就编译，编译之后推送到发布服务器（jenkins里面可以调脚本），然后从分发服务器往下分发到业务服务器上。
+
+2.编写一些简单的脚本编写
+3.给测试环境搭建一些应用
+除此之外，还有就是解决一些日常工作中遇到的问题
+
+今天我来贵公司应聘的职位是linux运维工程师，以上是我的自我介绍，谢谢。
+</code></pre><h1 id="1-configure-make-make-install-">1.编译安装三步骤 configure、make、make install 每个过程主要发生了些什么？</h1>
+<pre><code>./configure：检查系统环境是否符合满足安装要求，并将定义好的安装配置和系统环境信息写入Makefile文件中。里面包含了如何编译、启用哪些功能、安装路径等信息。
+make：make命令会根据Makefile文件进行编译。编译工作主要是调用编译器(如gcc)将源码编译为可执行文件，通常需要一些函数库才能产生一个完整的可执行文件。
+make install：将上一步所编译的数据安装到指定的目录下。
+</code></pre><h1 id="2-rss-vsz-linux-">2.什么是RSS和VSZ在Linux内存管理？</h1>
+<pre><code>RSS：是物理内存大小，用于显示分配给该进程的内存量，并且在RAM中。它不包括换出的内存。它包括来自共享库的内存，只要这些库的页面实际上在内存中。它包括所有堆栈和堆内存。
+VSZ：是虚拟内存大小。它包括进程可以访问的所有内存，包括换出的内存和来自共享库的内存。
+</code></pre><h1 id="3-linux-cpu-">3.linux系统监控命令，查看cpu负载内存等情况</h1>
+<pre><code>top命令是Linux下常用的性能分析工具，比如cpu、内存的使用，能够实时显示系统中各个进程的资源占用状况，类似于Windows的任务管理器。 top显示系统当前的进程和其他状况,是一个动态显示过程,即可以通过用户按键来不断刷新当前状态.如果在前台执行该命令,它将独占前台,直到用户终止该程序为止.
+
+比较准确的说,top命令提供了实时的对系统处理器的状态监视.它将显示系统中CPU最“敏感”的任务列表.该命令可以按CPU使用.内存使用和执行时间对任务进行排序；而且该命令的很多特性都可以通过交互式命令或者在个人定制文件中进行设定。
+
+top命令参数
+d：指定每两次屏幕信息刷新之间的时间间隔。当然用户可以使用s交互命令来改变之。
+p：通过指定监控进程ID来仅仅监控某个进程的状态。
+q：该选项将使top没有任何延迟的进行刷新。如果调用程序有超级用户权限，那么top将以尽可能高的优先级运行。
+S：指定累计模式
+s：使top命令在安全模式中运行。这将去除交互命令所带来的潜在危险。
+i：使top不显示任何闲置或者僵死进程。
+c：显示整个命令行而不只是显示命令名
+
+常用操作
+
+top  //每隔5秒显式所有进程的资源占用情况
+
+top -d2//每隔2秒显式所有进程的资源占用情况
+
+top -c//每隔5秒显式进程的资源占用情况，并显示进程的命令行参数(默认只有进程名)
+
+top -p12345-p6789//每隔5秒显示pid是12345和pid是6789的两个进程的资源占用情况
+
+top -d2-c-p123456//每隔2秒显示pid是12345的进程的资源使用情况，并显式该进程启动的命令行参数
+</code></pre><h1 id="4-">4.查看网络流量的命令</h1>
+<pre><code>watch -n 1 &quot;/sbin/ifconfig ens33 | grepbytes&quot;
+</code></pre><h1 id="5-linux-cpuinfo-meinfo-">5.查看Linux系统的所有配置的命令（除了cpuinfo和meinfo）</h1>
+<pre><code>查看主板的序列号: dmidecode | grep -i ’serialnumber’
+
+用硬件检测程序kuduz探测新硬件：servicekudzu start ( or restart)
+
+查看CPU信息： cat /proc/cpuinfo
+             dmesg | grep -i &#39;cpu&#39;
+             dmidecode -t processor
+
+查看内存信息： cat /proc/meminfo 
+             free -m
+             vmstat
+
+查看板卡信息：cat /proc/pci
+
+查看显卡/声卡信息： lspci |grep-i &#39;VGA&#39;
+                 dmesg | grep -i &#39;VGA&#39;
+
+查看网卡信息：dmesg | grep -i &#39;eth&#39;
+            cat/etc/sysconfig/hwconf | grep -i ens33
+            lspci | grep -i &#39;ens33&#39;   
+
+查看PCI信息：lspci (相比cat /proc/pci更直观）
+
+查看USB设备：cat /proc/bus/usb/devices
+
+查看键盘和鼠标:cat /proc/bus/input/devices
+
+查看系统硬盘信息和使用情况： fdisk
+                         disk – l 
+                         df
+
+查看各设备的中断请求(IRQ):cat /proc/interrupts
+
+查看系统体系结构：uname -a
+</code></pre><h1 id="6-etc-sysctl-conf-kernel-">6./etc/sysctl.conf 这个文件的意义？列举一些常见的kernel参数和作用？</h1>
+<pre><code>/etc/sysctl.conf这个目录主要是配置一些系统信息,而且它的内容全部是对应于/proc/sys/这个目录的子目录及文件。
+（1）shmmax：该参数定义了共享内存段的最大尺寸（以字节为单位）。缺省为32M，对于oracle来说，该缺省值太低了，通常将其设置为2G。
+（2）shmmni：这个内核参数用于设置系统范围内共享内存段的最大数量。该参数的默认值是 4096 。通常不需要更改。     
+（3）shmall：该参数表示系统一次可以使用的共享内存总量（以页为单位）。缺省值就是2097152，通常不需要修改。     
+（4）sem：该参数表示设置的信号量。     
+（5）file-max：该参数表示文件句柄的最大数量。文件句柄设置表示在linux系统中可以打开的文件数量。
+
+vi /etc/sysctl.conf  这里修改参数
+sysctl -p  刷新后可用
+
+可直接echo重定向 /proc/sys/...，但只能临时生效
+</code></pre><h1 id="7-linux-">7.Linux系统是由那些部分组成？</h1>
+<pre><code>Linux系统内核，shell，文件系统和应用程序四部分组成。
+</code></pre><h1 id="8-linux-">8.一台Linux服务器负载高，连接慢，怎么查看</h1>
+<pre><code>先用w看负载多少，用top看哪个进程占用cpu高，同时用top按M看哪个进程占用内存多，用iotop看哪个进程读写频发，用sar命令或者nload命令查看网卡流量，是否跑满带宽.
+</code></pre><h1 id="9-linux-">9.Linux服务器中程序经常自动停止如何处理</h1>
+<pre><code>可以先写监控脚本，当发现进程不存在时自动启动。 然后要查各个日志，看看程序为什么会自动停止，只有找到根本原因，才能真正解决问题.
+</code></pre><h1 id="10-nas-san-das-">10.NAS,SAN,DAS存储解析</h1>
+<pre><code>NAS：网络储存设备 (Network Attached Storage)，是一种专门的资料储存技术的名称，它可以直接连接在电脑网络上面，对不同操作系统的使用者提供了集中式资料存取服务。
+代表有NFS，Samba
+SAN：存储区域网络（Storage Area Network），SAN存储通过光纤交换机将磁盘空间分配给不同的服务器，服务器通过以太网对外提供服务，存储区域与用户的应用区域隔离。
+DAS：直接附加存储(Direct Attached Storage)是指将存储设备通过SCSI接口或光纤通道直接连接到一台计算机上。
+
+总结：根据DAS、NAS、SAN的不同特性，DAS及SAN是基于存储空间的磁盘分配，是基于硬件层面的存储方式，而NAS则是基于应用层面的存储方式，可以根据应用环境来对其进行总结。
+
+DAS多采用SCSI或SAS接口，由于部署节点的单一性及较高的性能，适用于单一节点的企业级应用，或者地理位置比较分散的服务器使用。DAS由于部署的局限性目前使用量越来越少。
+
+NAS利用现有以太网网络，因此部署灵活，部署的成本非常低，基于TCP/IP协议的特性可以提供丰富的网络服务，基于文件的形式提供数据的存储及备份，
+但是TCP/IP协议决定了数据传输的数据打包及解包会占用系统资源，另外传输速率受限于以太网的速率，因此不适用于企业级应用，通常部署于部门级应用。
+
+SAN存储使用光纤网络进行传输，并且独立于应用网络，可以提供非常高的带宽，数据的传输基于块协议，无需对数据进行处理，直接进行传送，因此性能最好，
+另外光纤线路可以提供远距离的高带宽链路，可以实现数据中心的异地灾备应用，但是部署成本较高。因此SAN存储多应用于企业级的存储部署中。
+</code></pre><h1 id="11-linux-">11.linux环境变量设置</h1>
+<pre><code>临时有效：
+    export NAME=NEW_NAME
+永久生效:
+    1.修改/etc/profile文件
+        NAME=NEWNAME
+    . /etc/profile
+    2.在/etc/profile.d/目录下，生成一个.sh结尾的文件
+        NAME=NEW_NAME
+    . /etc/profile
+</code></pre><h1 id="12-raid0-raid1-raid5-raid10-">12.简述一下raid0，raid1、raid5、raid10他们的优势与区别</h1>
+<pre><code>RAID，可以把硬盘整合成一个大磁盘，还可以在大磁盘上再分区，放数据
+还有一个大功能，多块盘放在一起可以有冗余（备份）
+
+RAID整合方式有很多，常用的：0 1 5 10
+
+RAID 0，可以是一块盘和N个盘组合 
+其优点读写快，是RAID中最好的
+缺点：没有冗余，一块坏了数据就全没有了
+
+RAID 1，至少2块盘，盘的大小可以不一样，以小的为准
+10G+10G只有10G，另一个做备份。它有100%的冗余
+缺点：浪费资源，成本高
+
+RAID 5，至少3块盘，容量计算 SIZE（最小的盘容量）*（n-1）,损失一块盘
+特点，读写性能一般，读还好一点，写不好
+
+冗余从好到坏：RAID1 RAID10 RAID 5 RAID0
+性能从好到坏：RAID0 RAID10 RAID5 RAID1
+成本从低到高：RAID0 RAID5 RAID1 RAID10
+
+单台服务器：很重要盘不多，系统盘，RAID1
+数据库服务器：主库：RAID10 
+             从库 RAID5\RAID0（为了维护成本，RAID10）
+WEB服务器，如果没有太多的数据的话，RAID5,RAID0（单盘）
+          有多台，监控、应用服务器，RAID0 RAID5
+
+我们会根据数据的存储和访问的需求，去匹配对应的RAID级别
+</code></pre><h1 id="13-linux-">13.常见的Linux版本有哪些？你最擅长哪一种？说明你擅长哪一块？</h1>
+<pre><code>常见的Linux发行版有，Debian, Gentoo, Ubuntu, RedHat, CentOS, Fedora,  Kali Linux, Suse等，最擅长CentOS，擅长部分命令使用，脚本编程，环境服务搭建与配置。
+</code></pre><h1 id="14-linux-daemon-">14.什么是linux的daemon进程？和一般进程有什么区别？</h1>
+<pre><code>守护进程的第一个特征是长时间在后台运行的程序，并且主要是为了提供某种服务，而为了能够让服务尽可能随时都可用，就要求这个服务是一直运行的，
+于是守护进程就守护着这个服务不挂掉。linux里面常见的守护进程一般都是以d结尾的，比如apache的httpd,samba的smbd,ssh的sshd。
+</code></pre><h1 id="15-etc-fstab-">15.解释/etc/fstab文件中每个字段的意义</h1>
+<pre><code>文件系统  挂载点  文件类型     挂载选项   dump  fsck
+</code></pre><h1 id="16-">16.软连接与硬连接的区别</h1>
+<pre><code>在Linux的文件系统中，保存在磁盘分区中的文件不管是什么类型都给它分配一个编号，称为索引节点号inode 。
+
+软连接，其实就是新建立一个文件，这个文件就是专门用来指向别的文件的（那就和windows 下的快捷方式的那个文件有很接近的意味）。
+软链接产生的是一个新的文件，但这个文件的作用就是专门指向某个文件的，删了这个软连接文件，那就等于不需要这个连接，和原来的存在的实体原文件没有任何关系，
+但删除原来的文件，则相应的软连接不可用（cat那个软链接文件，则提示“没有该文件或目录“）
+
+硬连接是不会建立inode的，他只是在文件原来的inode link count域再增加1而已，也因此硬链接是不可以跨越文件系统的。
+相反是软连接会重新建立一个inode，当然inode的结构跟其他的不一样，他只是一个指明源文件的字符串信息。一旦删除源文件，
+那么软连接将变得毫无意义。而硬链接删除的时候，系统调用会检查inode link count的数值，如果他大于等于1，那么inode不会被回收。因此文件的内容不会被删除。
+
+硬链接实际上是为文件建一个别名，链接文件和原文件实际上是同一个文件。可以通过ls -i来查看一下，这两个文件的inode号是同一个，说明它们是同一个文件；
+而软链接建立的是一个指向，即链接文件内的内容是指向原文件的指针，它们是两个文件。
+
+异同：
+1.软链接可以跨文件系统，硬链接不可以；
+2.软链接可以对一个不存在的文件名(filename)进行链接（当然此时如果你vi这个软链接文件，linux会自动新建一个文件名为filename的文件）,
+硬链接不可以（其文件必须存在，inode必须存在）；
+3.软链接可以对目录进行连接，硬链接不可以。
+
+两种链接都可以通过命令 ln 来创建。ln 默认创建的是硬链接。使用 -s 开关可以创建软链接。
+</code></pre><h1 id="17-linux-">17.给你一个linux机器，怎么测试它的一些指标</h1>
+<pre><code>网络流量信息：ifstat
+io：iotop、iostat、df
+cpu：top
+内存：vmstat、free
+系统负载：uptime、top、tload
+
+
+top命令详解：https://www.cnblogs.com/cherishry/p/5886041.html
+vmstat命令详解：https://www.linuxprobe.com/linux-vmstat-explain.html
+
+
+更多参考：http://man.linuxde.net/sub/%E6%80%A7%E8%83%BD%E7%9B%91%E6%B5%8B%E4%B8%8E%E4%BC%98%E5%8C%96
+</code></pre><h1 id="18-http-keeplive-">18.http协议中的keeplive是做什么的？它的适应场景是什么？</h1>
+<pre><code>1.Http底层也是通过TCP传输的。
+2.HTTP keep-alive
+Http是一个”请求-响应”协议，它的keep-alive主要是为了让多个http请求共享一个Tcp连接，以避免每个Http又新建一个TCP连接。每个Http服务器默认的keep-alive时间可能是不一样的。
+3.直接介绍一个场景就可能更容易明白了。客户端发送了一个Http请求，服务器响应后，判断这个Http是否是keep-alive模式的，如果不是则关闭连接,如果是keep-alive，
+则等待keep-alive time后再关闭，如果这期间再收到一个http 请求，则继续等待最后一个请求的keep-alive time时间，直到keep-alive time时间内没有收到请求，则关闭。
+4.上面是HTTP keep-alive的，而TCP是它下一层的协议，本身TCP是长连接的，除非主动关闭。HTTP的keep-alive time一般是15ms, 30ms之类的，
+如果是超过了HTTP的keep-alive time时间，则HTTP会关闭TCP连接。本身TCP是不会关闭连接的，TCP的keep alive是TCP的保鲜装置，
+在keep alive timeout 后服务端发送一个监测包来判断连接是否仍保持着，如果还是可连接，则继续保持，它不会主动关闭连接的。而心跳包是为了防止NAT超时。
+</code></pre><h1 id="19-">19.进程与线程</h1>
+<pre><code>1.进程是资源分配的最小单位，线程是程序执行的最小单位。
+
+2.进程有自己的独立地址空间，每启动一个进程，系统就会为它分配地址空间，建立数据表来维护代码段、堆栈段和数据段，这种操作非常昂贵。
+而线程是共享进程中的数据的，使用相同的地址空间，因此CPU切换一个线程的花费远比进程要小很多，同时创建一个线程的开销也比进程要小很多。
+
+3.线程之间的通信更方便，同一进程下的线程共享全局变量、静态变量等数据，而进程之间的通信需要以通信的方式（IPC)进行。
+不过如何处理好同步与互斥是编写多线程程序的难点。
+
+4.但是多进程程序更健壮，多线程程序只要有一个线程死掉，整个进程也死掉了，而一个进程死掉并不会对另外一个进程造成影响，因为进程有自己独立的地址空间。
+</code></pre><h1 id="20-linux-">20.如何发现linux系统是否出现性能瓶颈？请例举出你常用的监控命令以及参数</h1>
+<pre><code>A. 用w命令看系统负载高不高，如果高可能是CPU不够用，进程太多运行太慢，也可能是磁盘I/O太高了。
+B. 用vmstat 1命令来查看各个指标，着重分析r,b,swpd,si,so,bi,bo,us,wa. 若r列或者us列数值偏高则说明cpu有瓶颈，若b列或者wa列数值偏高同时bi或bo的数字很大，则说明磁盘有压力，若swpd一直变化，并且si和so一直不为0，则说明内存不够了。
+C. 用top命令来分析哪个进程耗费cpu最多，默认按使用cpu多少排序，按M也可以按内存使用多少排序。
+D. 用sar -n DEV 1 10 或者 nload 命令可以查看网卡的流量（若没有nload命令，请使用yum install epel-release; yum install -y nload 安装）
+E. 用iotop命令可以查看磁盘读写速度 （yum install -y iotop 安装）
+</code></pre><h1 id="21-192-168-3-0-24-192-168-1-254-">21.添加一条到192.168.3.0/24的路由，网关为192.168.1.254？</h1>
+<pre><code>~]# route add  -net 192.168.3.0 netmask 255.255.255.0 gw 192.168.1.254
+</code></pre><h1 id="22-80-8080-ip-192-168-2-1-">22.如何将本地80端口的请求转发到8080端口，当前主机IP为192.168.2.1？</h1>
+<pre><code>iptables -t nat -A PREROUTING -d LOCALIP -p tcp --dport 80 -j DNAT --to-destination 192.168.2.1:8080
+iptables -t nat -A POSTROUTING -d 192.168.2.1 -p tcp --dport 8080 -j SNAT --to-source LOCALIP:80
+</code></pre><h1 id="23-">23.防火墙的四表五链？</h1>
+<pre><code>netfilter/iptables(下文简称为iptables)组成Linux平台下的包过滤防火墙, 与大多数的Linux软件一样, 这个包过滤防火墙是免费的, 
+它可以代替昂贵的商业防火墙解决方案, 完成封包过滤, 封包重定向和网络地址转换NAT等功能.
+
+当主机收到一个数据包后，数据包先在内核空间中处理，若发现目的地址是自身，则传到用户空间中交给对应的应用程序处理，若发现目的不是自身，则会将包丢弃或进行转发。
+
+虽然 netfilter/iptables IP 信息包过滤系统被称为单个实体, 但它实际上由两个组件 netfilter 和 iptables 组成.
+
+netfilter 组件也称为内核空间(kernelspace)组件, 是内核的一部分, 由一些信息包过滤表组成, 这些表包含内核用来控制信息包过滤处理的规则集.
+iptables 组件是一种工具, 也称为用户空间(userspace), 它使插入, 修改和除去信息包过滤表中的规则变得容易.
+
+4个表为:
+
+filter: 一般的过滤功能.
+nat: 用于nat功能(端口映射, 地址映射等).
+mangle: 用于对特定数据包的修改.
+raw: 优先级最高, 设置raw时一般是为了不再让iptables做数据包的链接跟踪处理, 提高性能.
+默认表是filter(没有指定表的时候就是filter表). 表的处理优先级: raw &gt; mangle &gt; nat &gt; filter.
+
+5个链为: PREROUTING, INPUT, FORWARD, OUTPUT, POSTROUTING.
+
+PREROUTING: 数据包进入路由表之前.
+INPUT: 通过路由表后目的地为本机.
+FORWARDING: 通过路由表后, 目的地不为本机.
+OUTPUT: 由本机产生, 向外转发.
+POSTROUTIONG: 发送到网卡接口之前.
+</code></pre><h1 id="24-linux-">24.Linux的运行级别</h1>
+<pre><code>0.关机
+1.单用户
+2.无网络多用户
+3.命令行
+4.未用
+5.图形
+6.重启
+
+查看：who -r | runlevel
+切换：init num
+</code></pre><h1 id="25-redhat-6-x-centos-7-x-">25.redhat 6.X版本系统 和 centos 7.X版本有啥区别？</h1>
+<pre><code>1.文件系统（6/ext4、7/xfs）
+2.内核版本（6/2.6x、7/3.10x）
+3.防火墙（6/iptables、7/firewalld）
+4.默认数据库（6/mysql、7/mariadb）
+5.启动服务（6/service启动、7/systemctl启动）
+6.网卡（6/eth0、7/ens192）等。
+</code></pre><h1 id="26-linux-">26.如何开启linux服务器路由转发功能？</h1>
+<pre><code>echo &quot;1&quot; &gt; /proc/sys/net/ipv4/ip_forward
+</code></pre><h1 id="27-">27.网站登陆缓慢是什么原因?</h1>
+<pre><code>1.网络带宽，这是一个很常见的瓶颈。
+2.cpu、硬盘、内存配置过低，服务器负载不起来。
+3.网站的开发代码不够完善，例如mysql语句没有进行优化，导致数据库的读写相当耗费时间。
+4.数据库的瓶颈。当我们的数据库的数据变得越来越多的时候，那么对于数据库的读写压力肯定会变大。
+</code></pre><h1 id="28-ping-">28.如果PING不通怎么排查</h1>
+<pre><code>1.首先先看看是不是网路接口故障或是网卡接口接触不良造成，其次检查交换机和路由等网络设备是有故障
+2.是否关闭了防火墙和selinux机制
+3.然后查看网卡和路由和网关是否配置正确
+4.查看是否因为网络异常
+</code></pre><h1 id="29-">29.僵尸进程与孤儿进程</h1>
+<pre><code>孤儿进程：一个父进程退出，而它的一个或多个子进程还在运行，那么那些子进程将成为孤儿进程。孤儿进程将被init进程(进程号为1)所收养，并由init进程对它们完成状态收集工作。
+
+僵尸进程：一个进程使用fork创建子进程，如果子进程退出，而父进程并没有调用wait或waitpid获取子进程的状态信息，那么子进程的进程描述符仍然保存在系统中。这种进程称之为僵死进程。
+</code></pre><h1 id="30-linux-">30.LINUX系统软件安装和卸载的常见方法</h1>
+<pre><code>1.rpm包卸载：rpm -e XXX.rpm(如果想忽略依赖，可加上–nodeps)
+
+2.yum remove xxx.rpm  这种方法非常不建议使用，卸载过程会将待卸载的软件包所依赖的软件包一并卸载掉，很容易造成系统缺少某些包而崩溃等问题
+
+3.源码包卸载：cd命令进入编译后的软件目录，即安装时的目录，执行make uninstall命令即可；或者直接删除安装目录
+</code></pre><h1 id="31-windows-linux-">31.Windows和LINUX常用的远程连接工具有那些</h1>
+<pre><code>命令远程连接工具：Xshell、SecureCRT、Putty、SSH Secure Shell Client等
+</code></pre><h1 id="32-umask-022-">32.umask 022代表什么意思</h1>
+<pre><code>掩码：用于限制创建文件权限
+普通文件：666-umask
+目录：777-umask
+</code></pre><h1 id="33-">33.如何查看某进程所打开的所有文件，如何动态的修改文件数，如何查看程序的所有进程信息</h1>
+<pre><code>得到进程的进程号
+
+lsof -p PID
+
+在 /proc/PID 目录下修改
+
+使用pstree命令可查看程序所有进程信息
+
+pstree -p PID
+</code></pre><h1 id="34-5-">34.常用的网络管理工具（5种以上）</h1>
+<pre><code>Linux下有：ifconfig,ping,tracerroute,dig,nslookup...
+</code></pre><h1 id="35-">35.对运维的了解，为什么选择运维</h1>
+<pre><code>运维是指大型组织已经建立好的网络软硬件的维护，就是要保证业务的上线与运作的正常，在它运转的过程中，对他进行维护，它集合了网络、系统、数据库、开发、安全、监控于一身的技术。
+运维又包括很多种，有DBA运维、网站运维、虚拟化运维、监控运维、游戏运维等等。
+
+运维工程师在公司当中责任重大，需要保证时刻为公司及客户提供最高、最快、最稳定、最安全的服务
+运维工程师的一个小小的失误，很有可能会对公司及客户造成重大损失，因此运维工程师的工作需要严谨及富有创新精神
+</code></pre><h1 id="36-">36.现在给你三百台服务器，你怎么对他们进行管理？</h1>
+<pre><code>管理3百台服务器的方式：
+1）设定跳板机，使用统一账号登录，便于安全与登录的考量。
+2）使用salt、ansiable、puppet进行系统的统一调度与配置的统一管理。
+3）建立简单的服务器的系统、配置、应用的cmdb信息管理。便于查阅每台服务器上的各种信息记录。
+</code></pre><h1 id="37-linux-">37.如何优化 Linux系统（可以不说太具体）？</h1>
+<pre><code>1.不用root，添加普通用户，通过sudo授权管理
+2.更改默认的远程连接SSH服务端口及禁止root用户远程连接
+3.定时自动更新服务器时间
+4.配置国内yum源
+5.关闭selinux及iptables（iptables工作场景如果有外网IP一定要打开，高并发除外）
+6.调整文件描述符的数量
+7.精简开机启动服务（crond rsyslog network sshd）
+8.内核参数优化（/etc/sysctl.conf）
+9.更改字符集，支持中文，但建议还是用英文字符集，防止乱码
+10.锁定关键系统文件
+11.清空/etc/issue，去除系统及内核版本登录前的屏幕显示
+</code></pre><h1 id="38-shell-case-">38.你在shell脚本中用过哪些语法，case语法会用到哪些地方？</h1>
+<pre><code>一般会用到if语句、for语句、while语句、case语句以及function函数的定义；
+case语句为多选择语句，可以用case语句匹配一个值与一个模式，如果匹配成功，执行相匹配的命令。最典型的case语法会用到启动服务脚本的处理。
+</code></pre><h1 id="39-linux-">39.linux系统中你会用到什么命令查看硬件使用状态信息？</h1>
+<pre><code>这个命令就很多了，比如：lscpu(查看cpu信息)、free -m（查看内存信息）、df -h（查看硬盘分区信息）、top（还可以动态查看cpu、内存使用情况的信息），
+/proc/目录下也可以查看很多硬件信息。
+</code></pre><h1 id="40-">40.用什么命令可以查看上一次服务器启动的时间、上一次谁登录过服务器？</h1>
+<pre><code>w命令查看上次服务器启动时间。last命令 查看登录
+</code></pre><h1 id="41-">41.热备份和冷备份温备份的区别</h1>
+<pre><code>按照是否能够继续提供服务，将数据库备份类型划分为：
+
+热备份：在线备份，能读能写
+温备份：能读不能写
+冷备份：离线备份
+
+按照备份数据库对象分类：
+物理备份：直接复制数据文件
+逻辑备份：将数据导出至文件中，必要时将其还原(也包括备份成sql语句的方式)
+
+按照是否备份整个数据集分为：
+完全备份：备份从开始到某段时间的全部数据
+差异备份：备份自完全备份以来变化的数据
+增量备份：备份自上次增量备份以来变化的数据
+</code></pre><h1 id="42-web-">42.有一web服务器，某天某用户投诉上某个网站速度很慢，如果你是服务器的管理员，请问你如何查找原因。假设服务器有任意操作系统和软件。</h1>
+<pre><code>1、首先检测服务器状态，排除硬件故障和系统故障 排除机器故障
+2、检查底层网络状态（包括互联情况，PING包延迟、流量情况）排除网络故障和网卡等设备故障。
+3、检查WEB服务器软件运行情况（并发连接、服务软件配置情况、数据库连接情况等）排除应用服务故障。
+</code></pre><h1 id="43-linux-swap-swap-swap-swap-">43.在linux系统中，一般都会有swap内存，你觉得使用swap内存有什么好处，在什么情况下swap内存才会被使用？你觉得在生产环境中要不要用swap内存？</h1>
+<pre><code>好处：在内存不够用的时候，将部分内存上的数据交换到swap空间上，以便让系统不会因为内存不够用而导致oom或者更致命的情况出现。
+
+什么情况下会用swap：当系统的物理内存不够用的时候，就需要将物理内存中的一部分空间释放出来，以供当前运行的程序使用。
+那些被释放的空间可能来自一些很长时间没有什么操作的程序，这些被释放的空间被临时保存到swap空间中，等到那些程序要运行时，
+再从swap中恢复保存的数据到内存中。这样，系统总是在物理内存不够时，才进行swap交换。
+
+swap大小约为物理内存的两倍
+</code></pre><h1 id="44-linux-rz-y-tftp-">44.在linux服务器上，不管是用rz -y命令还是tftp工具上传，我把本地的一个文件上传到服务器完成后，服务器上还是什么都没有，这有可能是什么问题？</h1>
+<pre><code>根据这种现象有可能是：服务器磁盘满了；文件格式破坏了；或者你用的是普通用户上传，正好上传的目录没有权限；还有可能就是你上传的文件大小超出了该目录空间的范围。
+</code></pre><h1 id="45-">45.死锁、原因、解决、避免</h1>
+<pre><code>死锁是指两个或两个以上的进程在执行过程中，由于竞争资源或者由于彼此通信而造成的一种阻塞的现象，若无外力作用，它们都将无法推进下去。
+此时称系统处于死锁状态或系统产生了死锁，这些永远在互相等待的进程称为死锁进程。
+
+原因：
+    互斥：资源不能共享，只能由一个进程持有 
+    占有且等待：当一个等待另外进程而阻塞时，资源不主动释放 
+    不可抢占：操作系统不能强行抢占被进程持有的资源 
+    循环等待：存在一个封闭的进程链，使得每一个进程都至少占有下个进程所需要的资源。
+
+预防：
+    破坏第一个是不可能的，资源本来就是互斥的；
+    第二个占有且等待，可以要求进程一次性地请求所有需要的资源，并且阻塞到所有请求同时满足；
+    不可抢占，将进程持有的资源抢占，也是于理不合。
+
+避免：
+1. 进程启动拒绝。如果在进程启动时，看看系统已经分配的和剩余的资源能不能满足进程需要的最大资源，如果不能，直接拒绝 
+2. 资源分配拒绝。采用银行家算法，当进程请求一组资源时，假设同意该请求，从而改变系统的状态，然后确定其结果是能够使系统处于安全状态。
+    如果是，则同意该请求，如果不是，阻塞该进程直到同意该请求后系统状态能够处于安全状态。
+
+恢复： 
+1. 取消所有的死锁进程 
+2. 连续取消死锁进程，直到不再死锁。
+</code></pre><h1 id="46-rsync-inotify-delete-">46.rsync+inotify是实现文件实时同步的，加什么参数才能实现实时同步，--delete参数又是什么意思？</h1>
+<pre><code>rsync是远程同步工具、inotify是一种强大的异步文件系统系统监控机制。通过inotifywait 中的-m参数可以实现“始终保持事件监听状态”。
+rsync中的-delete参数是指“ 删除那些DST中SRC没有的文件”。
+</code></pre><h1 id="47-jenkins-">47.如何发布和回滚，用jenkins又是怎么实现？</h1>
+<pre><code>发布：jenkins配置好代码路径（SVN或GIT），然后拉代码，打tag。需要编译就编译，编译之后推送到发布服务器（jenkins里面可以调脚本），
+然后从分发服务器往下分发到业务服务器上。
+
+回滚：按照版本号到发布服务器找到对应的版本推送
+</code></pre><h1 id="48-ext4-">48.ext4文件系统原理</h1>
+<h1 id="49-ext4-">49.不用工具恢复ext4删除文件</h1>
+<h1 id="50-">50.系统启动流程详细说明</h1>
+<h1 id="51-">51.高并发的架构设计</h1>
+<h1 id="52-linux-">52.linux内核分为哪四个子系统</h1>
+<pre><code>进程调度、内存管理、虚拟文件系统、进程间通信
+网络接口
+</code></pre><h1 id="53-centos7-systemd-centos6-service-">53.简述centos7系统systemd管理工具，以及centos6系统service的主要区别？</h1>
+<h1 id="54-ss-netstat-">54.ss命令为什么比netstat命令快</h1>
+<pre><code>netstat命令是去遍历/proc目录下的PID文件来实现统计
+
+而ss快的秘诀在于它利用到了TCP协议栈中tcp_diag。tcp_diag是一个用于分析统计的模块，可以获得Linux内核中第一手的信息，这就确保了ss的快捷高效。
+当然，如果你的系统中没有tcp_diag，ss也可以正常运行，只是效率会变得稍慢（但仍然比 netstat要快）。
+</code></pre><h1 id="55-">55.</h1>
+<h1 id="56-">56.</h1>
+<h1 id="57-linux-fork-">57.linux的fork了解吗？什么是写时复制机制？</h1>
+<pre><code>Linux的fork()使用写时拷贝(copy-on-write)页实现。写时拷贝是一种可以推迟甚至避免拷贝数据的技术。
+内核此时并不复制整个进程的地址空间，而是让父子进程共享同一个地址空间。只用在需要写入的时候才会复制地址空间，从而使各个进行拥有各自的地址空间。
+也就是说，资源的复制是在需要写入的时候才会进行，在此之前，只有以只读方式共享。这种技术使地址空间上的页的拷贝被推迟到实际发生写入的时候。
+</code></pre><h1 id="58-du-df-">58.du和df的区别</h1>
+<pre><code>1.两者区别 
+du：disk usage,是通过搜索文件来计算每个文件的大小然后累加，du能看到的文件只是一些当前存在的，
+    没有被删除的。他计算的大小就是当前他认为存在的所有文件大小的累加和。
+df：disk free，通过文件系统来快速获取空间大小的信息，当我们删除一个文件的时候，这个文件不是马上就在文件系统当中消失了，而是暂时消失了，
+当所有程序都不用时，才会根据OS的规则释放掉已经删除的文件， df记录的是通过文件系统获取到的文件的大小，他比du强的地方就是能够看到已经删除的文件，
+而且计算大小的时候，把这一部分的空间也加上了，更精确了。当文件系统也确定删除了该文件后，这时候du与df就一致了。
+
+2.du查看目录大小，df查看磁盘使用情况。
+</code></pre><h1 id="59-web-">59.简单介绍一下您所知道的减少和加速web服务器的请求的方法。</h1>
+<pre><code>A. 针对静态的访问，做过期时间，把静态文件缓存在客户端上
+
+B. 在前端搭建squid反向代理，把静态的文件缓存在squid上
+
+C. 接入CDN
+
+D. 合并js、css以及小图片
+</code></pre><h1 id="60-linux-">60.常用Linux命令</h1>
+<pre><code>cd/cp/ls/rm/mv/cat
+查看负载：top/upload
+内存：free
+磁盘使用状况：df
+文本编辑器：vim
+网卡信息：ifconfig，ss
+脚本常用：awk/sed/grep/cut/uniq/sort/wc
+</code></pre><h1 id="61-">61.提高性能和并发数，需要优化哪些内核参数</h1>
+<pre><code>net.ipv4.tcp_max_tw_buckets = 6000  //timewait的数量，默认是180000。
+net.ipv4.ip_local_port_range = 1024 65000  //允许系统打开的端口范围。
+net.ipv4.tcp_tw_reuse = 1 //允许将TIME-WAIT sockets 重新用于新的TCP 连接。
+net.ipv4.tcp_syncookies = 1 //开启SYN Cookies，当出现SYN 等待队列溢出时，启用cookies 来处理。
+net.ipv4.tcp_max_orphans = 262144 //系统中最多有多少个TCP套接字不被关联到任何一个用户文件句柄上。如果超过这个数字，孤儿连接将即刻被复位并打印出警告信息。这个限制仅仅是为了防止简单的DoS攻击，不能过分依靠它或者人为地减小这个值，更应该增加这个值(如果增加了内存之后)。
+net.ipv4.tcp_max_syn_backlog = 262144  //记录的那些尚未收到客户端确认信息的连接请求的最大值。对于有128M内存的系统而言，缺省值是1024，小内存的系统则是128。
+net.ipv4.tcp_synack_retries = 1  //为了打开对端的连接，内核需要发送一个SYN 并附带一个回应前面一个SYN的ACK。也就是所谓三次握手中的第二次握手。这个设置决定了内核放弃连接之前发送SYN+ACK 包的数量。
+net.ipv4.tcp_syn_retries = 1  //在内核放弃建立连接之前发送SYN 包的数量。
+net.ipv4.tcp_keepalive_time = 30 //当keepalive 起用的时候，TCP 发送keepalive 消息的频度。缺省是2 小时。
+</code></pre><h1 id="62-suid-sgid-sbit-">62.SUID、SGID、SBIT权限</h1>
+<pre><code>SUID：s位，二进制可执行程序，任何用户执行该程序都拥有属主的权限
+SGID：g位
+    1.二进制可执行程序，任何用户执行该程序都拥有属组的权限
+    2.对于文件夹，在该文件夹下创建的文件和目录，都将和该文件夹权限一致
+SBIT：t位，粘滞位，对于目录，该目录下创建的文件只有属主和管理员能进行删除操作
+</code></pre><h1 id="hypervisor-">hypervisor介绍</h1>
+<pre><code>hypervisor：一种运行在物理服务器和操作系统之间的中间层软件，可以允许多个操作系统和应用共享一套基础物理硬件。
+可以将hypervisor看做是虚拟环境中的“元”操作系统，可以协调访问服务器上的所有物理设备和虚拟机，所以又称为虚拟机监视器（virtual machine monitor）。
+hypervisor是所有虚拟化技术的核心，非中断的支持多工作负载迁移是hypervisor的基本功能。
+当服务器启动并执行hypervisor时，会给每一台虚拟机分配适量的内存，cpu，网络和磁盘资源，并且加载所有虚拟机的客户操作系统。
+虚拟化 就是通过某种方式隐藏底层物理硬件的过程，从而让多个操作系统可以透明地使用和共享它。这种架构的另一个更常见的名称是平台虚拟化。
+在典型的分层架构中，提供平台虚拟化的层称为 hypervisor （有时称为虚拟机管理程序 或 VMM）。
+
+hypervisor 可以划分为两大类。首先是类型 1，这种 hypervisor 是直接运行在物理硬件之上的。其次是类型 2，这种 hypervisor 运行在另一个操作系统（运行在物理硬件之上）中。
+类型 1 hypervisor 的一个例子是基于内核的虚拟机（KVM —— 它本身是一个基于操作系统的 hypervisor）。类型 2 hypervisor 包括 QEMU 和 WINE。
+</code></pre>
+</body>
+</html>
+<!-- This document was created with MarkdownPad, the Markdown editor for Windows (http://markdownpad.com) -->
