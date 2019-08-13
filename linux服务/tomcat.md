@@ -38,72 +38,73 @@
 yum install tomcat-webapps tomcat-admin-webapps tomcat java-1.8.0-openjdk
 ```
 #2.配置管理界面
-server status:
-manager app:
-```
-~]# vim /usr/local/tomcat/conf/tomcat-users.xml
-<tomcat-users ...>
-... 
-  <role rolename="admin-gui"/>
-  <role rolename="manager-gui"/>
-  <user username="chuan" password="123456" roles="manager-gui,admin-gui"/>
-</tomcat-users>
-
-~]# vim /usr/local/tomcat/conf/Catalina/localhost/manager.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<Context docBase="${catalina.home}/webapps/manager" 
-        antiResourceLocking="false" privileged="true" >
-  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
-         allow="^.*$" />
-</Context>
-```
-host manager
-```
-~]# cp /usr/local/tomcat/conf/Catalina/localhost/manager.xml /usr/local/tomcat/conf/Catalina/localhost/host-manager.xml
-~]# sed -i s/manager/host-manager/ /usr/local/tomcat/conf/Catalina/localhost/host-manager.xml
-```
-#3.虚拟主机
-```
-测试页：
+	server status:
+	manager app:
 	
-~]# cat index.jsp 
-	<%@ page language="java" %>
-	<%@ page import="java.util.*" %>
-	<html>
-	  <body>
-	    <% out.println("hello world! this is /usr/local/tomcat/chuan/xuexi dir"); %>
-	  </body>
-	</html>
+	~]# vim /usr/local/tomcat/conf/tomcat-users.xml
+	<tomcat-users ...>
+	... 
+	  <role rolename="admin-gui"/>
+	  <role rolename="manager-gui"/>
+	  <user username="chuan" password="123456" roles="manager-gui,admin-gui"/>
+	</tomcat-users>
+	
+	~]# vim /usr/local/tomcat/conf/Catalina/localhost/manager.xml
+	<?xml version="1.0" encoding="UTF-8"?>
+	<Context docBase="${catalina.home}/webapps/manager" 
+	        antiResourceLocking="false" privileged="true" >
+	  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+	         allow="^.*$" />
+	</Context>
 
-添加host组件即可：
+	host manager
+	
+	~]# cp /usr/local/tomcat/conf/Catalina/localhost/manager.xml /usr/local/tomcat/conf/Catalina/localhost/host-manager.xml
+	~]# sed -i s/manager/host-manager/ /usr/local/tomcat/conf/Catalina/localhost/host-manager.xml
 
- 	  <Host name="www.chuan1.com"  appBase="/www/chuan"
-            unpackWARs="true" autoDeploy="true">
-          <Context path="" docBase="/www/chuan" reloadable="true" />
-          <Context path="/xuexi" docBase="xuexi" reloadable="true" />
-        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-               prefix="longshuai_access_log" suffix=".txt"
-               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
-      </Host>
+#3.虚拟主机
 
-      <Host name="www.chuan2.com"  appBase="webapps/chuan"
-            unpackWARs="true" autoDeploy="true">
-          <Context path="" docBase="" reloadable="true" />
-          <Context path="/xuexi" docBase="xuexi" reloadable="true" />
-        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-               prefix="xiaofang_access_log" suffix=".txt"
-               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
-      </Host>
+**测试页：**
+	
+	~]# cat index.jsp 
+		<%@ page language="java" %>
+		<%@ page import="java.util.*" %>
+		<html>
+		  <body>
+		    <% out.println("hello world! this is /usr/local/tomcat/chuan/xuexi dir"); %>
+		  </body>
+		</html>
+	
+	添加host组件即可：
+	
+	 	  <Host name="www.chuan1.com"  appBase="/www/chuan"
+	            unpackWARs="true" autoDeploy="true">
+	          <Context path="" docBase="/www/chuan" reloadable="true" />
+	          <Context path="/xuexi" docBase="xuexi" reloadable="true" />
+	        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+	               prefix="longshuai_access_log" suffix=".txt"
+	               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+	      </Host>
+	
+	      <Host name="www.chuan2.com"  appBase="webapps/chuan"
+	            unpackWARs="true" autoDeploy="true">
+	          <Context path="" docBase="" reloadable="true" />
+	          <Context path="/xuexi" docBase="xuexi" reloadable="true" />
+	        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+	               prefix="xiaofang_access_log" suffix=".txt"
+	               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+	      </Host>
+	
+	注：
+		1.使用绝对路径则路径就为该路径，若使用相对路径，则前面要加上 $CATALINA_BASE 路径.
+		2.若Host组件中未指定Context，则默认路径为APPBase/ROOT/目录。
 
-注：
-	1.使用绝对路径则路径就为该路径，若使用相对路径，则前面要加上 $CATALINA_BASE 路径.
-	2.若Host组件中未指定Context，则默认路径为APPBase/ROOT/目录。
-```
 #4.反代实现负载均衡
 ##4.1 模型一
 ![](./picture/4.png)
+
 **nginx反代：**
-```
+
 	upstream tomcat_servers {
         server 192.168.179.111:8080 weight=1 max_fails=2 fail_timeout=2;
         server 192.168.179.113:8080 weight=2 max_fails=2 fail_timeout=2;
@@ -122,67 +123,67 @@ host manager
             proxy_pass http://tomcat_servers;
         }
     }
-```
+
 **httpd反代：**
-```
-AJP协议：
-	]# cat ajp.conf
-	<VirtualHost 192.168.179.110:80>
-	    serverName www.ilinux.io
-	    DirectoryIndex index.html
-	    DocumentRoot /www/html
-	
-		#<proxy balancer://TomcatLB>
-        #	BalancerMember ajp://192.168.179.111:8009 loadfactor=5
-        #	BalancerMember ajp://192.168.179.113:8009 loadfactor=10
-    	#</Proxy>	
 
-	    ProxyVia off
-	    ProxyRequests off
-	    ProxyPreserveHost off
-	 
-	    ProxyPassMatch "^/(.*\.jsp)$" ajp://192.168.179.111:8009/$1
-	    ProxyPassReverse "^/(.*\.jsp)$" ajp://192.168.179.111:8009/$1
+	AJP协议：
+		]# cat ajp.conf
+		<VirtualHost 192.168.179.110:80>
+		    serverName www.ilinux.io
+		    DirectoryIndex index.html
+		    DocumentRoot /www/html
+		
+			#<proxy balancer://TomcatLB>
+	        #	BalancerMember ajp://192.168.179.111:8009 loadfactor=5
+	        #	BalancerMember ajp://192.168.179.113:8009 loadfactor=10
+	    	#</Proxy>	
 	
-		#ProxyPassMatch "^/(.*\.jsp)$" balancer://TomcatLB/$1
-    	#ProxyPassReverse "^/(.*\.jsp)$" balancer://TomcatLB/$1
+		    ProxyVia off
+		    ProxyRequests off
+		    ProxyPreserveHost off
+		 
+		    ProxyPassMatch "^/(.*\.jsp)$" ajp://192.168.179.111:8009/$1
+		    ProxyPassReverse "^/(.*\.jsp)$" ajp://192.168.179.111:8009/$1
+		
+			#ProxyPassMatch "^/(.*\.jsp)$" balancer://TomcatLB/$1
+	    	#ProxyPassReverse "^/(.*\.jsp)$" balancer://TomcatLB/$1
+	
+		    <Directory /www/html>
+		        AllowOverride None
+		        Require all granted
+		    </Directory>
+		
+		    <Proxy *>
+		        Require all granted
+		    </Proxy>
+		</VirtualHost>
+	
 
-	    <Directory /www/html>
-	        AllowOverride None
-	        Require all granted
-	    </Directory>
-	
-	    <Proxy *>
-	        Require all granted
-	    </Proxy>
-	</VirtualHost>
-```
-```
-http协议：
+	http协议：
 
-	]# cat http.conf
-	<VirtualHost 192.168.179.110:80>
-	    serverName www.ilinux.io
-	    DirectoryIndex index.html
-	    DocumentRoot /www/html
-	
-	    ProxyVia off
-	    ProxyRequests off
-	    ProxyPreserveHost off
-	 
-	    ProxyPassMatch "^/(.*\.jsp)$" http://192.168.179.111:8080/$1
-	    ProxyPassReverse "^/(.*\.jsp)$" http://192.168.179.111:8080/$1
-	
-	    <Directory /www/html>
-	        AllowOverride None
-	        Require all granted
-	    </Directory>
-	
-	    <Proxy *>
-	        Require all granted
-	    </Proxy>
-	</VirtualHost>
-```
+		]# cat http.conf
+		<VirtualHost 192.168.179.110:80>
+		    serverName www.ilinux.io
+		    DirectoryIndex index.html
+		    DocumentRoot /www/html
+		
+		    ProxyVia off
+		    ProxyRequests off
+		    ProxyPreserveHost off
+		 
+		    ProxyPassMatch "^/(.*\.jsp)$" http://192.168.179.111:8080/$1
+		    ProxyPassReverse "^/(.*\.jsp)$" http://192.168.179.111:8080/$1
+		
+		    <Directory /www/html>
+		        AllowOverride None
+		        Require all granted
+		    </Directory>
+		
+		    <Proxy *>
+		        Require all granted
+		    </Proxy>
+		</VirtualHost>
+
 
 ##4.2 模型二
 ![](./picture/5.png)

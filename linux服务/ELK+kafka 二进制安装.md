@@ -11,25 +11,29 @@
 	kibana-6.3.0
 	logstash-6.3.0
 
-注：
-
-	1.按需关闭防火墙、SELinux
-	2.同步系统时间
-		a.通过时间服务同步
-			1.安装ntpdate工具
-			~]# yum -y install ntp ntpdate
-			
-			2.设置系统时间与网络时间同步
-			~]# ntpdate cn.pool.ntp.org
-			
-			3.将系统时间写入硬件时间
-			~]# hwclock --systohc
-		
-		b. sdate命令同步
-
 ## 架构图： ##
 
+![](./picture/27.png)
 	
+# 初始化准备 #
+
+**1.按需关闭防火墙、SELinux**
+	
+	~]# systemctl stop firewalld
+	~]# systemctl disable firewalld
+	~]# setenforce 0
+	~]# sed -i '/SELINUX/s/enforcing/disabled/g' /etc/sysconfig/selinux
+
+**2.同步系统时间**
+		
+	1.安装ntpdate工具
+	~]# yum -y install ntp ntpdate
+			
+	2.设置系统时间与网络时间同步
+	~]# ntpdate cn.pool.ntp.org
+			
+	3.将系统时间写入硬件时间
+	~]# hwclock --systohc
 
 #1.安装JDK 8
 [https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html](https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html)
@@ -58,19 +62,19 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 	~]# ln -sv zookeeper-3.4.14/ zookeeper
 	~]# cd zookeeper/conf
 	~]# cat zoo.cfg
-	tickTime=2000
-	initLimit=10
-	syncLimit=5
-	dataDir=/usr/local/zookeeper-3.4.14/data
+		tickTime=2000
+		initLimit=10
+		syncLimit=5
+		dataDir=/usr/local/zookeeper-3.4.14/data
+		
+		dataLogDir=/usr/local/zookeeper-3.4.14/log
+		autopurge.snapRetainCount=3
+		autopurge.purgeInterval=1
 	
-	dataLogDir=/usr/local/zookeeper-3.4.14/log
-	autopurge.snapRetainCount=3
-	autopurge.purgeInterval=1
-
-	clientPort=2181
-	server.0=192.168.164.128:2888:3888
-	server.1=192.168.164.132:2888.3888
-	server.2=192.168.164.133:2888.3888
+		clientPort=2181
+		server.0=192.168.164.128:2888:3888
+		server.1=192.168.164.132:2888.3888
+		server.2=192.168.164.133:2888.3888
 	
 	~]# mkdir ../{data,log}
 	~]# echo 0 > data/myid			#最好从0开始，否则可能会无法实现高可用
@@ -98,8 +102,6 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 	配置observer角色：
 		peerType=observer	#设置observer角色，只需在设置为observer服务器配置
 		server.N=IP:PORT1:PORT2:observer	#所有服务器配置
-	
-
 
 **服务自启：**
 
@@ -133,8 +135,6 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 	~]# chkconfig --add zookeeper
 	~]# chkconfig --list
 
-
-
 #3.搭建kafka集群
 [https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/](https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/)
 
@@ -142,29 +142,29 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 	~]# tar xf kafka_2.12-2.2.0.tgz -C /usr/local/
 	~]# cd /usr/local/
 	~]# ln -sv kafka_2.12-2.2.0/ kafka
-	~]# cd kafka/config/server.properties
+	~]# cd kafka/config/
 
 	~]# cat server.properties | grep -v '#' | grep -v "^$"
-	broker.id=1										#kafka节点标识(节点唯一)
-	listeners=PLAINTEXT://192.168.164.128:9092		#本机ip
-	num.network.threads=3
-	num.io.threads=8
-	socket.send.buffer.bytes=102400
-	socket.receive.buffer.bytes=102400
-	socket.request.max.bytes=104857600
-	log.dirs=/usr/local/kafka/kafka-logs				#kafka数据存放目录
-	num.partitions=1
-	num.recovery.threads.per.data.dir=1
-	offsets.topic.replication.factor=1
-	transaction.state.log.replication.factor=1
-	transaction.state.log.min.isr=1
-	log.retention.hours=168
-	log.segment.bytes=1073741824
-	log.retention.check.interval.ms=300000
-	zookeeper.connect=192.168.164.128:2181,192.168.164.132:2181,192.168.164.133:2181	#zookeeper集群地址
-	zookeeper.connection.timeout.ms=6000
-	group.initial.rebalance.delay.ms=0
-	
+		broker.id=1										#kafka节点标识(节点唯一)
+		listeners=PLAINTEXT://192.168.164.128:9092		#本机ip
+		num.network.threads=3
+		num.io.threads=8
+		socket.send.buffer.bytes=102400
+		socket.receive.buffer.bytes=102400
+		socket.request.max.bytes=104857600
+		log.dirs=/usr/local/kafka/kafka-logs				#kafka数据存放目录
+		num.partitions=1
+		num.recovery.threads.per.data.dir=1
+		offsets.topic.replication.factor=1
+		transaction.state.log.replication.factor=1
+		transaction.state.log.min.isr=1
+		log.retention.hours=168
+		log.segment.bytes=1073741824
+		log.retention.check.interval.ms=300000
+		zookeeper.connect=192.168.164.128:2181,192.168.164.132:2181,192.168.164.133:2181	#zookeeper集群地址
+		zookeeper.connection.timeout.ms=6000
+		group.initial.rebalance.delay.ms=0
+		
 	~]# echo 'KFK_HOME=/usr/local/kafka_2.12-2.2.0' > /etc/profile.d/kfk.sh
     ~]# echo 'PATH=$KFK_HOME/bin:$PATH' >> /etc/profile.d/kfk.sh
     ~]# source /etc/profile.d/kfk.sh
@@ -225,7 +225,7 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		~]# kafka-topics.sh --delete --topic topic_name --zookeeper 192.168.164.128:2181,192.168.164.132:2181,192.168.164.133:2181
 
 
-#4. 搭建elasticsearch集群
+#4.搭建elasticsearch集群
 
 	~]# tar xf elasticsearch-6.3.0.tar.gz -C /usr/local/
 	~]# cd /usr/local/
@@ -238,8 +238,8 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		node.name: node1											#节点名称
 		path.data: /usr/local/elasticsearch/data					#数据目录		
 		path.logs: /usr/local/elasticsearch/log						#日志目录
-		bootstrap.memory_lock: true									#尽量关闭交换分区
-		network.host: 192.168.164.128								#本机IP
+		bootstrap.memory_lock: true									#启动时锁定内存
+		network.host: 192.168.164.150								#本机IP
 		http.port: 9200												#开放端口
 		discovery.zen.ping.unicast.hosts: ["node2", "node3"]		#集群中其他成员
 		discovery.zen.minimum_master_nodes: 2						#成为master
@@ -273,7 +273,7 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		192.168.164.151 10 96 0 0.08 0.17 0.21 mdi - node2
 
 
-#5. elasticsearch-head插件
+#5.elasticsearch-head插件
 
 	elasticsearch-head简介：
 		1.ElasticSearch-head是一个H5编写的ElasticSearch集群操作和管理工具，可以对集群进行傻瓜式操作。
@@ -301,29 +301,40 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 
 	注：以上方法会有一些报错，但仍可使用
 
+		~]# vim /usr/local/elasticsearch/config/elasticsearch.yml
+			http.cors.enabled: true
+			http.cors.allow-origin: "*"
 
-#6. 搭建logstash集群
+		重启es
+
+#6.搭建logstash集群
 
 	~]# tar xf logstash-6.3.0.tar.gz -C /usr/local/	
 	~]# ln -sv logstash-6.3.0/ logstash
 
-	
 	~]# ./bin/logstash -e 'input{stdin{}}output{stdout{codec=>rubydebug}}'		#测试logstash，可能会等好几分钟
 
 	~]# cat logstash-test.conf
 		input {
-        	stdin {}
+        #stdin {}
+        	file {
+                path => "/var/log/messages"
+                start_position => "beginning"
+        	}
 		}
 		
 		output {
-		    elasticsearch {
-		        hosts => ["192.168.164.150:9200","192.168.164.151:9200","192.168.164.152:9200"]
+			elasticsearch {
+		    	hosts => ["192.168.164.150:9200","192.168.164.151:9200","192.168.164.152:9200"]
+		        	index => "system-messages-%{+YYYY-MM}"
 		    }
 		}
 
-	~]# nohup /usr/local/logstash/bin/logstash -f /usr/local/logstash/logstash.conf &				#启动logstash
+	~]# nohup /usr/local/logstash/bin/logstash -f /usr/local/logstash/logstash-test.conf &		#启动logstash
 
-#7. 搭建kibana
+	注：搜集系统日志需注意日志权限问题
+
+#7.搭建kibana
 
 	~]# tar xf kibana-6.3.0-linux-x86_64.tar.gz -C /usr/local/
 	~]# ln -sv kibana-6.3.0-linux-x86_64/ kibana
@@ -338,15 +349,84 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 
 	~]# echo 'LS_HOME=/usr/local/logstash-6.3.0/' >> /etc/profile.d/elk.sh
 	~]# echo 'ES_HOME=/usr/src/elasticsearch-6.3.0/' >>　/etc/profile.d/elk.sh
-	~]# echo 'PATH=$ES_HOME/bin:$LS_HOME/bin:$PATH' >> /etc/profile.d/elk.sh 
+	~]# echo 'KB_HOME=/usr/src/kibana-6.3.0-linux-x86_64/' >> /etc/profile.d/elk.sh
+	~]# echo 'PATH=$ES_HOME/bin:$LS_HOME/bin:$KB_HOME/bin:$PATH' >> /etc/profile.d/elk.sh 
 	~]# source /etc/profile.d/elk.sh
+
+
+#8.写入日志(服务器到kafka)
+## 1.filebeat->logstash->kafka
+
+**filebeat->logstash:**
+	
+	~]# cat /etc/filebeat/filebeat.yml	
+
+	filebeat.inputs:
+	- type: log
+	  enabled: true
+	  paths:
+	    - /var/log/nginx/access.log
+	  tags: ["nginx-log"] 			#当有多个日志文件写入时，logstash可通过该标签将日志写入不同topic
+
+	output.logstash:
+	  hosts: ["192.168.164.154:5044"]
+
+**logstash->kafka:**	
+
+	~]# cat /etc/logstash/conf.d/logstash-kafka.conf 
+		input {
+		    beats {
+				host => "0.0.0.0"
+		        port => 5044
+		    }
+		}
+		
+		output {
+		    if "nginx-log" in [tags]{		#通过filebeat里面的tag进行判断
+		        kafka {
+		            bootstrap_servers => "192.168.164.150:9092,192.168.164.151:9092,192.168.164.152:9092"	#kafka集群
+	                topic_id => "nginx-menssages"			#生成的topic 
+		            compression_type => "snappy"			#压缩方式
+		        }
+		        #stdout {codec => rubydebug}
+		    }
+		}
 	
 
-	
+## 2.filebeat->kafka
 
-	
-	
-	
-	
+	filebeat.inputs:
+	- type: log
+	  enabled: true 
+	  paths:
+    	- /var/log/nginx/access.log
 
-	
+	output.kafka:
+	  hosts: ["kafka1:9092","kafka2:9092","kafka3:9092"]
+	  topic: nginx-messages
+	  keep_alive: 10s
+
+#9.输出日志(kafka到es)
+
+	~]# cat logstash-nginx.conf 
+		input {
+	        kafka {
+            	bootstrap_servers => "192.168.164.150:9092,192.168.164.151:9092,192.168.164.152:9092"	#kafka集群
+                group_id => "logstash"
+                auto_offset_reset => "earliest"
+                decorate_events => true
+                topics => ["nginx-menssages"]		#从kafka集群的哪个topics拿数据
+                type => "nginx"						#标记这个输入，output可进行判断
+                #codec => json
+	        }
+		}
+		
+		output {
+	        if [type] == "nginx" {
+                elasticsearch {
+                    hosts => ["192.168.164.150:9200"]
+                    index => "nginx-messages-%{+YYYY-MM}"		#索引，kibana中使用添加
+                }
+	        }
+		}
+

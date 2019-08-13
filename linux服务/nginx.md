@@ -17,42 +17,39 @@
 	
 	#配置
 	~]# ./configure \
-	--user=www \
-	--group=www \
-	--prefix=/usr/local/nginx \
-	--with-http_ssl_module \
-	--with-http_stub_status_module \
-	--with-http_realip_module \
-	--with-threads
+		--user=www \
+		--group=www \
+		--prefix=/usr/local/nginx \
+		--with-http_ssl_module \
+		--with-http_stub_status_module \
+		--with-http_realip_module \
+		--with-threads
 
 	~]# ./configure \
-	--prefix=/usr/local/nginx \
-	--conf-path=/etc/nginx/nginx.conf \
-	--error-log-path=/var/log/nginx/error.log \
-	--http-log-path=/var/log/nginx/access.log \
-	--pid-path=/var/run/nginx.pid \
-	--lock-path=/var/run/nginx.lock \
-	--user=nginx \
-	--group=nginx \
-	--with-http_ssl_module \
-	--with-http_v2_module \
-	--with-http_dav_module \
-	--with-http_stub_status_module \
-	--with-threads \
-	--with-file-aio
-
+		--prefix=/usr/local/nginx \
+		--conf-path=/etc/nginx/nginx.conf \
+		--error-log-path=/var/log/nginx/error.log \
+		--http-log-path=/var/log/nginx/access.log \
+		--pid-path=/var/run/nginx.pid \
+		--lock-path=/var/run/nginx.lock \
+		--user=nginx \
+		--group=nginx \
+		--with-http_ssl_module \
+		--with-http_v2_module \
+		--with-http_dav_module \
+		--with-http_stub_status_module \
+		--with-threads \
+		--with-file-aio
 
 	ngx_http_ssl_module：提供必要的https支持，需要依赖openssl库
 	ngx_http_v2_module：支持http/2.0协议
 	ngx_http_stub_status_module：提供nginx状态页
-
 
 	#编译安装
 	~]# make && make install
 	
 	~]# echo 'PATH=/usr/local/nginx/sbin:$PATH' >> /etc/profile.d/nginx.sh
 	~]# . /etc/profile.d/nginx.sh
-	
 	
 	#添加启动脚本
 	~]# vim /etc/init.d/nginx
@@ -371,9 +368,10 @@
 	
 
 #10.nginx负载均衡
-**依赖于ngx_http_upstream_module，ngx_http_proxy_module**
+**依赖于 ngx_http_upstream_module，ngx_http_proxy_module**
 
 **httpd+php-fpm nginx+php-fpm后端：**
+
 ![](./picture/2.png)
 
 	http {
