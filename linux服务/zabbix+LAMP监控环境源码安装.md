@@ -256,10 +256,7 @@
 		
 		[client]
 		port                               = 3306
-		socket                             = /usr/local/mysql/var/run/mysqld.sock
-
-
-		
+		socket                             = /usr/local/mysql/var/run/mysqld.sock		
 
 	编译安装
 
@@ -443,12 +440,45 @@
 	http://IP/index.php
 	http://IP/mysql.php
 
+
+	Server=172.16.2.12
+	Hostname=zabbix_proxy_172.21.11.2
+	LogFile=/var/log/zabbix/zabbix_proxy.log
+	LogFileSize=0
+	PidFile=/var/run/zabbix/zabbix_proxy.pid
+	DBHost=172.21.11.2
+	DBName=zabbix_proxy
+	DBUser=zabbix
+	DBPassword=517na.com.cn
+	SNMPTrapperFile=/var/log/snmptrap/snmptrap.log
+	Timeout=4
+	ExternalScripts=/usr/lib/zabbix/externalscripts
+	LogSlowQueries=3000
+
+	LogFile=/var/log/zabbix/zabbix_server.log
+	LogFileSize=0
+	PidFile=/var/run/zabbix/zabbix_server.pid
+	DBHost=172.16.7.30
+	DBName=zabbixforFWQ20180310
+	DBUser=zabbix
+	DBPassword=zabbix
+	SNMPTrapperFile=/var/log/snmptrap/snmptrap.log
+	CacheSize=5000M
+	HistoryCacheSize=512M
+	ValueCacheSize=512M
+	Timeout=30
+	AlertScriptsPath=/usr/lib/zabbix/alertscripts
+	ExternalScripts=/usr/lib/zabbix/externalscripts
+	LogSlowQueries=3000
+	
+
+
 ## 7.安装zabbix-server ##
 
 	~]# tar -xf zabbix-3.4.15.tar.gz -C /usr/src/
 	~]# yum install -y net-snmp-devel libxml2-devel libcurl-devel libevent libevent-devel fping
 	~]# cd /usr/src/zabbix-3.4.15/
-	~]# ./configure --prefix=/usr/local/zabbix --enable-server --enable-agent --with-mysql --enable-ipv6 --with-net-snmp --with-libcurl --with-libxml2
+	~]# ./configure --prefix=/usr/local/zabbix --enable-server --enable-agent --with-mysql --enable-ipv6 --with-net-snmp --with-libcurl --with-libxml2 (--enable-java)
 	
 	# ~]# ./configure --prefix=/usr/local/zabbix-agent  --enable-agent
 	# ~]# make && make install	
@@ -945,8 +975,8 @@
 	ImportError: No module named requests
 		
 	~]# yum install -y python-requests
-	
-	
+
+
 **第一步：钉钉建立群聊**
 ![](./picture/11.png)
 
@@ -1066,9 +1096,40 @@
 ![](./picture/25.png)
 ![](./picture/26.png)
 	
+#15.proxy分布式监控
 
+	~]# wget https://mirrors.aliyun.com/zabbix/zabbix/3.4/rhel/7/x86_64/zabbix-release-3.4-1.el7.centos.noarch.rpm
+	~]# rpm -ivh zabbix-release-3.4-1.el7.centos.noarch.rpm
+	~]# yum install -y zabbix-proxy-mysql zabbix-get zabbix-agent mariadb-server (net-snmp*)
 
+	~]# systemctl start mariadb
+	~]# mysql
+	mysql> set password=password("960711");	
 
+	mysql> create database zabbix_proxy;
+	mysql> grant all on zabbix_proxy.* to zabbix_proxy@'localhost' identified by 'zabbix_proxy';
+	mysql> flush privileges;
+	
+	~]# zcat /usr/share/doc/zabbix-proxy-mysql-3.4.15/schema.sql.gz | mysql -uzabbix_proxy -pzabbix_proxy zabbix_proxy
+
+	~]# cat /etc/zabbix/zabbix_proxy.conf | grep -vE "#|^$"
+		Server=192.168.164.100
+		Hostname=Zabbix_proxy_192.168.164.145
+		LogFile=/var/log/zabbix/zabbix_proxy.log
+		LogFileSize=0								#日志不轮询生成，日志到最大清空老日志
+		PidFile=/var/run/zabbix/zabbix_proxy.pid
+		SocketDir=/var/run/zabbix
+		DBName=zabbix_proxy
+		DBUser=zabbix_proxy
+		DBPassword=zabbix_proxy
+		SNMPTrapperFile=/var/log/snmptrap/snmptrap.log
+		Timeout=20
+		ExternalScripts=/usr/lib/zabbix/externalscripts
+		LogSlowQueries=3000
+
+	~]# systemctl start zabbix-proxy
+	~]# systemctl enable zabbix-proxy
+	
 
 
 
