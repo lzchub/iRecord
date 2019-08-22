@@ -1,5 +1,4 @@
-#1 zabbix
-##1.1 yum安装
+#1.zabbix安装
 
 官网3.4中文文档：[https://www.zabbix.com/documentation/3.4/zh/manual](https://www.zabbix.com/documentation/3.4/zh/manual)
 
@@ -36,7 +35,7 @@
 		初始账号：Admin
 		初始密码：zabbix
 
-**Agent:**
+**Linux Agent:**
 
 	1.更新yum源
 		~]# rpm -ivh https://mirrors.aliyun.com/zabbix/zabbix/3.0/rhel/7/x86_64/zabbix-release-3.0-1.el7.noarch.rpm
@@ -47,24 +46,20 @@
 			Server=192.168.179.110			#若有proxy，则server为proxy
 	4.启动服务
 		~]# systemctl start zabbix-agent
+		~]# systemctl enable zabbix-agent
 
+**windows Agent:**
 
-	windows:
-		windows客户端
-		拷贝安装包到相应位置（官网下载）
-		在命令行执行命令：
-			安装agent ： D:\zabbix\bin\win64\zabbix_agentd.exe -i -c D:\zabbix\conf\zabbix_agentd.win.conf
-			启动agent客户端 ：D:\zabbix\bin\win64\zabbix_agentd.exe -c D:\zabbix\conf\zabbix_agentd.win.conf -s
-		打开windows的zabbix服务
+	1.拷贝安装包到相应位置（官网下载）
+		
+	2.在命令行执行命令：
+		安装agent： D:\zabbix\bin\win64\zabbix_agentd.exe -i -c D:\zabbix\conf\zabbix_agentd.win.conf
+		启动agent客户端： D:\zabbix\bin\win64\zabbix_agentd.exe -c D:\zabbix\conf\zabbix_agentd.win.conf -s
+		
+	3.打开windows的zabbix服务
 		开启防火墙规则，允许10050端口，防火墙允许ping服务
 
-		https://blog.csdn.net/wh211212/article/details/78836729
-
-	注： 
-		报错：active check configuration update from [127.0.0.1:10051] started to fail (cannot connect to [[127.0.0.1]:10051]: [111] Connection refused)
-		直接注释掉：
-			ActiveServer
-
+	参考：https://blog.csdn.net/wh211212/article/details/78836729
 	
 **Proxy：**
 
@@ -90,22 +85,11 @@
 			
 	5.启动服务
 		~]# systemctl start zabbix-proxy
+		~]# systemctl enable zabbix-proxy
 
 **注：以上默认为被动模式，若为主动模式，要注意hostname参数。**
-
-##1.2 源码安装zabbix-server
-
-##1.3 自动发现
-
-	配置——>定义自动发现——>定义动作	
 	
-	注意：agent端，hostname参数就是server自动发现后的名字，否则默认为主机名
-
-##1.4 定义报警媒介，定义动作，添加报警
-	
-##1.5 添加模板
-	
-##1.6 主动模式与被动模式
+##2.主动模式与被动模式
 
 	被动模式：默认为被动模式，服务端会主动连接客户端获取监控项目数据，客户端被动地接受连接，并把监控信息传递给服务端
 	~]# cat /etc/zabbix/zabbix_agentd.conf | grep -Ev "^#|^$" 
@@ -128,18 +112,14 @@
 		Hostname=192.168.164.137					#agent的名称，不配置则使用主机名，必须要和server端添加主机的名字相同
 		Include=/etc/zabbix/zabbix_agentd.d/*.conf
 
-
-
 	注:
 		1.当客户端数量非常多时，建议使用主动给模式，降低服务器压力
 		2.主动模式需要使用主动模式模板
 		3.主动模式下，zbx监控可能不会显示或者显示错误，但任有数据跟新
 [https://www.jianshu.com/p/ddc7f2dc51ae](https://www.jianshu.com/p/ddc7f2dc51ae)
-
-##1.7 添加监控，item，triggers，graph，screen
 	
 
-##1.8 监控nginx连接数,自定义key
+##3.监控nginx连接数,自定义key
 
 	在需要监控的agent上执行
 
@@ -181,7 +161,7 @@
 	服务器测试
 		zabbix_get -s IP -p 10050 -k "nginx.status[active..]"
 
-##1.9 监控tomcat
+##4.监控tomcat
 	
 	1.1 agent主机上安装
 		~]# yum install -y java-1.8.0-openjdk-devel zabbix-java-gateway

@@ -807,3 +807,63 @@
 
 ##7.6 读写分离
 ##7.7 高可用
+
+			~]# cat /etc/my.cnf
+		[mysqld]
+		server-id                          = 1
+		
+		basedir                            = /usr/local/mysql
+		datadir                            = /usr/local/mysql/var/db
+		innodb_data_home_dir               = /usr/local/mysql/var/innodb
+		innodb_log_group_home_dir          = /usr/local/mysql/var/innodb
+		log-bin                            = /usr/local/mysql/var/replication/binary-log
+		log-error                          = /usr/local/mysql/var/log/mysqld.log
+		master_info_file                   = /usr/local/mysql/var/replication/master.info
+		pid-file                           = /usr/local/mysql/var/run/mysqld.pid
+		relay_log                          = /usr/local/mysql/var/replication/relay-log
+		relay_log_info_file                = /usr/local/mysql/var/replication/relay-log.info
+		relay_log_index                    = /usr/local/mysql/var/replication/relay-log.index
+		slow_query_log_file                = /usr/local/mysql/var/log/slow_query.log
+		socket                             = /usr/local/mysql/var/run/mysqld.sock
+		tmpdir                             = /usr/local/mysql/var/tmp
+		
+		innodb_additional_mem_pool_size    = 16M
+		innodb_autoextend_increment        = 256
+		innodb_buffer_pool_instances       = 12
+		innodb_buffer_pool_size            = 24G                                                                                                                                                                                                                                       
+		innodb_concurrency_tickets         = 5000                                                                                                                                                                                                                                      
+		innodb_data_file_path              = ibdata1:1G:autoextend                                                                                                                                                                                                                     
+		innodb_file_format                 = Barracuda                                                                                                                                                                                                                                 
+		innodb_file_per_table              = 1                                                                                                                                                                                                                                         
+		innodb_flush_log_at_trx_commit     = 2                                                                                                                                                                                                                                         
+		innodb_flush_method                = O_DIRECT                                                                                                                                                                                                                                  
+		innodb_log_file_size               = 512M                                                                                                                                                                                                                                      
+		innodb_log_files_in_group          = 4                                                                                                                                                                                                                                         
+		innodb_old_blocks_time             = 1000
+		innodb_open_files                  = 2048
+		innodb_stats_on_metadata           = OFF 
+		
+		large-pages
+		binlog-row-event-max-size          = 8192
+		binlog-format                      = MIXED
+		character_set_server               = utf8
+		collation_server                   = utf8_bin
+		expire_logs_days                   = 1
+		join_buffer_size                   = 262144
+		max_allowed_packet                 = 32M
+		max_connect_errors                 = 10000
+		max_connections                    = 2500
+		max_heap_table_size                = 134217728
+		port                               = 3306
+		query_cache_type                   = 0
+		query_cache_size                   = 0
+		slow-query-log                     = ON
+		table_open_cache                   = 2048
+		thread_cache_size                  = 64
+		tmp_table_size                     = 134217728
+		user                               = mysql
+		wait_timeout                       = 86400
+		
+		[client]
+		port                               = 3306
+		socket                             = /usr/local/mysql/var/run/mysqld.sock	

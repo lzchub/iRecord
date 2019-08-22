@@ -1,3 +1,4 @@
+
 ## 实验环境： ##
 
 	CentOS 7.6
@@ -10,7 +11,7 @@
 
 	\\172.17.3.30\工具\安装包\zabbix-image
 
-## 1.关闭防火墙与selinux ##
+## 关闭防火墙与selinux ##
 
 	~]# systemctl stop firewalld
 	~]# systemctl disable firewalld
@@ -18,7 +19,7 @@
 	~]# sed -i 's/SELINUX=enable/SELINUX=disabled/g' /etc/sysconfig/selinux 
 	~]# setenforce 0
 
-## 2.Httpd安装 ##
+## Httpd安装 ##
 
 	httpd依赖：apr、apr-util、pcre、pcre-devel、expat-devel、gcc
 
@@ -103,7 +104,7 @@
 		It works	
 
 
-## 3.Mysql安装 ##
+## Mysql安装 ##
 
 	编译安装5.7
 		~]# yum -y install ncurses-devel cmake gcc gcc-c++ perl*
@@ -152,8 +153,6 @@
 			-DDOWNLOAD_BOOST=1 \									#允许在线更新boost库
 			-DWITH_BOOST=./boost									#指定boost安装路径
 		
-
-
 		~]# make && make install
 
 		~]# cat /etc/profile.d/mysql.sh 
@@ -195,70 +194,9 @@
 
 		还需配置
 		~]# chkconfig --del mysqld
-		~]# chkconfig --add mysqld
+		~]# chkconfig --add mysqld	
 
-
-		~]# cat /etc/my.cnf
-		[mysqld]
-		server-id                          = 1
-		
-		basedir                            = /usr/local/mysql
-		datadir                            = /usr/local/mysql/var/db
-		innodb_data_home_dir               = /usr/local/mysql/var/innodb
-		innodb_log_group_home_dir          = /usr/local/mysql/var/innodb
-		log-bin                            = /usr/local/mysql/var/replication/binary-log
-		log-error                          = /usr/local/mysql/var/log/mysqld.log
-		master_info_file                   = /usr/local/mysql/var/replication/master.info
-		pid-file                           = /usr/local/mysql/var/run/mysqld.pid
-		relay_log                          = /usr/local/mysql/var/replication/relay-log
-		relay_log_info_file                = /usr/local/mysql/var/replication/relay-log.info
-		relay_log_index                    = /usr/local/mysql/var/replication/relay-log.index
-		slow_query_log_file                = /usr/local/mysql/var/log/slow_query.log
-		socket                             = /usr/local/mysql/var/run/mysqld.sock
-		tmpdir                             = /usr/local/mysql/var/tmp
-		
-		innodb_additional_mem_pool_size    = 16M
-		innodb_autoextend_increment        = 256
-		innodb_buffer_pool_instances       = 12
-		innodb_buffer_pool_size            = 24G                                                                                                                                                                                                                                       
-		innodb_concurrency_tickets         = 5000                                                                                                                                                                                                                                      
-		innodb_data_file_path              = ibdata1:1G:autoextend                                                                                                                                                                                                                     
-		innodb_file_format                 = Barracuda                                                                                                                                                                                                                                 
-		innodb_file_per_table              = 1                                                                                                                                                                                                                                         
-		innodb_flush_log_at_trx_commit     = 2                                                                                                                                                                                                                                         
-		innodb_flush_method                = O_DIRECT                                                                                                                                                                                                                                  
-		innodb_log_file_size               = 512M                                                                                                                                                                                                                                      
-		innodb_log_files_in_group          = 4                                                                                                                                                                                                                                         
-		innodb_old_blocks_time             = 1000
-		innodb_open_files                  = 2048
-		innodb_stats_on_metadata           = OFF 
-		
-		large-pages
-		binlog-row-event-max-size          = 8192
-		binlog-format                      = MIXED
-		character_set_server               = utf8
-		collation_server                   = utf8_bin
-		expire_logs_days                   = 1
-		join_buffer_size                   = 262144
-		max_allowed_packet                 = 32M
-		max_connect_errors                 = 10000
-		max_connections                    = 2500
-		max_heap_table_size                = 134217728
-		port                               = 3306
-		query_cache_type                   = 0
-		query_cache_size                   = 0
-		slow-query-log                     = ON
-		table_open_cache                   = 2048
-		thread_cache_size                  = 64
-		tmp_table_size                     = 134217728
-		user                               = mysql
-		wait_timeout                       = 86400
-		
-		[client]
-		port                               = 3306
-		socket                             = /usr/local/mysql/var/run/mysqld.sock		
-
-	编译安装
+	mysql5.6编译安装
 
 		~]# yum -y install ncurses-devel cmake gcc gcc-c++ perl*
 		~]# perl -v 		#检查perl是否能用，若没有版本信息输出，卸掉后重新yum安装
@@ -310,7 +248,7 @@
 		~]# chown -R mysql  /opt/mysql
 		~]# cd
 		
-**4.PHP安装**
+## PHP安装 ##
 
 	~]# yum install -y openssl openssl-devel curl curl-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel pcre pcre-devel libxslt libxslt-devel bzip2 bzip2-devel openldap openldap-devel nss_ldap openldap-clients openldap-servers
 
@@ -390,7 +328,7 @@
 		方法：
 			~]# cp /usr/src/php-7.3.6/ext/zip/lib/zipconf.h /usr/local/include/
 
-## 5.配置修改 ##
+## httpd代理php请求 ##
 
 	~]# vi /usr/local/apache/conf/httpd.conf
 
@@ -402,7 +340,7 @@
 	Include conf/extra/httpd-vhosts.conf
 
 
-	]# cat /usr/local/apache/conf/extra/httpd-vhosts.conf 
+	~]# cat /usr/local/apache/conf/extra/httpd-vhosts.conf 
 	<VirtualHost 192.168.164.144:80>
 	        DirectoryIndex index.php
 	        #ServerName www.chuan.com
@@ -417,7 +355,7 @@
 	</VirtualHost>
 
 
-## 6.测试解析 ##
+## 测试mysql解析 ##
 
 	~]# cat /usr/local/apache/htdocs/index.php
 		<?php
@@ -440,40 +378,7 @@
 	http://IP/index.php
 	http://IP/mysql.php
 
-
-	Server=172.16.2.12
-	Hostname=zabbix_proxy_172.21.11.2
-	LogFile=/var/log/zabbix/zabbix_proxy.log
-	LogFileSize=0
-	PidFile=/var/run/zabbix/zabbix_proxy.pid
-	DBHost=172.21.11.2
-	DBName=zabbix_proxy
-	DBUser=zabbix
-	DBPassword=517na.com.cn
-	SNMPTrapperFile=/var/log/snmptrap/snmptrap.log
-	Timeout=4
-	ExternalScripts=/usr/lib/zabbix/externalscripts
-	LogSlowQueries=3000
-
-	LogFile=/var/log/zabbix/zabbix_server.log
-	LogFileSize=0
-	PidFile=/var/run/zabbix/zabbix_server.pid
-	DBHost=172.16.7.30
-	DBName=zabbixforFWQ20180310
-	DBUser=zabbix
-	DBPassword=zabbix
-	SNMPTrapperFile=/var/log/snmptrap/snmptrap.log
-	CacheSize=5000M
-	HistoryCacheSize=512M
-	ValueCacheSize=512M
-	Timeout=30
-	AlertScriptsPath=/usr/lib/zabbix/alertscripts
-	ExternalScripts=/usr/lib/zabbix/externalscripts
-	LogSlowQueries=3000
-	
-
-
-## 7.安装zabbix-server ##
+## 安装zabbix-server ##
 
 	~]# tar -xf zabbix-3.4.15.tar.gz -C /usr/src/
 	~]# yum install -y net-snmp-devel libxml2-devel libcurl-devel libevent libevent-devel fping
@@ -596,7 +501,7 @@
 		
 		$IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
 
-## 8.安装keepalived ##
+## keepalived实现zabbix-server高可用 ##
 
 **MASTER:**
 
@@ -700,7 +605,7 @@
 	}
 
 
-## 9.配置mysql主主 ##
+## 配置mysql主主同步 ##
 
 **MASTER:**
 
@@ -819,7 +724,7 @@
 	148挂掉：
 		start slave user='zabbixM' password='zabbixM';
 	
-## 10.mysql高可用 ##
+## keepalived实现mysql高可用 ##
 
 **MASTER:**
 
@@ -959,7 +864,7 @@
 			~]# start slave user='zabbixM' password='zabbixM';
 			
 
-## 11.ldap认证 ##
+## LDAP认证 ##
 
 	注：必须要php支持ldap模块,可用如下查看
 	~]# php -m | grep ldap
@@ -967,7 +872,7 @@
 
 ![](./picture/10.png)
 
-## 12.配置dingding告警 ##
+## 配置dingding告警 ##
 
 	#yum install -y epel-release
 	#yum install -y python-pip
@@ -1065,12 +970,12 @@
 ![](./picture/21.png)
 
 
-## 13.触发器触发后执行远程命令 ##
+## 触发器触发后执行远程命令 ##
 
 	1.修改agent配置
 		~]# vim /etc/zabbix/zabbix_agentd.conf
 			EnableRemoteCommands=1	#允许执行远程命令
-		~]#systemctl restart zabbix-agent
+		~]# systemctl restart zabbix-agent
 
 	2.修改visudo
 		因为执行远程命令是使用zabbix用户执行，需赋予权限
@@ -1087,7 +992,7 @@
 
 	5.编写执行脚本，添加执行权限
 
-## 14.创建自动发现与自动注册规则 ##
+## 创建自动发现与自动注册规则 ##
 
 **自动注册：客户端主动在服务端注册添加入监控**
 ![](./picture/24.png)
@@ -1096,7 +1001,7 @@
 ![](./picture/25.png)
 ![](./picture/26.png)
 	
-#15.proxy分布式监控
+## proxy分布式监控
 
 	~]# wget https://mirrors.aliyun.com/zabbix/zabbix/3.4/rhel/7/x86_64/zabbix-release-3.4-1.el7.centos.noarch.rpm
 	~]# rpm -ivh zabbix-release-3.4-1.el7.centos.noarch.rpm
@@ -1131,9 +1036,26 @@
 	~]# systemctl enable zabbix-proxy
 	
 
+## 可视化工具grafana安装配置 
 
+	~]# cat /etc/yum.repos.d/grafana.repo 
+		[grafana]
+		name=grafana
+		baseurl=https://packages.grafana.com/oss/rpm
+		repo_gpgcheck=1
+		enabled=1
+		gpgcheck=1
+		gpgkey=https://packages.grafana.com/gpg.key
+		sslverify=1
+		sslcacert=/etc/pki/tls/certs/ca-bundle.crt
 
+	~]# yum list --showduplicates grafana
+	~]# yum isntall -y grafana
+	
+	~]# systemctl start grafana-server				#监听3000端口
 
+	~]# grafana-cli plugins install alexanderzobnin-zabbix-app		#下载zabbix插件
+	
 
 
 
