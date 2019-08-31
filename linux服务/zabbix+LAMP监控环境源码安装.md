@@ -15,7 +15,6 @@
 
 	~]# systemctl stop firewalld
 	~]# systemctl disable firewalld
-
 	~]# sed -i 's/SELINUX=enable/SELINUX=disabled/g' /etc/sysconfig/selinux 
 	~]# setenforce 0
 
@@ -31,7 +30,7 @@
 		~]# cd /usr/src/apr-1.6.5/
 		~]# ./configure --prefix=/usr/local/apr 
 		~]# make && make install
-		~]# cd
+		~]# cd ~
 
 	编译apr-util:
 		~]# tar xf apr-util-1.6.1.tar.gz -C /usr/src/
@@ -90,7 +89,6 @@
 		~]# service httpd start
 
 		~]# vi /etc/rc.d/init.d/httpd  
-		
 			# chkconfig: 2345 85 15
 			# description: Apache is a World Wide Web server.
 
@@ -380,8 +378,8 @@
 
 ## 安装zabbix-server ##
 
-	~]# tar -xf zabbix-3.4.15.tar.gz -C /usr/src/
 	~]# yum install -y net-snmp-devel libxml2-devel libcurl-devel libevent libevent-devel fping
+	~]# tar -xf zabbix-3.4.15.tar.gz -C /usr/src/
 	~]# cd /usr/src/zabbix-3.4.15/
 	~]# ./configure --prefix=/usr/local/zabbix --enable-server --enable-agent --with-mysql --enable-ipv6 --with-net-snmp --with-libcurl --with-libxml2 (--enable-java)
 	
@@ -604,6 +602,7 @@
 	    }    
 	}
 
+ 
 
 ## 配置mysql主主同步 ##
 
@@ -761,7 +760,7 @@
 		    track_script {
 		        check_mysql
 		    }
-		}
+		} 
 
 **BACKUP:**
 
@@ -872,6 +871,15 @@
 
 ![](./picture/10.png)
 
+	LDAP主机：域控服务器IP
+	端口：默认389，一般不动
+	基于DN：域名分段写
+	搜寻属性：默认SAMAccountName，一般不动
+	绑定DN：CN=域管理员账号，CN=账号所属组，DC=同上
+	Bind密码：域管理员密码
+	测试认证：需要一个域中的账号
+
+
 ## 配置dingding告警 ##
 
 	#yum install -y epel-release
@@ -902,7 +910,7 @@
 
 **第七步：zabbix-server配置**
 
-	]# cat /usr/local/zabbix/etc/zabbix_server.conf | grep -Ev "#|^$"
+	~]# cat /usr/local/zabbix/etc/zabbix_server.conf | grep -Ev "#|^$"
 	...
 	AlertScriptsPath=/usr/local/zabbix/etc/alertscripts		#告警脚本存放目录
 	...
@@ -986,6 +994,9 @@
 		~]# zabbix-get -I SRC_IP -p 10050 -s DST_IP -k "system.run[sudo CMD]"	 
 
 	4.在页面进行配置
+
+
+
 
 ![](./picture/22.png)
 ![](./picture/23.png)

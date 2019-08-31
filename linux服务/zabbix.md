@@ -60,6 +60,8 @@
 		开启防火墙规则，允许10050端口，防火墙允许ping服务
 
 	参考：https://blog.csdn.net/wh211212/article/details/78836729
+
+
 	
 **Proxy：**
 
