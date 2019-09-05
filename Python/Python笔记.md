@@ -49,6 +49,11 @@
 
 	~]$ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple gevent		#临时使用一次
 
+## 使用脚本安装和升级pip：
+
+	~]# wget https://bootstrap.pypa.io/get-pip.py
+	~]# python get-pip.py
+	~]# pip -V　　#查看pip版本
 
 ## jupyter：
 
