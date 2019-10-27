@@ -10,7 +10,7 @@
 	~]# cd ipvsadm-1.26
 	~]# make && make install
 
-注：可直接yum安装，yum install -y ipvsadm
+	注：可直接yum安装，yum install -y ipvsadm
 
 
 #2.vs/nat模式

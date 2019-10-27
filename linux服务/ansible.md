@@ -39,7 +39,11 @@
 		        sleep 1
 		done
 
-	~]# 在/etc/ansible/hosts中配置主机
+	~]# vi /etc/ansible/hosts			#配置主机
+		[GROUP_NAME]
+		HOST
+
+	
 
 #1. ansible
 ##1.1 常用参数

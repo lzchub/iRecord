@@ -103,7 +103,7 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		peerType=observer	#设置observer角色，只需在设置为observer服务器配置
 		server.N=IP:PORT1:PORT2:observer	#所有服务器配置
 
-**服务自启：**
+**服务自启：System V风格**
 
 	~]# cat /etc/init.d/zookeeper 
 		#!/bin/bash
@@ -134,6 +134,24 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 	~]# chmod a+x /etc/init.d/zookeeper
 	~]# chkconfig --add zookeeper
 	~]# chkconfig --list
+
+**服务自启：Systemd风格**
+
+	~]# cat /usr/lib/systemd/system/zookeeper.service
+		[Unit]
+		Description=zookeeper.service
+		After=network.target
+		[Service]
+		User=root
+		Type=idle
+		ExecStart=/usr/local/zookeeper/bin/zkServer.sh start 
+		ExecStop=/usr/local/zookeeper/bin/zkServer.sh stop
+		ExecReload=$ExecStop;$ExecStart
+		[Install]
+		WantedBy=multi-user.target
+
+	~]# systemctl daemon-reload
+
 
 #3.搭建kafka集群
 [https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/](https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/)
@@ -198,6 +216,23 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		找到KAFKA_HEAP_OPTS配置项，例如修改如下：
 			export KAFKA_HEAP_OPTS="-Xmx2G -Xms2G"
 
+**服务自启：Systemd风格**
+
+	~]# cat /usr/lib/systemd/system/kafka.service
+		[Unit]
+		Description=kafka.service
+		After=network.target remote-fs.target 
+		[Service]
+		User=root
+		Type=idle
+		ExecStart=/usr/local/kafka/bin/kafka-server-start.sh /usr/local/kafka/config/server.properties
+		ExecStop=/usr/local/kafka/bin/kafka-server-stop.sh /usr/local/kafka/config/server.properties
+		ExecReload=$ExecStop;$ExecStart
+		[Install]
+		WantedBy=multi-user.target
+
+	~]# systemctl daemon-reload
+
 **kafka常用命令：**
 
 	启动kafka：
@@ -236,7 +271,7 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 	~]# cat /usr/local/elasticsearch/config/elasticsearch.yml | grep -v '#'
 		cluster.name: myes			#集群名称，一定要一致，当集群内节点启动的时候，默认使用组播（多播），寻找集群中的节点
 		node.name: node1											#节点名称
-		path.data: /usr/local/elasticsearch/data					#数据目录		
+		path.data: /usr/local/elasticsearch/data					#数据目录,可以添加多个，使用","隔开		
 		path.logs: /usr/local/elasticsearch/log						#日志目录
 		bootstrap.memory_lock: true									#启动时锁定内存
 		network.host: 192.168.164.150								#本机IP
@@ -272,6 +307,62 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		192.168.164.152 11 96 1 0.11 0.20 0.48 mdi - node3
 		192.168.164.151 10 96 0 0.08 0.17 0.21 mdi - node2
 
+**服务自启：Systemd风格**
+
+	~]# cat elasticsearch.service 
+		[Unit]
+		Description=Elasticsearch
+		Documentation=http://www.elastic.co
+		Wants=network-online.target
+		After=network-online.target
+		
+		[Service]
+		RuntimeDirectory=elasticsearch
+		Environment=ES_HOME=/usr/share/elasticsearch
+		Environment=ES_PATH_CONF=/etc/elasticsearch
+		Environment=PID_DIR=/var/run/elasticsearch
+		EnvironmentFile=-/etc/sysconfig/elasticsearch
+		
+		WorkingDirectory=/usr/share/elasticsearch
+		
+		User=elasticsearch
+		Group=elasticsearch
+		
+		ExecStart=/usr/share/elasticsearch/bin/elasticsearch -p ${PID_DIR}/elasticsearch.pid --quiet
+		
+		
+		StandardOutput=journal
+		StandardError=inherit
+		
+		LimitNOFILE=65536
+		
+		LimitNPROC=4096
+		
+		# Specifies the maximum size of virtual memory
+		LimitAS=infinity
+		
+		# Specifies the maximum file size
+		LimitFSIZE=infinity
+		
+		# Disable timeout logic and wait until process is stopped
+		TimeoutStopSec=0
+		
+		# SIGTERM signal is used to stop the Java process
+		KillSignal=SIGTERM
+		
+		# Send the signal only to the JVM rather than its control group
+		KillMode=process
+		
+		# Java process is never killed
+		SendSIGKILL=no
+		
+		# When a JVM receives a SIGTERM signal it exits with code 143
+		SuccessExitStatus=143
+		
+		[Install]
+		WantedBy=multi-user.target
+
+	~]# systemctl daemon-reload
 
 #5.elasticsearch-head插件
 
@@ -334,6 +425,32 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 
 	注：搜集系统日志需注意日志权限问题
 
+**开机自启：Systemd风格**
+
+	~]# cat /etc/systemd/system/logstash.service               
+		[Unit]
+		Description=logstash
+		
+		[Service]
+		Type=simple
+		User=logstash
+		Group=logstash
+		# Load env vars from /etc/default/ and /etc/sysconfig/ if they exist.
+		# Prefixing the path with '-' makes it try to load, but if the file doesn't
+		# exist, it continues onward.
+		EnvironmentFile=-/etc/default/logstash
+		EnvironmentFile=-/etc/sysconfig/logstash
+		ExecStart=/usr/share/logstash/bin/logstash "--path.settings" "/etc/logstash"
+		Restart=always
+		WorkingDirectory=/
+		Nice=19
+		LimitNOFILE=16384
+		
+		[Install]
+		WantedBy=multi-user.target
+
+	~]# systemctl daemon-reload
+
 #7.搭建kibana
 
 	~]# tar xf kibana-6.3.0-linux-x86_64.tar.gz -C /usr/local/
@@ -353,6 +470,29 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 	~]# echo 'PATH=$ES_HOME/bin:$LS_HOME/bin:$KB_HOME/bin:$PATH' >> /etc/profile.d/elk.sh 
 	~]# source /etc/profile.d/elk.sh
 
+**开机自启：Systemd风格**
+
+	~]# cat /etc/systemd/system/kibana.service 
+		[Unit]
+		Description=Kibana
+		 
+		[Service]
+		Type=simple
+		User=kibana
+		Group=kibana
+		# Load env vars from /etc/default/ and /etc/sysconfig/ if they exist.
+		# Prefixing the path with '-' makes it try to load, but if the file doesn't
+		# exist, it continues onward.
+		EnvironmentFile=-/etc/default/kibana
+		EnvironmentFile=-/etc/sysconfig/kibana
+		ExecStart=/usr/share/kibana/bin/kibana "-c /etc/kibana/kibana.yml"
+		Restart=always
+		WorkingDirectory=/
+		
+		[Install]
+		WantedBy=multi-user.target
+
+	~]# systemctl daemon-reload
 
 #8.写入日志(服务器到kafka)
 ## 1.filebeat->logstash->kafka

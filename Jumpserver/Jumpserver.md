@@ -12,11 +12,13 @@
 	~]# setenforce 0
 	~]# sed -i "s/SELINUX=enforcing/SELINUX=disabled/g" /etc/sysconfig/selinux  
 
-	~]# yum -y install wget gcc git		#安装
+	~]# yum -y install wget gcc git vim		#安装
 	
 	~]# wget https://mirrors.aliyun.com/epel/epel-release-latest-7.noarch.rpm	
 	~]# rpm -ivh epel-release-latest-7.noarch.rpm
 	
+	
+	~]# yum -y install redis
 	~]# systemctl enable redis			#安装 Redis, Jumpserver 使用 Redis 做 cache 和 celery broke
 	~]# systemctl start redis		
 	~]# ss -tnl
@@ -54,13 +56,13 @@
 	~]# sed -i "s/# DEBUG: true/DEBUG: false/g" /opt/jumpserver/config.yml
 	~]# sed -i "s/# LOG_LEVEL: DEBUG/LOG_LEVEL: ERROR/g" /opt/jumpserver/config.yml 
 	~]# sed -i "s/# SESSION_EXPIRE_AT_BROWSER_CLOSE: false/SESSION_EXPIRE_AT_BROWSER_CLOSE: true/g" /opt/jumpserver/config.yml
-	~]# sed -i "s/DB_PASSWORD: /DB_PASSWORD: 517na.com/g" /opt/jumpserver/config.yml
+	~]# sed -i "s/DB_PASSWORD: /DB_PASSWORD: 517na.com/g" /opt/jumpserver/config.yml	#数据库不在本机需要修改数据库IP等等
 
 	#~]# ./jms start -d	#启动服务 
 
 	~]# wget -O /usr/lib/systemd/system/jms.service https://demo.jumpserver.org/download/shell/centos/jms.service
 	~]# chmod 755 /usr/lib/systemd/system/jms.service
-	~]# systemctl start jms
+	~]# systemctl start jms			#监听8080端口
 	~]# systemctl enable jms  # 配置自启
 
 	
@@ -71,8 +73,8 @@
 	~]# systemctl enable docker
 
 	~]# Server_IP=`ip addr | grep inet | egrep -v '(127.0.0.1|inet6|docker)' | awk '{print $2}' | tr -d "addr:" | head -n 1 | cut -d / -f1`			#获取宿主机IP
-	~]# docker run --name jms_koko -d -p 2222:2222 -p 127.0.0.1:5000:5000 -e CORE_HOST=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN --restart=always jumpserver/jms_koko:1.5.2		#启动koko容器
-	~]# docker run --name jms_guacamole -d -p 127.0.0.1:8081:8081 -e JUMPSERVER_SERVER=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN --restart=always jumpserver/jms_guacamole:1.5.2	#启动guacamole容器
+	~]# docker run --name jms_koko -d -p 2222:2222 -p 127.0.0.1:5000:5000 -e CORE_HOST=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN --restart=always jumpserver/jms_koko:1.5.2			#启动koko容器
+	~]# docker run --name jms_guacamole -d -p 127.0.0.1:8081:8081 -e JUMPSERVER_SERVER=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN --restart=always jumpserver/jms_guacamole:1.5.2		#启动guacamole容器
 	~]# docker ps
 		CONTAINER ID    IMAGE                            COMMAND             CREATED          STATUS        PORTS                                              NAMES
 		2a86160707c3    jumpserver/jms_guacamole:1.5.2   "entrypoint.sh"     2 hours ago      Up 2 hours    127.0.0.1:8081->8081/tcp                           jms_guacamole
@@ -88,7 +90,7 @@
 	~]# chown -R root:root luna
 
 	# 配置 Nginx 整合各组件
-	~]# cat nginx.repo 
+	~]# cat /etc/yum.repo.d/nginx.repo 
 		[nginx]
 		name=nginx repo
 		baseurl=http://nginx.org/packages/centos/7/$basearch/
@@ -98,7 +100,7 @@
 	~]# yum -y install nginx
 
 	~]# rm -f /etc/nginx/conf.d/default.conf 
-	~]# cat /etc/nginx/conf.d/jumpserver.conf 
+	~]# cat /etc/nginx/conf.d/jumpserver.conf
 		server {
 		    listen 80;
 		

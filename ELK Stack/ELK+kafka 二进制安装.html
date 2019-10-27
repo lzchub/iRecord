@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ELK+kafka 二进制安装</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+/* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
+/* Author: Nicolas Hery - http://nicolashery.com */
+/* Version: b13fe65ca28d2e568c6ed5d7f06581183df8f2ff */
+/* Source: https://github.com/nicolahery/markdownpad-github */
+
+/* RESET
+=============================================================================*/
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* BODY
+=============================================================================*/
+
+body {
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  background-color: #fff;
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+body>*:first-child {
+  margin-top: 0 !important;
+}
+
+body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* BLOCKS
+=============================================================================*/
+
+p, blockquote, ul, ol, dl, table, pre {
+  margin: 15px 0;
+}
+
+/* HEADERS
+=============================================================================*/
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code, h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code {
+  font-size: inherit;
+}
+
+h1 {
+  font-size: 28px;
+  color: #000;
+}
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+h5 {
+  font-size: 14px;
+}
+
+h6 {
+  color: #777;
+  font-size: 14px;
+}
+
+body>h2:first-child, body>h1:first-child, body>h1:first-child+h2, body>h3:first-child, body>h4:first-child, body>h5:first-child, body>h6:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+  margin-top: 10px;
+}
+
+/* LINKS
+=============================================================================*/
+
+a {
+  color: #4183C4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* LISTS
+=============================================================================*/
+
+ul, ol {
+  padding-left: 30px;
+}
+
+ul li > :first-child, 
+ol li > :first-child, 
+ul li ul:first-of-type, 
+ol li ol:first-of-type, 
+ul li ol:first-of-type, 
+ol li ul:first-of-type {
+  margin-top: 0px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px;
+}
+
+dl dt:first-child {
+  padding: 0;
+}
+
+dl dt>:first-child {
+  margin-top: 0px;
+}
+
+dl dt>:last-child {
+  margin-bottom: 0px;
+}
+
+dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px;
+}
+
+dl dd>:first-child {
+  margin-top: 0px;
+}
+
+dl dd>:last-child {
+  margin-bottom: 0px;
+}
+
+/* CODE
+=============================================================================*/
+
+pre, code, tt {
+  font-size: 12px;
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+code, tt {
+  margin: 0 0px;
+  padding: 0px 0px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+}
+
+pre>code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+pre code, pre tt {
+  background-color: transparent;
+  border: none;
+}
+
+kbd {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #DDDDDD;
+    background-image: linear-gradient(#F1F1F1, #DDDDDD);
+    background-repeat: repeat-x;
+    border-color: #DDDDDD #CCCCCC #CCCCCC #DDDDDD;
+    border-image: none;
+    border-radius: 2px 2px 2px 2px;
+    border-style: solid;
+    border-width: 1px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 10px;
+    padding: 1px 4px;
+}
+
+/* QUOTES
+=============================================================================*/
+
+blockquote {
+  border-left: 4px solid #DDD;
+  padding: 0 15px;
+  color: #777;
+}
+
+blockquote>:first-child {
+  margin-top: 0px;
+}
+
+blockquote>:last-child {
+  margin-bottom: 0px;
+}
+
+/* HORIZONTAL RULES
+=============================================================================*/
+
+hr {
+  clear: both;
+  margin: 15px 0;
+  height: 0px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  border-bottom: 4px solid #ddd;
+  padding: 0;
+}
+
+/* TABLES
+=============================================================================*/
+
+table th {
+  font-weight: bold;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+/* IMAGES
+=============================================================================*/
+
+img {
+  max-width: 100%
+}
+</style>
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function() {
+
+    // 生成目录列表
+    var div1 = document.createElement("div");
+    div1.style.cssText = "clear:both";
+    var outline = document.createElement("div");
+    outline.setAttribute("id", "outline-list");
+    outline.style.cssText = "border:solid 1px #ccc; background:#eee; min-width:200px;padding:4px 10px;";
+
+    var ele_p = document.createElement("p");
+    ele_p.style.cssText = "text-align: left; margin: 0;";
+    outline.appendChild(ele_p);
+
+    var ele_span = document.createElement("span");
+    // ele_span.style.cssText = "float: left;";
+    var ele_text=document.createTextNode("目录");
+    ele_span.appendChild(ele_text);
+
+    var ele_a = document.createElement("a");
+    ele_a.appendChild(document.createTextNode("[+]"));
+    ele_a.setAttribute("href", "#");
+    ele_a.setAttribute("onclick", "javascript:return openct(this);");
+    ele_a.setAttribute("title", "点击打开目录");
+
+    ele_span.appendChild(ele_a);
+    ele_p.appendChild(ele_span);
+
+    var ele_ol = document.createElement("ol");
+    ele_ol.style.cssText = "display:none;margin-left:14px;padding-left:14px;line-height:160%;";
+    ele_ol.setAttribute("id", "outline_ol");
+    outline.appendChild(ele_ol);
+    var div1 = document.createElement("div");
+    div1.style.cssText = "clear:both";
+
+    document.body.insertBefore(outline, document.body.childNodes[0]);
+    // 获取所有标题
+    var headers = document.querySelectorAll('h1,h2,h3,h4,h5,h6');
+    if (headers.length < 2)
+      return;
+
+    // -----
+    var old_h = 0, ol_cnt = 0;
+    // -----
+
+    for (var i = 0; i < headers.length; i++) {
+
+      var ele_ols = null;
+      var ele_Current = ele_ol;
+      // 找出它是H几，为后面前置空格准备
+      var header = headers[i];
+      header.setAttribute("id", "t" + i + header.tagName);
+      var h = parseInt(header.tagName.substr(1), 10);
+
+      // -----
+      if (!old_h){
+        old_h = h;
+
+      }
+
+      if (h > old_h) {
+
+        ele_ols = document.createElement("ol");
+        ele_Current = ele_ol;
+        if(ele_Current && ol_cnt > 0){
+          var temp = ol_cnt;
+          while(temp > 0){
+            ele_Current = ele_Current.lastChild;
+            temp--;
+          }
+        }
+        ele_Current.lastChild.appendChild(ele_ols);
+        ol_cnt++;
+      } else if (h < old_h && ol_cnt > 0) {
+
+        if (h == 1) {
+          while (ol_cnt > 0) {
+            ol_cnt--;
+          }
+        } else {
+          ele_ols = document.createElement("ol");
+          ele_Current = ele_ol;
+          if(ele_Current && ol_cnt > 0){
+            var temp = ol_cnt;
+            while(temp > 1){
+              ele_Current = ele_Current.lastChild;
+              temp--;
+            }
+          }
+        // var ele_Parent = ele_Current.parentNode();
+        //ele_Current.appendChild(ele_ols);
+        ol_cnt--;
+
+        }
+      } else if (h == old_h && ol_cnt > 0) {
+
+        ele_Current = ele_ol;
+        if(ele_Current && ol_cnt > 0){
+          var temp = ol_cnt;
+          while(temp > 0){
+            ele_Current = ele_Current.lastChild;
+            temp--;
+          }
+        }
+        ele_Current = ele_Current.lastChild;
+      }
+      if (h == 1) {
+        while (ol_cnt > 0) {
+          ol_cnt--;
+        }
+      }
+      if (h < old_h && ol_cnt > 0 && h != 1){
+        ele_li = document.createElement("li")
+        ele_Current.lastChild.appendChild(ele_li);
+        old_h = h;
+        var a = document.createElement("a");
+        // 为目录项设置链接
+        a.setAttribute("href", "#t" + i + header.tagName);
+        // 目录项文本前面放置对应的空格
+        a.innerHTML = header.textContent;
+        ele_li.appendChild(a);
+        continue;
+      }
+
+      old_h = h;
+      // -----
+      if (ele_ols){
+        ele_li = document.createElement("li")
+        ele_ols.appendChild(ele_li); 
+      } else {
+        ele_li = document.createElement("li")
+        ele_Current.appendChild(ele_li);
+      }
+      var a = document.createElement("a");
+      // 为目录项设置链接
+      a.setAttribute("href", "#t" + i + header.tagName);
+      // 目录项文本前面放置对应的空格
+      a.innerHTML = header.textContent;
+      ele_li.appendChild(a);
+    }
+    // -----
+    while (ol_cnt > 0) {
+      ol_cnt--;
+    }
+    // -----
+    });
+function openct(e) {
+  if (e.innerHTML == '[+]') {
+    // createTextNode
+    e.setAttribute('title', '收起');
+    e.innerHTML = '[-]';
+    var element = document.getElementById("outline_ol");
+    element.style.cssText = "margin-left:14px;padding-left:14px;line-height:160%;";
+  } else {
+    e.setAttribute('title', '展开');
+    e.innerHTML = '[+]';
+    var element = document.getElementById("outline_ol");
+    element.style.cssText = "display:none;margin-left:14px;padding-left:14px;line-height:160%;";
+  }
+  e.blur();
+  return false;
+}
+</script>
+</head>
+<body>
+<h2>实验环境：</h2>
+<pre><code>CentOS 7.6
+    node1：192.168.164.150
+    node2：192.168.164.151
+    node3：192.168.164.152
+JDK-1.8.0
+Zookeeper-3.4.14    
+kafka_2.12-2.2.0
+elasticsearch-6.3.0
+kibana-6.3.0
+logstash-6.3.0
+</code></pre>
+
+<h2>架构图：</h2>
+<p><img src="./picture/27.png" /></p>
+<h1>初始化准备</h1>
+<p><strong>1.按需关闭防火墙、SELinux</strong></p>
+<pre><code>~]# systemctl stop firewalld
+~]# systemctl disable firewalld
+~]# setenforce 0
+~]# sed -i '/SELINUX/s/enforcing/disabled/g' /etc/sysconfig/selinux
+</code></pre>
+
+<p><strong>2.同步系统时间</strong></p>
+<pre><code>1.安装ntpdate工具
+~]# yum -y install ntp ntpdate
+
+2.设置系统时间与网络时间同步
+~]# ntpdate cn.pool.ntp.org
+
+3.将系统时间写入硬件时间
+~]# hwclock --systohc
+</code></pre>
+
+<h1>1.安装JDK 8</h1>
+<p><a href="https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html">https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html</a></p>
+<pre><code>~]# yum install jdk-8u202-linux-x64.rpm -y
+~]# echo &quot;JAVA_HOME=/usr/java/latest&quot; &gt; /etc/profile.d/jdk.sh
+~]# echo &quot;PATH=$JAVA_HOME/bin:$PATH&quot; &gt;&gt; /etc/profile.d/jdk.sh
+~]# source /etc/profile.d/jdk.sh
+~]# java -version
+java version &quot;1.8.0_202&quot;
+Java(TM) SE Runtime Environment (build 1.8.0_202-b08)
+Java HotSpot(TM) 64-Bit Server VM (build 25.202-b08, mixed mode)
+
+注：zookeeper(java)与kafka(scale)都需要JVM环境
+</code></pre>
+
+<h1>2.搭建zookeeper集群</h1>
+<p>zookeeper包下载: <a href="https://mirrors.tuna.tsinghua.edu.cn/apache/">https://mirrors.tuna.tsinghua.edu.cn/apache/</a></p>
+<p>zookeeper配置参数：<a href="http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_configuration">http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_configuration</a></p>
+<p><strong>node1:node2/3同，只需修改myid文件即可</strong></p>
+<pre><code>~]# wget https://mirrors.tuna.tsinghua.edu.cn/apache/zookeeper/zookeeper-3.4.14/zookeeper-3.4.14.tar.gz
+~]# tar xf zookeeper-3.4.14.tar.gz -C /usr/local/
+~]# cd /usr/local/
+~]# ln -sv zookeeper-3.4.14/ zookeeper
+~]# cd zookeeper/conf
+~]# cat zoo.cfg
+    tickTime=2000
+    initLimit=10
+    syncLimit=5
+    dataDir=/usr/local/zookeeper-3.4.14/data
+
+    dataLogDir=/usr/local/zookeeper-3.4.14/log
+    autopurge.snapRetainCount=3
+    autopurge.purgeInterval=1
+
+    clientPort=2181
+    server.0=192.168.164.128:2888:3888
+    server.1=192.168.164.132:2888.3888
+    server.2=192.168.164.133:2888.3888
+
+~]# mkdir ../{data,log}
+~]# echo 0 &gt; data/myid          #最好从0开始，否则可能会无法实现高可用
+
+~]# echo 'ZK_HOME=/usr/local/zookeeper' &gt; /etc/profile.d/zk.sh                               
+~]# echo 'PATH=$ZK_HOME/bin:$PATH' &gt;&gt; /etc/profile.d/zk.sh
+~]# source /etc/profile.d/zk.sh
+
+~]# zkServer.sh start       #启动zk
+~]# zkServer.sh status      #查看zk状态
+
+~]# zkCli -server IP:PORT 
+
+＃配置参数说明：
+tickTime:客户端与服务器或者服务器与服务器之间每个tickTime时间就会发送一次心跳。通过心跳不仅能够用来监听机器的工作状态，还可以通过心跳来控制Flower跟Leader的通信时间，默认2秒
+initLimit：集群中的follower服务器(F)与leader服务器(L)之间初始连接时能容忍的最多心跳数（tickTime的数量）。
+syncLimit：集群中flower服务器（F）跟leader（L）服务器之间的请求和答应最多能容忍的心跳数。   
+dataDir：该属性对应的目录是用来存放myid信息跟一些版本，日志，跟服务器唯一的ID信息等。
+clientPort：客户端连接的接口，客户端连接zookeeper服务器的端口，zookeeper会监听这个端口，接收客户端的请求访问！这个端口默认是2181。
+server.N=YYY:A:B
+    N：代表服务器编号（也就是myid里面的值）
+    YYY：服务器地址
+    A：表示 Flower 跟 Leader的通信端口，简称服务端内部通信的端口（默认2888）
+    B：表示 是选举端口（默认是3888）
+配置observer角色：
+    peerType=observer   #设置observer角色，只需在设置为observer服务器配置
+    server.N=IP:PORT1:PORT2:observer    #所有服务器配置
+</code></pre>
+
+<p><strong>服务自启：</strong></p>
+<pre><code>~]# cat /etc/init.d/zookeeper 
+    #!/bin/bash
+
+    # chkconfig:2345 20 90
+    # description:zookeeper
+    # processname:zookeeper
+
+    export JAVA_HOME=/usr/java/latest
+
+    case $1 in        
+            start) 
+                    /usr/src/zookeeper-3.4.14/bin/zkServer.sh start
+            ;;        
+            stop)
+                    /usr/src/zookeeper-3.4.14/bin/zkServer.sh stop
+            ;;        
+            status) 
+                    /usr/src/zookeeper-3.4.14/bin/zkServer.sh status
+            ;;        
+            restart)
+                    /usr/src/zookeeper-3.4.14/bin/zkServer.sh restart
+            ;;        
+            *) 
+                    echo &quot;require start|stop|status|restart&quot;
+    esac    
+
+~]# chmod a+x /etc/init.d/zookeeper
+~]# chkconfig --add zookeeper
+~]# chkconfig --list
+</code></pre>
+
+<h1>3.搭建kafka集群</h1>
+<p><a href="https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/">https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/</a></p>
+<pre><code>~]# wget https://mirrors.tuna.tsinghua.edu.cn/apache/kafka/2.2.0/kafka_2.12-2.2.0.tgz   
+~]# tar xf kafka_2.12-2.2.0.tgz -C /usr/local/
+~]# cd /usr/local/
+~]# ln -sv kafka_2.12-2.2.0/ kafka
+~]# cd kafka/config/
+
+~]# cat server.properties | grep -v '#' | grep -v &quot;^$&quot;
+    broker.id=1                                     #kafka节点标识(节点唯一)
+    listeners=PLAINTEXT://192.168.164.128:9092      #本机ip
+    num.network.threads=3
+    num.io.threads=8
+    socket.send.buffer.bytes=102400
+    socket.receive.buffer.bytes=102400
+    socket.request.max.bytes=104857600
+    log.dirs=/usr/local/kafka/kafka-logs                #kafka数据存放目录
+    num.partitions=1
+    num.recovery.threads.per.data.dir=1
+    offsets.topic.replication.factor=1
+    transaction.state.log.replication.factor=1
+    transaction.state.log.min.isr=1
+    log.retention.hours=168
+    log.segment.bytes=1073741824
+    log.retention.check.interval.ms=300000
+    zookeeper.connect=192.168.164.128:2181,192.168.164.132:2181,192.168.164.133:2181    #zookeeper集群地址
+    zookeeper.connection.timeout.ms=6000
+    group.initial.rebalance.delay.ms=0
+
+~]# echo 'KFK_HOME=/usr/local/kafka_2.12-2.2.0' &gt; /etc/profile.d/kfk.sh
+~]# echo 'PATH=$KFK_HOME/bin:$PATH' &gt;&gt; /etc/profile.d/kfk.sh
+~]# source /etc/profile.d/kfk.sh
+
+~]# kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties     #启动kafka
+
+
+验证kafka是否可用：    
+    1.
+    ~]# zkCli.sh -server localhost:2181
+    [zk: localhost:2181(CONNECTED) 0] get /brokers/ids/1
+    {&quot;listener_security_protocol_map&quot;:{&quot;PLAINTEXT&quot;:&quot;PLAINTEXT&quot;},&quot;endpoints&quot;:[&quot;PLAINTEXT://192.168.164.128:9092&quot;],&quot;jmx_port&quot;:-1,&quot;host&quot;:&quot;192.168.164.128&quot;,&quot;timestamp&quot;:&quot;1556540032798&quot;,&quot;port&quot;:9092,&quot;version&quot;:4}
+    cZxid = 0x60000002b
+    ctime = Tue Apr 30 04:13:52 CST 2019
+    mZxid = 0x60000002b
+    mtime = Tue Apr 30 04:13:52 CST 2019
+    pZxid = 0x60000002b
+    cversion = 0
+    dataVersion = 1
+    aclVersion = 0
+    ephemeralOwner = 0x7d3ae0001
+    dataLength = 200
+    numChildren = 0
+
+    2.
+    ~]# jps -l | grep kafka
+
+注：
+    kafka节点默认需要的内存为1G，如果需要修改内存，可以修改kafka-server-start.sh的配置项。
+        vim /usr/local/kafka/kafka_2.12-2.0.0/bin/kafka-server-start.sh
+    找到KAFKA_HEAP_OPTS配置项，例如修改如下：
+        export KAFKA_HEAP_OPTS=&quot;-Xmx2G -Xms2G&quot;
+</code></pre>
+
+<p><strong>kafka常用命令：</strong></p>
+<pre><code>启动kafka：
+    ~]# kafka-server-start.sh -daemon /usr/local/kafka/config/server.properties
+
+停止kafka：
+    ~]# kafka-server-stop.sh 
+
+创建topic：
+    ~]# kafka-topics.sh --create --zookeeper 192.168.164.128:2181,192.168.164.132:2181,192.168.164.133:2181 --replication-factor 1 --partitions 1 --topic topic_name
+
+展示topic：
+    ~]# kafka-topics.sh --list --zookeeper 192.168.164.128:2181,192.168.164.132:2181,192.168.164.133:2181
+
+描述topic：
+    ~]# kafka-topics.sh --describe --zookeeper 192.168.164.128:2181,192.168.164.132:2181,192.168.164.133:2181 --topic topic_name
+
+生产者发送消息：
+    ~]# kafka-console-producer.sh --broker-list 192.168.164.128:9092 --topic topic_name
+
+消费者消费消息：
+    kafka-console-consumer.sh --zookeeper 192.168.164.128:2181,192.168.164.132:2181,192.168.164.133:2181 --topic topic_name --from-beginnin
+
+删除topic：
+    ~]# kafka-topics.sh --delete --topic topic_name --zookeeper 192.168.164.128:2181,192.168.164.132:2181,192.168.164.133:2181
+</code></pre>
+
+<h1>4.搭建elasticsearch集群</h1>
+<pre><code>~]# tar xf elasticsearch-6.3.0.tar.gz -C /usr/local/
+~]# cd /usr/local/
+~]# ln -sv elasticsearch-6.3.0/ elasticsearch
+</code></pre>
+
+<p><strong>配置文件：</strong></p>
+<pre><code>~]# cat /usr/local/elasticsearch/config/elasticsearch.yml | grep -v '#'
+    cluster.name: myes          #集群名称，一定要一致，当集群内节点启动的时候，默认使用组播（多播），寻找集群中的节点
+    node.name: node1                                            #节点名称
+    path.data: /usr/local/elasticsearch/data                    #数据目录       
+    path.logs: /usr/local/elasticsearch/log                     #日志目录
+    bootstrap.memory_lock: true                                 #启动时锁定内存
+    network.host: 192.168.164.150                               #本机IP
+    http.port: 9200                                             #开放端口
+    discovery.zen.ping.unicast.hosts: [&quot;node2&quot;, &quot;node3&quot;]        #集群中其他成员
+    discovery.zen.minimum_master_nodes: 2                       #成为master
+
+~]# cat jvm.options | grep -v '#' | grep -v '^$' | head -n 2       
+    -Xms1g
+    -Xmx1g
+
+~]# useradd elastic                                             #elasticsearch 5.0后不能使用root登录
+~]# chown -R elastic:elastic /usr/local/elasticsearch/          #修改用户权限，否则es无权限启动
+~]# echo &quot;123456&quot; | passwd --stdin elastic
+
+~]# vim /etc/sysctl.conf                                        #调整系统虚拟内存
+    vm.max_map_count=262144
+~]# sysctl -p
+
+~]# vim /etc/security/limits.conf                               #修改tcp连接数 #锁定内存
+~]# tail -n 2 /etc/security/limits.conf
+    * soft nofile 65536
+    * hard nofile 65536
+    * soft memlock unlimited                                    
+    * hard memlock unlimited 
+
+~]# su - elastic                                                #es默认不能使用root启动
+~]# cd /usr/local/elasticsearch/bin
+~]# /usr/local/elasticsearch/bin/elasticsearch -d               #非root用户
+
+~]# curl -XGET http://node1:9200/_cat/nodes                     #查看信息 .../_cat
+    192.168.164.150 11 96 0 0.06 0.07 0.13 mdi * node1
+    192.168.164.152 11 96 1 0.11 0.20 0.48 mdi - node3
+    192.168.164.151 10 96 0 0.08 0.17 0.21 mdi - node2
+</code></pre>
+
+<h1>5.elasticsearch-head插件</h1>
+<pre><code>elasticsearch-head简介：
+    1.ElasticSearch-head是一个H5编写的ElasticSearch集群操作和管理工具，可以对集群进行傻瓜式操作。
+    2.显示集群的拓扑,并且能够执行索引和节点级别操作
+    3.搜索接口能够查询集群中原始json或表格格式的检索数据
+    4.能够快速访问并显示集群的状态
+    5.有一个输入窗口,允许任意调用RESTful API。这个接口包含几个选项,可以组合在一起以产生有趣的结果
+    6.es的图形界面插件，托管于GitHub,使用9100端口
+
+安装NodeJS，root用户
+    ~]# wget https://nodejs.org/dist/v8.11.3/node-v8.11.3-linux-x64.tar.gz
+    ~]# tar xf node-v8.11.3-linux-x64.tar.gz -C /usr/src/
+    ~]# cd /usr/local/
+    ~]# ln -sv /usr/src/
+    ~]# ln -sv /usr/src/node-v8.11.3-linux-x64/ node
+    ~]# ln -sv /usr/local/node/bin/node /usr/local/bin/node
+    ~]# ln -sv /usr/local/node/bin/npm /usr/local/bin/npm
+    ~]# yum install -y git
+    ~]# cd ~
+    ~]# git clone git://github.com/mobz/elasticsearch-head.git
+    ~]# cd elasticsearch-head/
+    #~]# npm install grunt -save
+    ~]# npm install
+    ~]# nohup npm run start &amp;
+
+注：以上方法会有一些报错，但仍可使用
+
+    ~]# vim /usr/local/elasticsearch/config/elasticsearch.yml
+        http.cors.enabled: true
+        http.cors.allow-origin: &quot;*&quot;
+
+    重启es
+</code></pre>
+
+<h1>6.搭建logstash集群</h1>
+<pre><code>~]# tar xf logstash-6.3.0.tar.gz -C /usr/local/ 
+~]# ln -sv logstash-6.3.0/ logstash
+
+~]# ./bin/logstash -e 'input{stdin{}}output{stdout{codec=&gt;rubydebug}}'      #测试logstash，可能会等好几分钟
+
+~]# cat logstash-test.conf
+    input {
+    #stdin {}
+        file {
+            path =&gt; &quot;/var/log/messages&quot;
+            start_position =&gt; &quot;beginning&quot;
+        }
+    }
+
+    output {
+        elasticsearch {
+            hosts =&gt; [&quot;192.168.164.150:9200&quot;,&quot;192.168.164.151:9200&quot;,&quot;192.168.164.152:9200&quot;]
+                index =&gt; &quot;system-messages-%{+YYYY-MM}&quot;
+        }
+    }
+
+~]# nohup /usr/local/logstash/bin/logstash -f /usr/local/logstash/logstash-test.conf &amp;      #启动logstash
+
+注：搜集系统日志需注意日志权限问题
+</code></pre>
+
+<h1>7.搭建kibana</h1>
+<pre><code>~]# tar xf kibana-6.3.0-linux-x86_64.tar.gz -C /usr/local/
+~]# ln -sv kibana-6.3.0-linux-x86_64/ kibana
+
+~]# cat kibana.yml | grep -v '#' | grep -v '^$'
+    server.port: 5601                                           #web访问端口
+    server.host: &quot;192.168.164.150&quot;                              #kibana所在服务器IP
+    server.name: &quot;node1.kibana&quot;                                 #Kibana实例对外展示的名称
+    elasticsearch.url: &quot;http://192.168.164.150:9200&quot;            #从es拿数据地址
+
+~]# nohup ./bin/kibana &amp;                                        #访问 http://192.168.164.150:5601
+
+~]# echo 'LS_HOME=/usr/local/logstash-6.3.0/' &gt;&gt; /etc/profile.d/elk.sh
+~]# echo 'ES_HOME=/usr/src/elasticsearch-6.3.0/' &gt;&gt;　/etc/profile.d/elk.sh
+~]# echo 'KB_HOME=/usr/src/kibana-6.3.0-linux-x86_64/' &gt;&gt; /etc/profile.d/elk.sh
+~]# echo 'PATH=$ES_HOME/bin:$LS_HOME/bin:$KB_HOME/bin:$PATH' &gt;&gt; /etc/profile.d/elk.sh 
+~]# source /etc/profile.d/elk.sh
+</code></pre>
+
+<h1>8.写入日志(服务器到kafka)</h1>
+<h2>1.filebeat-&gt;logstash-&gt;kafka</h2>
+<p><strong>filebeat-&gt;logstash:</strong></p>
+<pre><code>~]# cat /etc/filebeat/filebeat.yml  
+
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/nginx/access.log
+  tags: [&quot;nginx-log&quot;]           #当有多个日志文件写入时，logstash可通过该标签将日志写入不同topic
+
+output.logstash:
+  hosts: [&quot;192.168.164.154:5044&quot;]
+</code></pre>
+
+<p><strong>logstash-&gt;kafka:</strong>	</p>
+<pre><code>~]# cat /etc/logstash/conf.d/logstash-kafka.conf 
+    input {
+        beats {
+            host =&gt; &quot;0.0.0.0&quot;
+            port =&gt; 5044
+        }
+    }
+
+    output {
+        if &quot;nginx-log&quot; in [tags]{       #通过filebeat里面的tag进行判断
+            kafka {
+                bootstrap_servers =&gt; &quot;192.168.164.150:9092,192.168.164.151:9092,192.168.164.152:9092&quot;   #kafka集群
+                topic_id =&gt; &quot;nginx-menssages&quot;           #生成的topic 
+                compression_type =&gt; &quot;snappy&quot;            #压缩方式
+            }
+            #stdout {codec =&gt; rubydebug}
+        }
+    }
+</code></pre>
+
+<h2>2.filebeat-&gt;kafka</h2>
+<pre><code>filebeat.inputs:
+- type: log
+  enabled: true 
+  paths:
+    - /var/log/nginx/access.log
+
+output.kafka:
+  hosts: [&quot;kafka1:9092&quot;,&quot;kafka2:9092&quot;,&quot;kafka3:9092&quot;]
+  topic: nginx-messages
+  keep_alive: 10s
+</code></pre>
+
+<h1>9.输出日志(kafka到es)</h1>
+<pre><code>~]# cat logstash-nginx.conf 
+    input {
+        kafka {
+            bootstrap_servers =&gt; &quot;192.168.164.150:9092,192.168.164.151:9092,192.168.164.152:9092&quot;   #kafka集群
+            group_id =&gt; &quot;logstash&quot;
+            auto_offset_reset =&gt; &quot;earliest&quot;
+            decorate_events =&gt; true
+            topics =&gt; [&quot;nginx-menssages&quot;]       #从kafka集群的哪个topics拿数据
+            type =&gt; &quot;nginx&quot;                     #标记这个输入，output可进行判断
+            #codec =&gt; json
+        }
+    }
+
+    output {
+        if [type] == &quot;nginx&quot; {
+            elasticsearch {
+                hosts =&gt; [&quot;192.168.164.150:9200&quot;]
+                index =&gt; &quot;nginx-messages-%{+YYYY-MM}&quot;       #索引，kibana中使用添加
+            }
+        }
+    }
+</code></pre>
+
+
+</body>
+</html>
+<!-- This document was created with MarkdownPad, the Markdown editor for Windows (http://markdownpad.com) -->

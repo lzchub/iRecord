@@ -78,6 +78,18 @@
 		kvm                   586948  1 kvm_intel
 		irqbypass              13503  3 kvm
 
+	
+	~]# virsh -c qemu:///system list
+		 Id    Name                           State
+		----------------------------------------------------
+ 
+	~]# virsh --version
+		4.5.0
+
+	~]# virt-install --version
+		1.5.0	
+
+	
 	~]# mkdir /data/{iso,vm-image}		#存放iso文件和安装文件
 
 	~]# virt-install 
@@ -106,6 +118,12 @@
 
 ![](./picture/4.png)
 ![](./picture/5.png)
+
+
+
+### 初始化系统
+	初始化网卡
+	初始化dns
 
 ## 6.常用命令 ##
 

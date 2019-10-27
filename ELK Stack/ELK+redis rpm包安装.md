@@ -276,3 +276,39 @@
 			proxy_cache_bypass $http_upgrade;
 		}
 	}
+
+#收集nginx日志
+
+	    input {
+            beats {
+                port => "5244"
+            }
+        }
+        
+        filter {
+          	grok {
+                match => {  "message" => "%{IPORHOST:clientip}  %{NOTSPACE:remote_user} \[%{HTTPDATE:logtimestamp}\] %{IPORHOST:hostname}%{NOTSPACE:request} %{WORD:verb} %{WORD:sendbytes} %{NUMBER:responseTime} %{NOTSPACE:referer} %{QS:serverIpPort} %{QS:serverCacheStatus} %{QS:useragent}" }
+            }
+        
+          	date {
+                match => [ "logtimestamp" , "dd/MMM/YYYY:HH:mm:ss Z" ]
+                target => "@timestamp"
+                "locale" => "cn"
+            }
+        
+         	mutate {
+                convert => [ "verb" , "integer" ]
+                convert => [ "sendbytes" , "integer" ]
+                convert => [ "responseTime" , "float" ]
+            }
+        
+            urldecode { all_fields => true }
+        }
+        
+        output {
+            elasticsearch {
+                hosts => ["172.21.51.31:9200"]
+                manage_template => true
+                index => "517la-nginx-access-%{+YYYY-MM-dd}"
+           }
+        }
