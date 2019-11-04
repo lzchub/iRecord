@@ -128,6 +128,12 @@
 	查看信息
 		~]# gluster volume info	
 
+	删除存储卷
+		~]# gluster volume stop GLUSTERFS_NAME	#要先停止卷
+		~]# gluster volume delete GLUSTERFS_NAME	#删除卷
+
+
+
 **客户端测试：**
 
 	挂载测试（请先做好hosts）

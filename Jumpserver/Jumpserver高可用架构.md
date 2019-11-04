@@ -428,10 +428,10 @@
 	~]# yum -y install redis
 	
 	~]# vi /etc/redis.conf
-	...
-	# bind 127.0.0.1  # 注释这行, 新增如下内容
-	bind 0.0.0.0
-	maxmemory-policy allkeys-lru  # 清理策略, 优先移除最近未使用的key
+		...
+		# bind 127.0.0.1  # 注释这行, 新增如下内容
+		bind 0.0.0.0
+		maxmemory-policy allkeys-lru  # 清理策略, 优先移除最近未使用的key
 
 	~]# systemctl enable redis			#安装 Redis, Jumpserver 使用 Redis 做 cache 和 celery broke
 	~]# systemctl start redis		
@@ -454,17 +454,21 @@
 	~]# python3.6 -m venv py3					#配置并载入 Python3 虚拟环境
 	~]# source /opt/py3/bin/activate			#进入虚拟环境  deactivete退出虚拟环境
 
-	~]# git clone --depth=1 https://github.com/jumpserver/jumpserver.git			#由于挂载的分布式文件系统，只需要一台上克隆安装即可，备机会自动同步
+	~]#  cd /opt/
+	~]# git clone https://github.com/jumpserver/jumpserver.git	#克隆慢可以先拉到码云在克隆
+	~]# cd /opt/jumpserver
+	~]# git checkout 1.4.8		#由于挂载的分布式文件系统，只需要一台上克隆安装即可，备机会自动同步
 
 	~]# yum -y install $(cat /opt/jumpserver/requirements/rpm_requirements.txt)		# 安装依赖 RPM 包
 
-	~]# pip install --upgrade pip setuptools									# 安装 Python 库依赖
+	~]# pip install --upgrade pip setuptools					# 安装 Python 库依赖,一台上操作
 	~]# pip install -r /opt/jumpserver/requirements/requirements.txt		# 安装Python依赖模块
 
 	~]# cd /opt/jumpserver
 	~]# cp config_example.yml config.yml		#一台上操作
 
 	~]# SECRET_KEY=`cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 50`				#在一台上随机生成，其余机器保持一致
+	~]# echo "SECRET_KEY=$SECRET_KEY" >> ~/.bashrc								#在一台上随机生成，其余机器保持一致
 	~]# BOOTSTRAP_TOKEN=`cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 16`			#在一台上随机生成，其余机器保持一致
 	~]# echo "BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN" >> ~/.bashrc						#在一台上随机生成，其余机器保持一致
 	
@@ -484,8 +488,51 @@
 		REDIS_HOST: 192.168.5.10
 		REDIS_PORT: 6379
 
-	~]# wget -O /usr/lib/systemd/system/jms.service https://demo.jumpserver.org/download/shell/centos/jms.service
-	~]# chmod 755 /usr/lib/systemd/system/jms.service
+	~]# vi /usr/lib/systemd/system/jms.service
+		[Unit]
+		Description=jms
+		After=network.target mariadb.service redis.service docker.service
+		Wants=mariadb.service redis.service docker.service
+		
+		[Service]
+		Type=forking
+		Environment="PATH=/opt/py3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin"
+		ExecStart=/opt/jumpserver/jms start all -d
+		ExecReload=
+		ExecStop=/opt/jumpserver/jms stop
+		
+		[Install]
+		WantedBy=multi-user.target
+
+	~]# vi /opt/start_jms.sh			#启动
+
+		#!/bin/bash
+		set -e
+		
+		export LANG=zh_CN.UTF-8
+		
+		systemctl start jms
+		docker start jms_coco
+		docker start jms_guacamole
+		
+		exit 0
+
+	~]# vi /opt/stop_jms.sh				#停止
+
+		#!/bin/bash
+		set -e
+		
+		export LANG=zh_CN.UTF-8
+		
+		docker stop jms_coco
+		docker stop jms_guacamole
+		systemctl stop jms
+		
+		exit 0
+	
+	~]# chmod +x /etc/rc.d/rc.local
+	~]# if [ "$(cat /etc/rc.local | grep start_jms.sh)" == "" ]; then echo "sh /opt/start_jms.sh" >> /etc/rc.local; fi
+
 	~]# systemctl start jms			#监听8080端口
 	~]# systemctl enable jms  # 配置自启
 
@@ -496,8 +543,8 @@
 	~]# systemctl enable docker
 
 	~]# Server_IP=`ip addr | grep inet | egrep -v '(127.0.0.1|inet6|docker)' | awk '{print $2}' | tr -d "addr:" | head -n 1 | cut -d / -f1`			#获取宿主机IP
-	~]# docker run --name jms_koko -d -p 2222:2222 -p 127.0.0.1:5000:5000 -e CORE_HOST=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN --restart=always jumpserver/jms_koko:1.5.2			#启动koko容器
-	~]# docker run --name jms_guacamole -d -p 127.0.0.1:8081:8081 -e JUMPSERVER_SERVER=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN --restart=always jumpserver/jms_guacamole:1.5.2		#启动guacamole容器
+	~]# docker run --name jms_coco -d -p 2222:2222 -p 5000:5000 -e CORE_HOST=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_coco:1.4.8			#启动koko容器
+	~]# docker run --name jms_guacamole -d -p 8081:8081 -e JUMPSERVER_SERVER=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_guacamole:1.4.8		#启动guacamole容器
 
 	~]# docker container ps   #查看容器是否起来
 		CONTAINER ID    IMAGE                            COMMAND             CREATED          STATUS        PORTS                                              NAMES
