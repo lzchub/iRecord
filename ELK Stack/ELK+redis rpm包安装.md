@@ -38,9 +38,9 @@
 
 	~]# cat /etc/hosts
 	...
-	192.168.179.110 node1
-	192.168.179.111 node2
-	192.168.179.113 node3
+	192.168.164.150 node1
+	192.168.164.151 node2
+	192.168.164.152 node3
 
 #1.安装JDK 8
 [https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html](https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html)
@@ -83,6 +83,7 @@
 		http.port: 9200												#开放端口
 		discovery.zen.ping.unicast.hosts: ["node2", "node3"]		#集群中其他成员
 		discovery.zen.minimum_master_nodes: 2						#成为master
+
 	~]# vim jvm.options 
 		-Xms1g	#初始化使用堆内存
 		-Xmx1g	#最大使用堆内存

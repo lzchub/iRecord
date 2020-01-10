@@ -29,7 +29,7 @@
 	~]# systemctl enable mariadb
 	~]# systemctl start mariadb
 	~]# mysql
-	mysql> set password=password("517na.com");
+	mysql> set password=password("www.517la.com");
 	mysql> create database jumpserver default charset 'utf8';
 	mysql> grant all on jumpserver.* to jumpserver@localhost identified by 'jumpserver';
 	mysql> flush privileges;
@@ -39,7 +39,9 @@
 	~]# python3.6 -m venv py3				#配置并载入 Python3 虚拟环境
 	~]# source /opt/py3/bin/activate				#进入虚拟环境  deactivete退出虚拟环境
 
-	~]# git clone --depth=1 https://github.com/jumpserver/jumpserver.git	
+	~]# git clone https://github.com/jumpserver/jumpserver.git			#克隆慢可以先将仓库通过码云中转后在克隆
+	~]# cd /opt/jumpserver
+	~]# git checkout 1.4.10
 	~]# yum -y install $(cat /opt/jumpserver/requirements/rpm_requirements.txt)		# 安装依赖 RPM 包
 
 	~]# pip install --upgrade pip setuptools									# 安装 Python 库依赖
@@ -47,8 +49,8 @@
 	~]# cd /opt/jumpserver
 	~]# cp config_example.yml config.yml
 
-	~]# SECRET_KEY=`cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 50`
-	~]# BOOTSTRAP_TOKEN=`cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 16`
+	~]# export SECRET_KEY=`cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 50`
+	~]# export BOOTSTRAP_TOKEN=`cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 16`
 	~]# echo "BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN" >> ~/.bashrc
 
 	~]# sed -i "s/SECRET_KEY:/SECRET_KEY: $SECRET_KEY/g" /opt/jumpserver/config.yml
@@ -61,6 +63,25 @@
 	#~]# ./jms start -d	#启动服务 
 
 	~]# wget -O /usr/lib/systemd/system/jms.service https://demo.jumpserver.org/download/shell/centos/jms.service
+	~]# cat /usr/lib/systemd/system/jms.service 
+		[Unit]
+		Description=jms
+		After=network.target mariadb.service redis.service docker.service
+		Wants=mariadb.service redis.service docker.service
+		
+		[Service]
+		Type=forking
+		TimeoutStartSec=0
+		WorkingDirectory=/opt/jumpserver
+		#PIDFile=/opt/jumpserver/tmp/jms.pid
+		Environment="PATH=/opt/py3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin"
+		ExecStart=/opt/jumpserver/jms start all -d
+		#ExecReload=/bin/kill -s HUP $MAINPID
+		ExecStop=/opt/jumpserver/jms stop
+		
+		[Install]
+		WantedBy=multi-user.target
+
 	~]# chmod 755 /usr/lib/systemd/system/jms.service
 	~]# systemctl start jms			#监听8080端口
 	~]# systemctl enable jms  # 配置自启
@@ -68,23 +89,29 @@
 	
 	~]# cd /etc/yum.repos.d/
 	~]# wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-	~]# yum install -y docker-ce		# 安装 docker 部署 coco 与 guacamole
+	~]# yum install -y docker-ce		# 安装 docker 
+# 部署 coco 与 guacamole
+	~]# mkdir /etc/docker
+	~]# cat /etc/docker/daemon.json 
+		{
+		  "registry-mirrors": ["https://sk77ti04.mirror.aliyuncs.com"]
+		}
 	~]# systemctl start docker
 	~]# systemctl enable docker
 
-	~]# Server_IP=`ip addr | grep inet | egrep -v '(127.0.0.1|inet6|docker)' | awk '{print $2}' | tr -d "addr:" | head -n 1 | cut -d / -f1`			#获取宿主机IP
-	~]# docker run --name jms_koko -d -p 2222:2222 -p 127.0.0.1:5000:5000 -e CORE_HOST=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN --restart=always jumpserver/jms_koko:1.5.2			#启动koko容器
-	~]# docker run --name jms_guacamole -d -p 127.0.0.1:8081:8081 -e JUMPSERVER_SERVER=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN --restart=always jumpserver/jms_guacamole:1.5.2		#启动guacamole容器
-	~]# docker ps
-		CONTAINER ID    IMAGE                            COMMAND             CREATED          STATUS        PORTS                                              NAMES
-		2a86160707c3    jumpserver/jms_guacamole:1.5.2   "entrypoint.sh"     2 hours ago      Up 2 hours    127.0.0.1:8081->8081/tcp                           jms_guacamole
-		d193f7be07d6    jumpserver/jms_koko:1.5.2        "./entrypoint.sh"   2 hours ago      Up 2 hours    0.0.0.0:2222->2222/tcp, 127.0.0.1:5000->5000/tcp   jms_koko
+	~]# export Server_IP=`ip addr | grep inet | egrep -v '(127.0.0.1|inet6|docker)' | awk '{print $2}' | tr -d "addr:" | head -n 1 | cut -d / -f1`			#获取宿主机IP
+	~]# docker run --name jms_coco -d -p 2222:2222 -p 5000:5000 -e CORE_HOST=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_coco:1.4.10			#启动koko容器
+	~]# docker run --name jms_guacamole -d -p 8081:8081 -e JUMPSERVER_SERVER=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_guacamole:1.4.10		#启动guacamole容器
+	~]# docker container ps
+		CONTAINER ID        IMAGE                             COMMAND             CREATED             STATUS              PORTS                                            NAMES
+		4a7fa8e91c2e        jumpserver/jms_guacamole:1.4.10   "entrypoint.sh"     3 minutes ago       Up 3 minutes        4822/tcp, 0.0.0.0:8081->8081/tcp                 jms_guacamole
+		73edb3d386e5        jumpserver/jms_coco:1.4.10        "entrypoint.sh"     11 minutes ago      Up 11 minutes       0.0.0.0:2222->2222/tcp, 0.0.0.0:5000->5000/tcp   jms_coco
 
 	~]# cd /opt
-	~]# wget https://github.com/jumpserver/luna/releases/download/1.5.2/luna.tar.gz		# 安装 Web Terminal 前端: Luna  需要 Nginx 来运行访问 访问(https://github.com/jumpserver/luna/releases)下载对应版本的 release 包, 直接解压, 不需要编译
+	~]# wget https://github.com/jumpserver/luna/releases/download/1.4.10/luna.tar.gz		# 安装 Web Terminal 前端: Luna  需要 Nginx 来运行访问 访问(https://github.com/jumpserver/luna/releases)下载对应版本的 release 包, 直接解压, 不需要编译
 
 	# 如果网络有问题导致下载无法完成可以使用下面地址
-	#~]# wget https://demo.jumpserver.org/download/luna/1.5.2/luna.tar.gz
+	#~]# wget https://demo.jumpserver.org/download/luna/1.4.10/luna.tar.gz
 
 	~]# tar xf luna.tar.gz
 	~]# chown -R root:root luna

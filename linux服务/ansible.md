@@ -47,13 +47,14 @@
 
 #1. ansible
 ##1.1 常用参数
-	1.-a MODULE_ARGS，--args=MODULE_ARGS：传递参数给模块。
-	2.-C，--check：不对远程主机做出一些改变，而是预测某些可能发生的改变。
-	3.-e EXTRA_VARS，--extra-vars=EXTRA_VARS：配置额外的配置变量(key=value或者YAML/JSON格式)。
-	4.-i INVENTORY，--inventory-file=INVENTORY：指定inventory文件，多个文件使用逗号分隔。默认为/etc/ansible/hosts。
-	5.-m MODULE_NAME，--module-name=MODULE_NAME：指定要执行的模块名，默认的模块为"command"。
-	6.-o，--one-line：简化输出(一行输出模式)。
-	7.--syntax-check：检查playbook的语法，不会执行。
+
+	1. -a MODULE_ARGS，--args=MODULE_ARGS：传递参数给模块。
+	2. -C，--check：不对远程主机做出一些改变，而是预测某些可能发生的改变。
+	3. -e EXTRA_VARS，--extra-vars=EXTRA_VARS：配置额外的配置变量(key=value或者YAML/JSON格式)。
+	4. -i INVENTORY，--inventory-file=INVENTORY：指定inventory文件，多个文件使用逗号分隔。默认为/etc/ansible/hosts。
+	5. -m MODULE_NAME，--module-name=MODULE_NAME：指定要执行的模块名，默认的模块为"command"。
+	6. -o，--one-line：简化输出(一行输出模式)。
+	7. --syntax-check：检查playbook的语法，不会执行。
 
 ##1.2 常用模块
 ###1.查看所有匹配到的主机

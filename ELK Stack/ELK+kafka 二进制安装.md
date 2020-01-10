@@ -35,6 +35,7 @@
 	3.将系统时间写入硬件时间
 	~]# hwclock --systohc
 
+
 #1.安装JDK 8
 [https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html](https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html)
 
@@ -73,8 +74,8 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 	
 		clientPort=2181
 		server.0=192.168.164.128:2888:3888
-		server.1=192.168.164.132:2888.3888
-		server.2=192.168.164.133:2888.3888
+		server.1=192.168.164.132:2888:3888
+		server.2=192.168.164.133:2888:3888
 	
 	~]# mkdir ../{data,log}
 	~]# echo 0 > data/myid			#最好从0开始，否则可能会无法实现高可用
@@ -153,7 +154,7 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		socket.receive.buffer.bytes=102400
 		socket.request.max.bytes=104857600
 		log.dirs=/usr/local/kafka/kafka-logs				#kafka数据存放目录
-		num.partitions=1
+		num.partitions=3
 		num.recovery.threads.per.data.dir=1
 		offsets.topic.replication.factor=1
 		transaction.state.log.replication.factor=1

@@ -293,11 +293,27 @@
 ##2.2 backend_serever.conf
 
 	~]# cat backend_server.conf
+
 		server {
-			listen 80;						#服务监听端口
-			listen 443 default ssl;						#服务监听端口
+        	listen       80;	#服务监听端口
+        	server_name www.chuan.com;
+        	rewrite ^(.*) https://www.chuan.com$1 permanent;
+		}
+
+		server {
+
+			#listen       80;
+        	#listen       443;
+        	#server_name  www.chuan.com;
+			#if ($server_port = 80) {
+        	#	rewrite  (.*)  https://www.chuan.com$1;
+         	#}
+	
+			listen 443;				
+			#listen 443 default ssl;						#服务监听端口
 			server_name www.chuan.com;		#基于域名的虚拟主机
 
+			ssl on;
 			ssl_certificate /home/ca/chuan.crt;		#当前虚拟主机使用PEM格式的证书文件
 			ssl_certificate_key /home/ca/chuan.key;	#当前虚拟主机上与其证书匹配的私钥文件	
 			ssl_protocols TLSv1 TLSv1.1 TLSv1.2;	#支持ssl协议版本，默认支持为这三个

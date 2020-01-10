@@ -83,6 +83,10 @@
 
 		~]# echo "glusterfs01:/g_jump /opt glusterfs defaults 0 0" >> /etc/fstab		#永久生效
 	
+## KVM搭建
+
+	virt-install --name virt-jumpserver1410 --ram 8192 --vcpus 4 --disk path=/data/vm-image/virt-jumpserver1410.img,size=100 --network bridge=br0 --cdrom /data/iso/CentOS-7-x86_64-DVD-1810.iso --vnclisten=192.168.5.10 --vncport=6901 --vnc
+
 
 ## 2.MySQL数据库主主搭建配置
 
@@ -452,7 +456,7 @@
 	~]# yum -y install python36 python36-devel	#安装 Python3.6
 	~]# cd /opt/
 	~]# python3.6 -m venv py3					#配置并载入 Python3 虚拟环境
-	~]# source /opt/py3/bin/activate			#进入虚拟环境  deactivete退出虚拟环境
+	~]# source /opt/py3/bin/activate			#进入虚拟环境  deactivete退出虚拟环境,以后起程序需要到虚拟环境
 
 	~]#  cd /opt/
 	~]# git clone https://github.com/jumpserver/jumpserver.git	#克隆慢可以先拉到码云在克隆
@@ -467,9 +471,9 @@
 	~]# cd /opt/jumpserver
 	~]# cp config_example.yml config.yml		#一台上操作
 
-	~]# SECRET_KEY=`cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 50`				#在一台上随机生成，其余机器保持一致
+	~]# export SECRET_KEY=`cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 50`				#在一台上随机生成，其余机器保持一致
 	~]# echo "SECRET_KEY=$SECRET_KEY" >> ~/.bashrc								#在一台上随机生成，其余机器保持一致
-	~]# BOOTSTRAP_TOKEN=`cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 16`			#在一台上随机生成，其余机器保持一致
+	~]# export BOOTSTRAP_TOKEN=`cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 16`			#在一台上随机生成，其余机器保持一致
 	~]# echo "BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN" >> ~/.bashrc						#在一台上随机生成，其余机器保持一致
 	
 	~]# sed -i "s/SECRET_KEY:/SECRET_KEY: $SECRET_KEY/g" /opt/jumpserver/config.yml
@@ -542,20 +546,20 @@
 	~]# systemctl start docker
 	~]# systemctl enable docker
 
-	~]# Server_IP=`ip addr | grep inet | egrep -v '(127.0.0.1|inet6|docker)' | awk '{print $2}' | tr -d "addr:" | head -n 1 | cut -d / -f1`			#获取宿主机IP
+	~]# export Server_IP=`ip addr | grep inet | egrep -v '(127.0.0.1|inet6|docker)' | awk '{print $2}' | tr -d "addr:" | head -n 1 | cut -d / -f1`			#获取宿主机IP
 	~]# docker run --name jms_coco -d -p 2222:2222 -p 5000:5000 -e CORE_HOST=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_coco:1.4.8			#启动koko容器
 	~]# docker run --name jms_guacamole -d -p 8081:8081 -e JUMPSERVER_SERVER=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_guacamole:1.4.8		#启动guacamole容器
 
 	~]# docker container ps   #查看容器是否起来
 		CONTAINER ID    IMAGE                            COMMAND             CREATED          STATUS        PORTS                                              NAMES
-		2a86160707c3    jumpserver/jms_guacamole:1.5.2   "entrypoint.sh"     2 hours ago      Up 2 hours    127.0.0.1:8081->8081/tcp                           jms_guacamole
-		d193f7be07d6    jumpserver/jms_koko:1.5.2        "./entrypoint.sh"   2 hours ago      Up 2 hours    0.0.0.0:2222->2222/tcp, 127.0.0.1:5000->5000/tcp   jms_koko
+		2a86160707c3    jumpserver/jms_guacamole:1.4.8  "entrypoint.sh"     2 hours ago      Up 2 hours    127.0.0.1:8081->8081/tcp                           jms_guacamole
+		d193f7be07d6    jumpserver/jms_koko:1.4.8        "./entrypoint.sh"   2 hours ago      Up 2 hours    0.0.0.0:2222->2222/tcp, 127.0.0.1:5000->5000/tcp   jms_koko
 
 	~]# cd /opt
-	~]# wget https://github.com/jumpserver/luna/releases/download/1.5.2/luna.tar.gz		# 安装 Web Terminal 前端: Luna  需要 Nginx 来运行访问 访问(https://github.com/jumpserver/luna/releases)下载对应版本的 release 包, 直接解压, 不需要编译
+	~]# wget https://github.com/jumpserver/luna/releases/download/1.4.8/luna.tar.gz		# 安装 Web Terminal 前端: Luna  需要 Nginx 来运行访问 访问(https://github.com/jumpserver/luna/releases)下载对应版本的 release 包, 直接解压, 不需要编译
 
 	# 如果网络有问题导致下载无法完成可以使用下面地址
-	#~]# wget https://demo.jumpserver.org/download/luna/1.5.2/luna.tar.gz
+	#~]# wget https://demo.jumpserver.org/download/luna/1.4.8/luna.tar.gz
 
 	~]# tar xf luna.tar.gz
 	~]# chown -R root:root luna
@@ -677,18 +681,51 @@
 	#打开核心转发功能
 	~]# echo 1 >/proc/sys/net/ipv4/ip_forward
 
-	~]# ipvsadm -A -t 192.168.5.20:80 -s rr				#采用轮询算法
+	~]# ipvsadm -A -t 192.168.5.20:80 -s dh			#采用轮询算法
 	~]# ipvsadm -a -t 192.168.5.20:80 -r 192.168.5.15:80 -m		#将后端服务器加入负载组  
 	~]# ipvsadm -a -t 192.168.5.20:80 -r 192.168.5.16:80 -m 		
 	~]# ipvsadm -ln
 		IP Virtual Server version 1.2.1 (size=4096)
 		Prot LocalAddress:Port Scheduler Flags
 		  -> RemoteAddress:Port           Forward Weight ActiveConn InActConn
-		TCP  192.168.5.20:80 rr
+		TCP  192.168.5.20:80 dh
 		  -> 192.168.5.15:80              Masq    1      0          0         
 		  -> 192.168.5.16:80              Masq    1      0          0   
 
 	~]# route add default gw 192.168.5.20		#后端服务器上设置默认网关
+
+	~]# ipvsadm -d -t 192.168.5.20:80 -r 192.168.5.16   #如何剔除后端服务器
+
+	~]# ipvsadm -D -t 192.168.5.20:80
+
+#故障解决
+
+	1.若出现宿主机可以访问网络，但是宿主机上的KVM虚拟机出现网络不通，先看看br0网桥，需要把vnet0连接上br0网桥上
+	
+	~]# brctl addif br0 vnet0      #网桥一般默认设为br0，将vnet0接口加入网桥
+
+	2.LVS采用nat模式时，若后端设置默认网关为LVS director 的vip时，且后端能ping通vip，则是LVS上的路由转发未打开
+	~]# cat /proc/sys/net/ipv4/ip_forward
+	0
+	~]# echo 1 >/proc/sys/net/ipv4/ip_forward
+	
+	3.若堡垒机连接不上linux服务器，检查后端coco容器是否正常启动，实在不行，杀掉重启容器
+	~]# docker container ps      #查看容器ID
+	~]# docker container rm ID   #根据容器ID删除容器
+	
+	4若堡垒机连接不上windows服务器，检查后端guacamole容器是否正常启动，处理方法同上
+	
+	5.重启各种服务
+	~]# source /opt/py3/bin/activate    #进入Python虚拟环境
+	~]#  ./jms start -d              #启动jumpserver  会监听 8080 端口
+	~]# systemctl start docker
+	~]# docker run --name jms_coco -d -p 2222:2222 -p 5000:5000 -e CORE_HOST=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_coco:1.4.8         #启动coco 会监听 2222  5000 端口
+	~]# docker run --name jms_guacamole -d -p 8081:8081 -e JUMPSERVER_SERVER=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_guacamole:1.4.8     #启动guacamole 会监听8081 端口
+	~]# systemcat start nginx          #启动nginx 会监听80端口
+	
+	
+	注：以上重启容器以及jumpserver的服务，需在 Python虚拟环境 下进行
+
 	
 
 	      

@@ -1046,7 +1046,48 @@
 
 	~]# systemctl start zabbix-proxy
 	~]# systemctl enable zabbix-proxy
-	
+
+**Zabbix API实现进程监控**
+
+	~]# cat zabbix_agentd.conf               
+    ...
+    UserParameter=process_name_discover,/usr/local/zabbix/shell/process_name_discover.sh
+    ...
+
+	~]# cat process_name_discover.sh         #获取到主机上的每个进程的进程名，主机IP
+	    #!/bin/bash
+	 
+	    echo "{"
+	    echo "  "\""data"\"":"[""
+	 
+	    for proc in `cat /app/tomcat/rclocal_start.sh | awk -F "/" '{print $4}' | awk -F "_" '{print $2}'`
+	    do
+	        echo "          {"
+	 
+	          name=$proc
+	           ip=`ip a | grep en | tail -n 1 | awk '{print $2}' | awk -F "/" '{print $1}'`
+	 
+	        echo "                  "\""{#IPP}"\"":"\""$ip"\"","
+	        echo "                  "\""{#NAMEE}"\"":"\""$name"\"""
+	 
+	        sleep 0.01
+	        echo "          },"
+	    done
+	 
+	        echo "          {"
+	        echo "                  "\""{#IPP}"\"":"\""port"\"","
+	        echo "                  "\""{#NAAME}"\"":"\""name"\"""
+	        echo "          }"
+	 
+	    echo "  ]"
+	    echo "}"
+	 
+	~]# systemctl restart zabbix-agent
+
+Web GUI配置：模板中配置为自动发现规则
+
+![](./picture/27.png)
+![](./picture/28.png)	
 
 ## 可视化工具grafana安装配置 
 
