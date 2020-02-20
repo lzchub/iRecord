@@ -3,6 +3,8 @@
 
 	日志网站磁盘满了，但是删除文件后，可见磁盘有剩余，但是没有可用空间
 
+	~]# lsof | grep deleted 	#查看哪个进程，杀掉
+
 	~]# cat /proc/sys/vm/drop_caches 		#默认为0
 		0
 

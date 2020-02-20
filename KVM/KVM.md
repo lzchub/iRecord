@@ -241,8 +241,90 @@
 ## 12.网络由NAT改为桥接 ##
 
 	
+## 13.修改虚拟机名
+
+	~]# virsh destory master-k8s-node	#关闭虚拟机
+
+	~]# cd /etc/libvirt/qemu
+
+	~]# virsh dumpxml master-k8s-node1 > master-k8s.xml 	
+
+	~]# vim master-k8s.xml		#修改如下两个地方
+	<name>master-k8s</name>
+	<source file='/data/vm-image/master-k8s.img'/>
 	
+	~]# mv /data/vm-image/master-k8s-node.img  /data/vm-image/master-k8s.img 
 		
+	~]# virsh undefine master-k8s-node
+
+	~]# virsh define /etc/libvirt/qemu/master-k8s.xml
+
+	~]# virsh start master-k8s
+
+
+## 14.克隆
+####全完克隆
+
+	可不关闭虚拟机
+
+	~]# virsh dumpxml init-image > /etc/libvirt/qemu/clone-image.xml		#创建虚拟机配置文件
+
+	~]# cp /data/vm-image/init-image.img /data/vm-image/clone-image.img		#拷贝镜像文件
+
+	~]# cat clone-image.xml | grep -E "</name>|</uuid>|source file|mac |vnc"   #需要修改的地方
+		<name>clone-image</name>
+		<uuid>df541ede-11e7-41cb-a38b-ce8a938263e4</uuid>
+        <source file='/data/vm-image/init-image.img'/>
+        <mac address='52:54:00:c5:e7:eb'/>
+	    <graphics type='vnc' port='6907' autoport='no' listen='192.168.5.12'>
+
+	~]# virsh define /etc/libvirt/qemu/clone-image.xml
+	~]# virsh start clone-image
+
+
+## 15.内存扩容
+
+注：内存缩容可以动态减小，扩容需停机处理
+
+	~]# virsh dominfo jumpVPN | grep memory
+		Max memory:     29374464 KiB
+		Used memory:    29360128 KiB
+
+	~]# virsh setmem jumpVPN 8192000	#单位字节,可动态减小
+
+	~]# virsh shutdown jumpVPN	#停机扩容
+
+	~]# vi /etc/libvirt/qemu/jumpVPN.xml	#直接修改配置文件，修改如下配置，不得超过宿主机
+
+	<memory unit='KiB'>29374464</memory>
+	<currentMemory unit='KiB'>16785408</currentMemory>
+ 
+	~]# virsh create /etc/libvirt/qemu/jumpVPN.xml	#start
+
+	~]# virsh setmem jumpVPN 29374464	#既可
+
+
+#故障处理
+
+	1.原因：由于机器开机状态时，将SElinux的状态信息save在虚拟机中，导致SElinux关闭之后，虚拟找不到对应的label，从而导致vm启动失败。
+
+	~]# virsh start zabbix
+		error: Failed to start domain zabbix
+		error: unsupported configuration: Unable to find security driver for label selinux
+
+	~]# vi /etc/libvirt/qemu/zabbix.xml  #修改完成后需要重启宿主机
+	<seclabel type='dynamic' model='selinux' relabel='yes'>
+	    <label>system_u:system_r:svirt_t:s0:c625,c859</label>
+	    <imagelabel>system_u:object_r:svirt_image_t:s0:c625,c859</imagelabel>
+	</seclabel>	
+
+	
+	~]# virsh managedsave-remove zabbix
+
+	
+
+	
+
 webvirtmgr:虚拟机web管理接口
 
 	https://www.cnblogs.com/lei0213/p/10785156.html

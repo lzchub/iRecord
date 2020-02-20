@@ -40,7 +40,7 @@
 	~]# systemctl rabbitmq-server start 			#启动服务
 
 	~]# rabbitmqctl add_user admin admin						#创建远程管理用户	账号：admin 密码：admin
-	~]# rabbitmqctl set_user_tags admin adminstrator			#标记为管理员
+	~]# rabbitmqctl set_user_tags admin administrator			#标记为管理员
 	~]# rabbitmqctl set_permissions -p "/" admin ".*" ".*" ".*"		#授予权限
 	~]# rabbitmqctl list_permissions -p /						#查看所有账户权限
 	~]# rabbitmqctl list_users									#列出所用用户
@@ -84,7 +84,7 @@
 	~]# chown -R rabbitmq:rabbitmq rabbitmq
 
 	~]# cat /etc/tabbitmq/rabbitmq-env.conf			#环境配置文件
-		RABBIRMQ_MNESIA_BASE=/opt/rabbitmq/data		#数据文件
+		RABBITMQ_MNESIA_BASE=/opt/rabbitmq/data		#数据文件,修改配置文件后，需重新加入集群且新建用户
 		RABBITMQ_LOG_BASE=/opt/rabbitmq/log			#日志文件
 
 #### 剔除节点
