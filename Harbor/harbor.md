@@ -123,7 +123,7 @@
 
 ####https访问
 
-	arbor采用https的方式交换数据，Docker客户端处需要配置签署 harbor 证书的 CA 证书。
+	harbor采用https的方式交换数据，Docker客户端处需要配置签署 harbor 证书的 CA 证书。
 
     在Docker客户端服务器上创建指定目录：/etc/docker/certs.d/[IP地址或域名]（Harbor地址，harbor.cfg文件中的hostname项）
 
