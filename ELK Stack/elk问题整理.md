@@ -12,3 +12,9 @@
 		    	}
 		    }
 		}
+
+问题二：kafka消息堆积，磁盘被kafka占用完，写不进es
+
+	1、停掉kafka进程
+	2、将kafka的server.properties中的log.retention.hours=1/60   #将日志数据保留1分钟
+	3、重启kafka

@@ -212,7 +212,7 @@
 		}
 		
 		vrrp_instance mysql {
-		    state BACKUP			#设置为非抢占模式，除了nopreempt参数外，state都要设置为backup
+		    state BACKUP			#设置为非抢占模式，除了设置nopreempt参数外，state都要设置为backup
 		    interface br0
 		    virtual_router_id 51
 		    priority 100
@@ -696,7 +696,10 @@
 
 	~]# ipvsadm -d -t 192.168.5.20:80 -r 192.168.5.16   #如何剔除后端服务器
 
-	~]# ipvsadm -D -t 192.168.5.20:80
+	~]# ipvsadm -D -t 192.168.5.20:80		#删除虚拟ipvs规则
+
+	~]# ipvsadm -S > /etc/sysconfig/ipvsadm 	#保存配置
+	~]# ipvsadm -R < /etc/sysocnfig/ipvsadm #配置丢失时，重新导入配置
 
 #故障解决
 

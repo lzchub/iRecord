@@ -1,9 +1,15 @@
+#架构图:
+
+![](./picture/1.png)
+
 #1.二进制部署prometheus监控系统
-##1.1 Prometheus
+## 1.1 Prometheus
 
 	https://prometheus.io/download/
 
-	~]# tar xf prometheus-2.16.0.linux-amd64.tar.gz -C /usr/local/prometheus-2.16.0
+	~]# tar xf prometheus-2.16.0.linux-amd64.tar.gz -C /usr/local/
+	~]# cd /usr/local/
+	~]# mv prometheus-2.16.0.linux-amd64/ prometheus-2.16.0
 	~]# cat /usr/lib/systemd/system/prometheus.service
 		[Unit]
 		Description=promrtheus
@@ -17,7 +23,7 @@
 		WantedBy=multi-user.target
 
 	~]# systemctl daemon-reload
-	~]# systemctl start prometheus		#默认监听9090端口
+	~]# systemctl start prometheus		#默认监听9090端口，数据目录为本地，可通过参数指定。默认在/data下 --storage.tsdb.path
 	~]# systemctl enable prometheus
 
 	~]# cat /etc/profile.d/prometueus.sh 
@@ -26,13 +32,13 @@
 
 	~]# cat prometheus.yml
 
-		# my global config
+		# 全局配置
 		global:
-		  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
-		  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+		  scrape_interval:     15s # 设置抓取(pull)时间间隔，默认是1m
+		  evaluation_interval: 15s # 设置rules评估时间间隔，默认是1m
 		  # scrape_timeout is set to the global default (10s).
-		
-		# Alertmanager configuration
+		 
+		# 告警管理配置，暂未使用，默认配置
 		alerting:
 		  alertmanagers:
 		  - static_configs:
@@ -45,8 +51,8 @@
 		  # - "first_rules.yml"
 		  # - "second_rules.yml"
 		
-		# A scrape configuration containing exactly one endpoint to scrape:
-		# Here it's Prometheus itself.
+		# 抓取(pull)，即监控目标配置
+		# 默认只有主机本身的监控配置
 		scrape_configs:
 		  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
 		  - job_name: 'prometheus'
@@ -72,6 +78,9 @@
 			file_sd_configs:
 			- files: ['/usr/local/prometheus-2.16.0/sd_config/*.yml']
 			  refresh_interval: 5s
+
+			kubernetes_sd_configs:
+			
 
 	~]# promtool check config prometheus.yml			#检查配置文件语法
 	~]# kill -hup PID 	#动态跟新配置
@@ -99,10 +108,34 @@
 		WantedBy=multi-user.target
 
 	~]# systemctl daemon-reload
-	~]# systemctl start node_exporter
+	~]# systemctl start node_exporter			#默认监听9100端口
 	~]# systemctl enable node_exporter	
 
 ## 1.3 grafana
+
+	https://grafana.com/grafana/download
+
+	~]# tar xf grafana-6.6.2.linux-amd64.tar.gz -C /usr/local/
+	~]# cd /usr/local/grafana-6.6.2
+	
+	~]# cd bin
+	~]# ./grafana-server -config=../conf/defaults.ini		#默认监听 3000端口
+
+	~]# cat /usr/lib/systemd/system/grafana-server.service 
+		[Unit]
+		Description=grafana
+		After=network.target 
+		
+		[Service]
+		ExecStart=/usr/local/grafana-6.6.2/bin/grafana-server --homepath=/usr/local/grafana-6.6.2 -config /usr/local/grafana-6.6.2/conf/defaults.ini
+		Restart=on-failure
+		
+		[Install]
+		WantedBy=multi-user.target
+
+	~]# systemctl daemon-reload
+	~]# systemctl start node_exporter			#默认监听3000端口
+	~]# systemctl enable node_exporter		
 
 ## 1.4 Alertmanager
 	
@@ -114,7 +147,7 @@
 	~]# mv alertmanager-0.20.0.linux-amd64/ alertmanager-0.20.0
 	~]# cd alertmanager-0.20.0
 
-	~]# cat alertmanager.yml 	#配置发送右键告警
+	~]# cat alertmanager.yml 	#配置发送邮件告警
 		global:
 		  resolve_timeout: 5m
 		  smtp_smarthost: 'smtp.163.com:25'
@@ -134,26 +167,58 @@
 		- name: 'mail'
 		  email_configs:
 		  - to: 'lzc7970@163.com'
-		
-		#receivers:
-		#- name: 'web.hook'
-		#  webhook_configs:
-		#  - url: 'http://127.0.0.1:5001/'
-		#inhibit_rules:
-		#  - source_match:
-		#      severity: 'critical'
-		#    target_match:
-		#      severity: 'warning'
-		#    equal: ['alertname', 'dev', 'instance']
 
-	~]# ./amtool check-config alertmanager.yml 
+	~]# cat alertmanager.yml		#配合下面钉钉告警
+		global:
+		  resolve_timeout: 5m
+		
+		route:
+		  group_by: ['alertname']
+		  group_wait: 10s
+		  group_interval: 10s
+		  repeat_interval: 1m
+		  receiver: 'dingding_webhook'
+		
+		receivers:
+		- name: 'dingding_webhook'
+		  webhook_configs:
+		  - url: http://localhost:8060/dingtalk/ops_dingding/send
+		    send_resolved: true		#恢复后发送恢复消息
+
+	~]# amtool check-config alertmanager.yml 
 
 	~]# cat /usr/lib/systemd/system/alertmanager.service 
+		[Unit]
+		Description=alertmanager
+		After=network.target
+		
+		[Service]
+		ExecStart=/usr/local/alertmanager-0.20.0/alertmanager --config.file=/usr/local/alertmanager-0.20.0/alertmanager.yml
+		Restart=on-failure
+		
+		[Install]
+		WantedBy=multi-user.target	
  
 	~]# systemctl daemon-reload
-	~]# systemctl start alertmanager
+	~]# systemctl start alertmanager		#默认监听 9093端口
 	~]# systemctl status alertmanager
 
+## 1.5 实现钉钉告警
+
+	https://github.com/timonwong/prometheus-webhook-dingtalk/releases
+
+	~]# tar xf prometheus-webhook-dingtalk-1.4.0.linux-amd64.tar.gz -C /usr/local/
+	~]# cd /usr/local/
+	~]# mv prometheus-webhook-dingtalk-1.4.0.linux-amd64/ prometheus-webhook-dingtalk-1.4.0
+	~]# cd prometheus-webhook-dingtalk-1.4.0
+
+	~]# cat startup.sh		#默认监听8060端口
+		#!/bin/bash 
+		
+		nohup ./prometheus-webhook-dingtalk --ding.profile="ops_dingding=https://oapi.dingtalk.com/robot/send?access_token=8e6a05712f071e99acb528727493fd066628e255aa8803a6e021913e634b7b0f" &> dingding.log &	
+
+
+参考文档：https://theo.im/blog/2017/10/16/release-prometheus-alertmanager-webhook-for-dingtalk/
 
 #2.监控不同对象
 ##2.1 Docker
@@ -184,4 +249,68 @@
 	资源状态监控：6417
 	node监控：9276
  
+
+#3.定义告警模板
+
+
+#4.Prometheus-operator安装
+
+## 4.1 helm安装	
+
+	https://get.helm.sh/helm-v3.1.2-linux-amd64.tar.gz
+
+	helm2.x 与 helm3.x版本相差较大，helm3.x 已不需要在集群中运行tiller,helm 可直接与 api-server 通信
+
+	~]# tar xf helm-v3.1.2-linux-amd64.tar.gz -C /usr/local
+	~]# mv /usr/local/linux-amd64/helm /usr/local/bin/
+
+	#添加仓库
+	~]# helm repo add alibb https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts		#阿里仓库
+	~]# helm repo add azure http://mirror.azure.cn/kubernetes/charts	#微软仓库
+
+	#查看仓库
+	~]# helm repo list 
+		NAME    URL                                                   
+		alibb  https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+		azure http://mirror.azure.cn/kubernetes/charts  
+
+	#查看默认配置
+	~]# helm env
+
+	#查看对应服务operator
+	~]# helm search repo redis
+
+	#安装operator
+	~]# helm install prometheus-operator --namespace monitoring stable2/prometheus-operator
+
+	#查看release
+	~]# helm list 
+
+	#查看release状态
+	~]# helm status redis
+
+	#创建charts
+	~]# helm create helm_charts
+
+	#打包charts
+	~]# cd helm_charts && helm package ./
+
+	#查看生成的yaml文件
+	~]# helm template helm_charts-0.1.1.tgz
+
+	#在本地更新仓库元数据
+	~]# helm repo update
+	
+
+
+	
+
+
+	
+
+	
+
+
+
+
 		
