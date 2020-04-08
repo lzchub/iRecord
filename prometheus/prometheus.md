@@ -301,6 +301,17 @@
 	#在本地更新仓库元数据
 	~]# helm repo update
 	
+#5.prometheus statefulset 
+
+	使用钉钉告警，以及创建自定义告警
+
+	修改 alertmanager-config，prometheus-config 等config配置，重启容器
+
+	自定义监控项：当系统提供的指标不满足我们需求时，可以自己指定监控项
+	https://www.cnblogs.com/huandada/p/10412490.html
+
+
+
 
 
 	

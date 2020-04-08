@@ -705,27 +705,30 @@
 
 	1.若出现宿主机可以访问网络，但是宿主机上的KVM虚拟机出现网络不通，先看看br0网桥，需要把vnet0连接上br0网桥上
 	
-	~]# brctl addif br0 vnet0      #网桥一般默认设为br0，将vnet0接口加入网桥
+		~]# brctl addif br0 vnet0      #网桥一般默认设为br0，将vnet0接口加入网桥
 
 	2.LVS采用nat模式时，若后端设置默认网关为LVS director 的vip时，且后端能ping通vip，则是LVS上的路由转发未打开
-	~]# cat /proc/sys/net/ipv4/ip_forward
-	0
-	~]# echo 1 >/proc/sys/net/ipv4/ip_forward
+		~]# cat /proc/sys/net/ipv4/ip_forward
+			0
+		~]# echo 1 >/proc/sys/net/ipv4/ip_forward
 	
 	3.若堡垒机连接不上linux服务器，检查后端coco容器是否正常启动，实在不行，杀掉重启容器
-	~]# docker container ps      #查看容器ID
-	~]# docker container rm ID   #根据容器ID删除容器
+		~]# docker container ps      #查看容器ID
+		~]# docker container rm ID   #根据容器ID删除容器
 	
-	4若堡垒机连接不上windows服务器，检查后端guacamole容器是否正常启动，处理方法同上
+	4.若堡垒机连接不上windows服务器，检查后端guacamole容器是否正常启动，处理方法同上
 	
 	5.重启各种服务
-	~]# source /opt/py3/bin/activate    #进入Python虚拟环境
-	~]#  ./jms start -d              #启动jumpserver  会监听 8080 端口
-	~]# systemctl start docker
-	~]# docker run --name jms_coco -d -p 2222:2222 -p 5000:5000 -e CORE_HOST=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_coco:1.4.8         #启动coco 会监听 2222  5000 端口
-	~]# docker run --name jms_guacamole -d -p 8081:8081 -e JUMPSERVER_SERVER=http://$Server_IP:8080 -e BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_guacamole:1.4.8     #启动guacamole 会监听8081 端口
-	~]# systemcat start nginx          #启动nginx 会监听80端口
+		~]# source /opt/py3/bin/activate    #进入Python虚拟环境
+		~]#  ./jms start -d              #启动jumpserver  会监听 8080 端口
+		~]# systemctl start docker
+		~]# docker run --name jms_coco -d -p 2222:2222 -p 5000:5000 -e CORE_HOST=http://$Server_IP:8080 -e 	BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_coco:1.4.8         #启动coco 会监听 2222  5000 端口
+		~]# docker run --name jms_guacamole -d -p 8081:8081 -e JUMPSERVER_SERVER=http://$Server_IP:8080 -e 	BOOTSTRAP_TOKEN=$BOOTSTRAP_TOKEN jumpserver/jms_guacamole:1.4.8     #启动guacamole 会监听8081 端口
+		~]# systemcat start nginx          #启动nginx 会监听80端口
 	
+	6.若服务器断电后，jump虚拟机程序未启动，或需要重启全部程序时
+		~]# source /opt/py3/bin/activate
+		~]# ./opt/start_jms.sh		#启动脚本，相应还有stop停止脚本
 	
 	注：以上重启容器以及jumpserver的服务，需在 Python虚拟环境 下进行
 

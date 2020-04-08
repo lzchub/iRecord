@@ -21,3 +21,39 @@
 	1. 打开chorme的扩展程序（设置——>更多工具——>扩展程序），选择开发者模式
 	2. 将插件文件 .crx 后缀改为 .rar 
 	3. 解压文件，进行安装
+
+# SSR 服务器
+
+	IP：161.117.249.204
+	用户：root
+	密码：kxsw.517na.com
+
+# SSR 操作
+
+	~]# ./ssr.sh 		#家目录下有操作脚本
+		ShadowsocksR 一键管理脚本 [v2.0.38]
+	  	---- Toyo | doub.io/ss-jc42 ----
+	
+	  	1. 安装 ShadowsocksR
+	  	2. 更新 ShadowsocksR
+	  	3. 卸载 ShadowsocksR
+	  	4. 安装 libsodium(chacha20)
+		————————————
+	  	5. 查看 账号信息
+	  	6. 显示 连接信息
+	  	7. 设置 用户配置
+	  	8. 手动 修改配置
+	  	9. 切换 端口模式
+		————————————
+	 	10. 启动 ShadowsocksR
+	 	11. 停止 ShadowsocksR
+	 	12. 重启 ShadowsocksR
+	 	13. 查看 ShadowsocksR 日志
+		————————————
+	 	14. 其他功能
+	 	15. 升级脚本
+	 
+	 	当前状态: 已安装 并 已启动
+	 	当前模式: 单端口
+	
+		请输入数字 [1-15]：

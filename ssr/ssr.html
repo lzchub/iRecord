@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ssr</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<style type="text/css">
+/* GitHub stylesheet for MarkdownPad (http://markdownpad.com) */
+/* Author: Nicolas Hery - http://nicolashery.com */
+/* Version: b13fe65ca28d2e568c6ed5d7f06581183df8f2ff */
+/* Source: https://github.com/nicolahery/markdownpad-github */
+
+/* RESET
+=============================================================================*/
+
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* BODY
+=============================================================================*/
+
+body {
+  font-family: Helvetica, arial, freesans, clean, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #333;
+  background-color: #fff;
+  padding: 20px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+body>*:first-child {
+  margin-top: 0 !important;
+}
+
+body>*:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* BLOCKS
+=============================================================================*/
+
+p, blockquote, ul, ol, dl, table, pre {
+  margin: 15px 0;
+}
+
+/* HEADERS
+=============================================================================*/
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-weight: bold;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 tt, h1 code, h2 tt, h2 code, h3 tt, h3 code, h4 tt, h4 code, h5 tt, h5 code, h6 tt, h6 code {
+  font-size: inherit;
+}
+
+h1 {
+  font-size: 28px;
+  color: #000;
+}
+
+h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #ccc;
+  color: #000;
+}
+
+h3 {
+  font-size: 18px;
+}
+
+h4 {
+  font-size: 16px;
+}
+
+h5 {
+  font-size: 14px;
+}
+
+h6 {
+  color: #777;
+  font-size: 14px;
+}
+
+body>h2:first-child, body>h1:first-child, body>h1:first-child+h2, body>h3:first-child, body>h4:first-child, body>h5:first-child, body>h6:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+a:first-child h1, a:first-child h2, a:first-child h3, a:first-child h4, a:first-child h5, a:first-child h6 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+h1+p, h2+p, h3+p, h4+p, h5+p, h6+p {
+  margin-top: 10px;
+}
+
+/* LINKS
+=============================================================================*/
+
+a {
+  color: #4183C4;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* LISTS
+=============================================================================*/
+
+ul, ol {
+  padding-left: 30px;
+}
+
+ul li > :first-child, 
+ol li > :first-child, 
+ul li ul:first-of-type, 
+ol li ol:first-of-type, 
+ul li ol:first-of-type, 
+ol li ul:first-of-type {
+  margin-top: 0px;
+}
+
+ul ul, ul ol, ol ol, ol ul {
+  margin-bottom: 0;
+}
+
+dl {
+  padding: 0;
+}
+
+dl dt {
+  font-size: 14px;
+  font-weight: bold;
+  font-style: italic;
+  padding: 0;
+  margin: 15px 0 5px;
+}
+
+dl dt:first-child {
+  padding: 0;
+}
+
+dl dt>:first-child {
+  margin-top: 0px;
+}
+
+dl dt>:last-child {
+  margin-bottom: 0px;
+}
+
+dl dd {
+  margin: 0 0 15px;
+  padding: 0 15px;
+}
+
+dl dd>:first-child {
+  margin-top: 0px;
+}
+
+dl dd>:last-child {
+  margin-bottom: 0px;
+}
+
+/* CODE
+=============================================================================*/
+
+pre, code, tt {
+  font-size: 12px;
+  font-family: Consolas, "Liberation Mono", Courier, monospace;
+}
+
+code, tt {
+  margin: 0 0px;
+  padding: 0px 0px;
+  white-space: nowrap;
+  border: 1px solid #eaeaea;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+}
+
+pre>code {
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  border: none;
+  background: transparent;
+}
+
+pre {
+  background-color: #f8f8f8;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 19px;
+  overflow: auto;
+  padding: 6px 10px;
+  border-radius: 3px;
+}
+
+pre code, pre tt {
+  background-color: transparent;
+  border: none;
+}
+
+kbd {
+    -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #DDDDDD;
+    background-image: linear-gradient(#F1F1F1, #DDDDDD);
+    background-repeat: repeat-x;
+    border-color: #DDDDDD #CCCCCC #CCCCCC #DDDDDD;
+    border-image: none;
+    border-radius: 2px 2px 2px 2px;
+    border-style: solid;
+    border-width: 1px;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 10px;
+    padding: 1px 4px;
+}
+
+/* QUOTES
+=============================================================================*/
+
+blockquote {
+  border-left: 4px solid #DDD;
+  padding: 0 15px;
+  color: #777;
+}
+
+blockquote>:first-child {
+  margin-top: 0px;
+}
+
+blockquote>:last-child {
+  margin-bottom: 0px;
+}
+
+/* HORIZONTAL RULES
+=============================================================================*/
+
+hr {
+  clear: both;
+  margin: 15px 0;
+  height: 0px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  border-bottom: 4px solid #ddd;
+  padding: 0;
+}
+
+/* TABLES
+=============================================================================*/
+
+table th {
+  font-weight: bold;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 6px 13px;
+}
+
+table tr {
+  border-top: 1px solid #ccc;
+  background-color: #fff;
+}
+
+table tr:nth-child(2n) {
+  background-color: #f8f8f8;
+}
+
+/* IMAGES
+=============================================================================*/
+
+img {
+  max-width: 100%
+}
+</style>
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function() {
+
+    // 生成目录列表
+    var div1 = document.createElement("div");
+    div1.style.cssText = "clear:both";
+    var outline = document.createElement("div");
+    outline.setAttribute("id", "outline-list");
+    outline.style.cssText = "border:solid 1px #ccc; background:#eee; min-width:200px;padding:4px 10px;";
+
+    var ele_p = document.createElement("p");
+    ele_p.style.cssText = "text-align: left; margin: 0;";
+    outline.appendChild(ele_p);
+
+    var ele_span = document.createElement("span");
+    // ele_span.style.cssText = "float: left;";
+    var ele_text=document.createTextNode("目录");
+    ele_span.appendChild(ele_text);
+
+    var ele_a = document.createElement("a");
+    ele_a.appendChild(document.createTextNode("[+]"));
+    ele_a.setAttribute("href", "#");
+    ele_a.setAttribute("onclick", "javascript:return openct(this);");
+    ele_a.setAttribute("title", "点击打开目录");
+
+    ele_span.appendChild(ele_a);
+    ele_p.appendChild(ele_span);
+
+    var ele_ol = document.createElement("ol");
+    ele_ol.style.cssText = "display:none;margin-left:14px;padding-left:14px;line-height:160%;";
+    ele_ol.setAttribute("id", "outline_ol");
+    outline.appendChild(ele_ol);
+    var div1 = document.createElement("div");
+    div1.style.cssText = "clear:both";
+
+    document.body.insertBefore(outline, document.body.childNodes[0]);
+    // 获取所有标题
+    var headers = document.querySelectorAll('h1,h2,h3,h4,h5,h6');
+    if (headers.length < 2)
+      return;
+
+    // -----
+    var old_h = 0, ol_cnt = 0;
+    // -----
+
+    for (var i = 0; i < headers.length; i++) {
+
+      var ele_ols = null;
+      var ele_Current = ele_ol;
+      // 找出它是H几，为后面前置空格准备
+      var header = headers[i];
+      header.setAttribute("id", "t" + i + header.tagName);
+      var h = parseInt(header.tagName.substr(1), 10);
+
+      // -----
+      if (!old_h){
+        old_h = h;
+
+      }
+
+      if (h > old_h) {
+
+        ele_ols = document.createElement("ol");
+        ele_Current = ele_ol;
+        if(ele_Current && ol_cnt > 0){
+          var temp = ol_cnt;
+          while(temp > 0){
+            ele_Current = ele_Current.lastChild;
+            temp--;
+          }
+        }
+        ele_Current.lastChild.appendChild(ele_ols);
+        ol_cnt++;
+      } else if (h < old_h && ol_cnt > 0) {
+
+        if (h == 1) {
+          while (ol_cnt > 0) {
+            ol_cnt--;
+          }
+        } else {
+          ele_ols = document.createElement("ol");
+          ele_Current = ele_ol;
+          if(ele_Current && ol_cnt > 0){
+            var temp = ol_cnt;
+            while(temp > 1){
+              ele_Current = ele_Current.lastChild;
+              temp--;
+            }
+          }
+        // var ele_Parent = ele_Current.parentNode();
+        //ele_Current.appendChild(ele_ols);
+        ol_cnt--;
+
+        }
+      } else if (h == old_h && ol_cnt > 0) {
+
+        ele_Current = ele_ol;
+        if(ele_Current && ol_cnt > 0){
+          var temp = ol_cnt;
+          while(temp > 0){
+            ele_Current = ele_Current.lastChild;
+            temp--;
+          }
+        }
+        ele_Current = ele_Current.lastChild;
+      }
+      if (h == 1) {
+        while (ol_cnt > 0) {
+          ol_cnt--;
+        }
+      }
+      if (h < old_h && ol_cnt > 0 && h != 1){
+        ele_li = document.createElement("li")
+        ele_Current.lastChild.appendChild(ele_li);
+        old_h = h;
+        var a = document.createElement("a");
+        // 为目录项设置链接
+        a.setAttribute("href", "#t" + i + header.tagName);
+        // 目录项文本前面放置对应的空格
+        a.innerHTML = header.textContent;
+        ele_li.appendChild(a);
+        continue;
+      }
+
+      old_h = h;
+      // -----
+      if (ele_ols){
+        ele_li = document.createElement("li")
+        ele_ols.appendChild(ele_li); 
+      } else {
+        ele_li = document.createElement("li")
+        ele_Current.appendChild(ele_li);
+      }
+      var a = document.createElement("a");
+      // 为目录项设置链接
+      a.setAttribute("href", "#t" + i + header.tagName);
+      // 目录项文本前面放置对应的空格
+      a.innerHTML = header.textContent;
+      ele_li.appendChild(a);
+    }
+    // -----
+    while (ol_cnt > 0) {
+      ol_cnt--;
+    }
+    // -----
+    });
+function openct(e) {
+  if (e.innerHTML == '[+]') {
+    // createTextNode
+    e.setAttribute('title', '收起');
+    e.innerHTML = '[-]';
+    var element = document.getElementById("outline_ol");
+    element.style.cssText = "margin-left:14px;padding-left:14px;line-height:160%;";
+  } else {
+    e.setAttribute('title', '展开');
+    e.innerHTML = '[+]';
+    var element = document.getElementById("outline_ol");
+    element.style.cssText = "display:none;margin-left:14px;padding-left:14px;line-height:160%;";
+  }
+  e.blur();
+  return false;
+}
+</script>
+</head>
+<body>
+<h1>SSR 问题处理</h1>
+<h3>1.GWF是什么?</h3>
+<pre><code>GWF的全称是中国长城防火墙(英文名称Great Firewall of China)，其首要设计者是被称为“国家防火墙之父”北京邮电大学原校长方滨兴。有些人天天喊着要翻墙，咱们也经常说“我的域名被墙了”，这些“墙”就是中国长城防火墙。
+
+GWF是中国对互联网信息内容中含政治议论、色情、重要人物名讳、邪教传播等不符合国家法律法规或在法律法规之外任何有损国家正常发展的敏感内容的一种自动审查与过滤，由计算机和网络设备等硬件组成的监控系统。GWF对互联网信息审查、监控、过滤主要采取以下4种技术：
+
+1)、国家入口网关的IP封锁，通过封锁IP地址来防止被过滤网站内容被用户搜索和访问到;
+
+2)、过滤阻断主干路由器关键字，这中国实现关键字过滤得益于路由器设备生产商的帮助，其中以思科公司为首，中国路由器占八成都是思科公司生产的;
+
+3)、劫持网站域名，主要是用路由器提供的IDS系统监测劫持域名，阻止用户的进一步搜索和访问;
+
+4)、HTTPS证书过滤，简单地说是对服务器证书进行过滤;
+
+综合而言，凡是被封锁的网站究其根本原因就是在网站上发布了咱们政府能容忍范围之外的内容，或者是受这些封锁网站的牵连。
+</code></pre>
+
+<h3>2.Chrome插件安装时程序包无效:&quot;CRX_HEADER_INVALID&quot;</h3>
+<pre><code>1. 打开chorme的扩展程序（设置——&gt;更多工具——&gt;扩展程序），选择开发者模式
+2. 将插件文件 .crx 后缀改为 .rar 
+3. 解压文件，进行安装
+</code></pre>
+
+<h1>SSR 服务器</h1>
+<pre><code>IP：161.117.249.204
+用户：root
+密码：kxsw.517na.com
+</code></pre>
+
+<h1>SSR 操作</h1>
+<pre><code>~]# ./ssr.sh        #家目录下有操作脚本
+    ShadowsocksR 一键管理脚本 [v2.0.38]
+    ---- Toyo | doub.io/ss-jc42 ----
+
+    1. 安装 ShadowsocksR
+    2. 更新 ShadowsocksR
+    3. 卸载 ShadowsocksR
+    4. 安装 libsodium(chacha20)
+    ————————————
+    5. 查看 账号信息
+    6. 显示 连接信息
+    7. 设置 用户配置
+    8. 手动 修改配置
+    9. 切换 端口模式
+    ————————————
+    10. 启动 ShadowsocksR
+    11. 停止 ShadowsocksR
+    12. 重启 ShadowsocksR
+    13. 查看 ShadowsocksR 日志
+    ————————————
+    14. 其他功能
+    15. 升级脚本
+
+    当前状态: 已安装 并 已启动
+    当前模式: 单端口
+
+    请输入数字 [1-15]：
+</code></pre>
+
+
+</body>
+</html>
+<!-- This document was created with MarkdownPad, the Markdown editor for Windows (http://markdownpad.com) -->
