@@ -38,6 +38,7 @@ http://nginx.org/en/docs/configure.html
 RabbitMQ£∫
 https://www.jianshu.com/p/d54074c092e4
 https://www.sundayle.com/rabbitmq-cluster-build/
+http://rabbitmq.mr-ping.com/AMQP/AMQP_0-9-1_Model_Explained.html
 
 ∫Ï√±
 https://www.redhat.com/zh
@@ -48,6 +49,18 @@ https://www.cnblogs.com/sammyliu/category/696699.html
 kubernetes
 https://blog.csdn.net/fanren224/article/details/86548398
 
+prometheus
+http://www.phperz.com/article/16/0123/185503.html
+https://www.cnblogs.com/pyuh/articles/9544121.html
+https://www.cnblogs.com/huandada/p/10412490.html
+https://www.jianshu.com/p/e76053b6f3f5
+
+rabbitmq
+https://www.bbsmax.com/A/8Bz8GYQXdx/
+https://yq.aliyun.com/articles/629860
+https://blog.csdn.net/qq_38658567/article/details/82057309
+https://blog.51cto.com/linuxnote/1825533
+https://www.jianshu.com/p/a33ff57f32df
 
 
 

@@ -21,8 +21,17 @@
 	~]# systemctl start docker 
 	~]# systemctl enable docker
 
+	方法一：
 	~]# curl -L https://github.com/docker/compose/releases/download/v1.25.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
 	~]# chmod +x /usr/local/bin/docker-compose
+
+
+	方法二：
+	~]# yum install -y python-pip
+	~]# pip --version
+	~]# pip install --upgrade pip
+	~]# pip install docker-compose
+
 
 #####下载包：
 ![](./picture/1.png)
@@ -70,11 +79,12 @@
 		    - jobservice
 		    - clair
 
-	~]# ./prepare
-	~]# ./install.sh 
+	~]# ./prepare				#生成harbor运行的必要文件（环境）以及docker-compose.yml文件；执行后会通过网络获取Docker Image，建议提前修改好国内镜像站加速。
+	~]# ./install.sh 			#安装Harbor 
 
-	
-
+	~]# cd /usr/local/harbor
+	~]# docker-compose stop
+	~]# docker-compose start
 	
 ####签发证书
 
@@ -116,6 +126,10 @@
 		  "insecure-registries":["http://harbor.ik8s.io"]
 		}
 
+	1、/etc/docker/daemon.json中添加 { "insecure-registries":[“ip:port"] }
+	2、/usr/lib/systemd/system/docker.service中ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock 后面加--insecure-registry=ip:port
+
+
 	~]# systemctl daemon-reload
 	~]# systemctl restart docker 
 
@@ -132,5 +146,7 @@
     拷贝CA证书到上述目录中
 
 
-
-	
+https://www.jianshu.com/p/1bc2d2b9d3fb
+https://blog.csdn.net/u013201439/article/details/81271182
+https://www.cnblogs.com/pangguoping/p/7650014.html
+https://blog.csdn.net/weixin_45649763/article/details/105380999
