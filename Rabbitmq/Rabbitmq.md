@@ -30,7 +30,7 @@
 
 	~]# systemctl start rabbitmq-server 	#开启rabbitmq
 	
-#### rabbitmq-node1 
+#### rabbitmq-node1: master 
 
 	~]# ll -a /var/lib/rabbitmq/				#rabbitmq集群中需要公用一个cookie文件，rpm安装默认在/var/lib/rabbitmq下
 

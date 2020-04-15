@@ -162,6 +162,15 @@
 
 ### 热扩容(虚拟机开机状态下，不推荐使用)
 
+	~]# cat /etc/libvirt/qemu/Centos7.6-kvm-1.xml | grep -A 5 "device='disk'"
+	    <disk type='file' device='disk'>
+	      <driver name='qemu' type='qcow2'/>
+	      <source file='/data/vm-image/Centos7.6-kvm-1.img'/>
+	      <target dev='vda' bus='virtio'/>
+	      <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
+	    </disk>
+
+
 	~]# qemu-img create -f raw /data/vm-image/Centos7.6-kvm-1.img 3G
 	~]# virsh attach-disk Centos7.6-kvm-1 /data/vm-image/Centos7.6-kvm-1.img  vdb --cache none
 	

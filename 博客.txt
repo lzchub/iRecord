@@ -29,6 +29,7 @@ https://www.dgstack.cn/archives/2858.html
 https://www.sundayle.com/elk-kafka-filebeat/
 https://www.clxz.top/2019/03/30/1124/
 https://blog.csdn.net/choelea/article/details/57406086
+https://www.jianshu.com/p/55fd8a0b120b
 
 NGinx£∫
 https://cloud.tencent.com/developer/section/1258944
@@ -37,6 +38,16 @@ http://nginx.org/en/docs/configure.html
 RabbitMQ£∫
 https://www.jianshu.com/p/d54074c092e4
 https://www.sundayle.com/rabbitmq-cluster-build/
+
+∫Ï√±
+https://www.redhat.com/zh
+
+KVM
+https://www.cnblogs.com/sammyliu/category/696699.html
+
+kubernetes
+https://blog.csdn.net/fanren224/article/details/86548398
+
 
 
 
