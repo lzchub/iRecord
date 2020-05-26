@@ -1,1 +1,0 @@
-http://blog.ramanshalupau.com/parameterized-jenkins-build-for-rollback-purposes 
