@@ -40,12 +40,45 @@
 ## 1.4 my.cnf 配置参数解析
 
 ```c
+事务日志：
+    innodb_log_files_in_group：事务日志分组出现，一组最小两个
 
-事务：
-    innodb_log_files_in_group
     innodb_log_group_home_dir
-    innodb_log_file_size
+
+    innodb_log_file_size：日志文件大小，默认为5M，建议调大
+
     innodb_mirrored_log_group
+
+	innodb_flush_log_at_trx_commit：
+		0：log buffer(内存)每秒一次同步到log file中，且同时会进行log file到data file的同步操作
+		1：每次提交时，log buffer同步到log file中，且同时会进行log file到data file的同步操作
+		2：每次提交时，log buffer同步到log file中，但不会同时会进行log file到data file的同步操作
+		
+		建议：关闭autocommit，而后将此值设置为1或2
+	
+InnoDB引擎参数：
+	innodb_buffer_pool_size：索引、数据、插入数据时的缓冲区，建议为专用服务器的70-80%
+
+	innodb_buffer_pool_instances：buffer_pool的实例数量，总和为上面参数大小
+
+	innodb_file_per_table：每个表使用单独表空间，默认未使用，建议开启
+
+	innodb_read_io_threads：文件读写的io线程数，可根据并发量和CPU核心数进行调整
+	innodb_write_io_threads：
+	
+	innodb_open_files：innodb可打开的文件数量上线
+
+	innodb_flush_method：
+
+	innodb_thread_concurrency：innodb自己的线程数，建议为cpu核心数
+
+	skip_name_resolve：跳过域名解析
+
+	max_connections：MySQL最大并发连接数
+    
+    
+    asdas
+
 ```
 
 # 2. MySQL命令行操作
@@ -206,7 +239,6 @@ mysql> grant all on *.* to 'chuan'@'localhost' identified by '123456';#授予任
 		 ALTER ROUTINE
 		 EVENT
 		 TRIGGER
-
 ```
 
 ### 2. revoke
@@ -390,8 +422,7 @@ MyISAM：
     	修复：手动或自动修复，但可能会丢失数据
     	索引：非聚集索引
     	延迟索引更新
-    	表压缩
-    
+    	表压缩   
 ```
 
 
@@ -962,8 +993,9 @@ mysql> select @@session.tx_isolation;
 			~]# mysqlbinlog node1-logbin.000005 > binlog-$(date +%F).sql  #拿到全备份后的二进制日志
 			~]# mysql -uroot -p -hlocalhost < /tmp/alldb-2020-05-26.sql
 			~]# mysql -uroot -p -hlocalhost < /tmp/binlog-2020-05-26.sql
-	    
-	    
+
+
+​	    
 		2.单个数据库备份与恢复-B,--databases
 			#注意若是myisam引擎需要锁库温备，innodb加上--single-transation可以热备
 			~]# mysqldump -uroot -p -hlocalhost -B test > /tmp/test_bak.sql
@@ -973,8 +1005,9 @@ mysql> select @@session.tx_isolation;
 			~]# mysqldump -uroot -p123456 -B test study | gzip > /tmp/mul_bak.sql.gz
 			
 			注:--compact 减少垃圾数据输出，适用于调试,恢复也是采用 全量+二进制日志
-		
-		
+
+
+​		
 		3.单个数据库备份，不添加-B参数
 			~]# mysqldump -uroot -p123456 test > /tmp/test_bak.sql
 			~]# mysql -uroot -p123456 test < /tmp/test_bak.sql
