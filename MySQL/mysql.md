@@ -75,9 +75,6 @@ InnoDB引擎参数：
 	skip_name_resolve：跳过域名解析
 
 	max_connections：MySQL最大并发连接数
-    
-    
-    asdas
 
 ```
 
