@@ -990,8 +990,9 @@ mysql> select @@session.tx_isolation;
 			~]# mysqlbinlog node1-logbin.000005 > binlog-$(date +%F).sql  #拿到全备份后的二进制日志
 			~]# mysql -uroot -p -hlocalhost < /tmp/alldb-2020-05-26.sql
 			~]# mysql -uroot -p -hlocalhost < /tmp/binlog-2020-05-26.sql
-	    
-	    
+
+
+​	    
 		2.单个数据库备份与恢复-B,--databases
 			#注意若是myisam引擎需要锁库温备，innodb加上--single-transation可以热备
 			~]# mysqldump -uroot -p -hlocalhost -B test > /tmp/test_bak.sql
@@ -1001,8 +1002,9 @@ mysql> select @@session.tx_isolation;
 			~]# mysqldump -uroot -p123456 -B test study | gzip > /tmp/mul_bak.sql.gz
 			
 			注:--compact 减少垃圾数据输出，适用于调试,恢复也是采用 全量+二进制日志
-		
-		
+
+
+​		
 		3.单个数据库备份，不添加-B参数
 			~]# mysqldump -uroot -p123456 test > /tmp/test_bak.sql
 			~]# mysql -uroot -p123456 test < /tmp/test_bak.sql
@@ -1067,6 +1069,106 @@ mysql> select @@session.tx_isolation;
 				~]# for dbname in `ls /tmp/bak | awk -F "_" '{print $1}'`; do mysql -uroot -p123456 < ${dbname}_bak.sql; done
 
 ## 10.4 xtrabackup
+
+https://www.percona.com/downloads
+
+**安装：**
+
+```c
+~]# wget https://www.percona.com/downloads/Percona-XtraBackup-2.4/Percona-XtraBackup-2.4.20/binary/redhat/7/x86_64/percona-xtrabackup-24-2.4.20-1.el7.x86_64.rpm
+~]# yum install -y percona-xtrabackup-24-2.4.20-1.el7.x86_64.rpm 
+~]# rpm -qpi ./percona-xtrabackup-24-2.4.20-1.el7.x86_64.rpm	#查看包信息
+```
+
+**创建备份账号：**
+
+```c
+mysql> create user 'bkuser'@localhost identified by 'bkuser';
+mysql> revoke all privileges,grant option from 'bkuser';
+mysql> grant reload,lock tables,replication client on *.* to 'bkuser'@'localhost';
+mysql> flush privileges;
+```
+
+**全量备份：**
+
+```
+~]# innobackupex --user=root --password= --host=localhost /data/backup/		
+~]# ll /data/backup/2020-05-26_07-16-52/		#根据备份时间生成目录
+    ... backup-my.cnf			#备份命令用到的配置选项信息
+    ... ibdata1
+    ... mysql
+    ... performance_schema
+    ... rep
+    ... test
+    ... xtrabackup_binlog_info	#mysql服务器当前正在使用的二进制日志文件及至备份这一刻为止的位置
+    ... xtrabackup_checkpoints	#备份的类型是全备还是增备，还有备份的起始、终止LSN号
+    ... xtrabackup_info
+    ... xtrabackup_logfile
+
+注：一般情况下，在备份完成后，数据尚且不能用于恢复操作，因为备份的数据中可能会包含尚未提交的事务或已经提交但尚未同步至数据文件中的事务，因此，此时数据文件仍处于不一致状态。还需要通过回滚未提交的事务及同步已提交的事务至数据文件使得数据文件处于一致性状态。
+
+~]# innobackupex --apply-log /data/backup/2020-05-26_07-16-52/		#准备还原，此步骤使数据一致
+
+~]# innobackupex --copy-back /data/backup/2020-05-26_07-16-52/		#恢复操作
+~]# chown -R mysql:mysql /var/lib/mysql/ -R		#记得更改权限
+~]# chown -R mysql:mysql /var/log/mariadb/ -R
+
+~]# systemctl start mariadb
+```
+
+**差异备份、增量备份：**
+
+```c
+备份：
+~]# innobackupex --user=root --password= --host=localhost /data/backup/		#先做一次全量
+
+~]# innobackupex --incremental /data/backup/ --incremental-basedir=/data/backup/2020-05-26_07-48-20/ 	#指定全量备份路径即可，即为差异备份
+    
+~]# innobackupex --incremental /data/backup/ --incremental-basedir=/data/backup/2020-05-26_07-49-45/		#指定前一次增量或差异备份文件为原始文件即为增量备份
+    
+还原：
+准备：全量+增量+增量+二进制日志
+~]# cat xtrabackup_binlog_info		#查看最后一次增量的二进制日志位置 
+	node1-logbin.000002	804
+~]# mysqlbinlog -j 804 node1-logbin.000002 > /data/backup/binlog.sql   	#导出二进制日志
+
+    
+~]# innobackupex --apply-log --redo-only /data/backup/2020-05-26_07-48-20/			
+~]# innobackupex --apply-log --redo-only /data/backup/2020-05-26_07-48-20/ --incremental-dir=/data/backup/2020-05-26_07-49-45/		#--redo-only 只提交不回滚
+~]# innobackupex --apply-log --redo-only /data/backup/2020-05-26_07-48-20/ --incremental-dir=/data/backup/2020-05-26_07-52-48/
+~]# innobackupex --apply-log /data/backup/2020-05-26_07-48-20/		#直到最后一次增量
+~]# innobackupex --copy-back /data/backup/2020-05-26_07-48-20/	
+ 
+~]# chown -R mysql:mysql /var/lib/mysql/ -R		#记得更改权限
+~]# chown -R mysql:mysql /var/log/mariadb/ -R
+    
+~]# systemctl start mariadb
+    
+mysql> set sql_log_bin=off;		#关闭记录二进制日志
+mysql> source /data/backup/binlog.sql;
+mysql> set sql_log_bin=on;
+
+恢复完成
+
+    
+    
+    
+  
+```
+
+
+
+```c
+
+```
+
+
+
+
+
+
+
+
 
 # 11. 主从复制
 ## 11.1 主从复制原理
