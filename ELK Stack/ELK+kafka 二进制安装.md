@@ -1,4 +1,4 @@
-## 实验环境： ##
+# 实验环境：
 
 	CentOS 7.6
 		node1：192.168.164.150
@@ -11,7 +11,7 @@
 	kibana-6.3.0
 	logstash-6.3.0
 
-## 架构图： ##
+# 架构图：
 
 ![](./picture/27.png)
 	
@@ -27,6 +27,7 @@
 
 **2.同步系统时间**
 		
+
 	1.安装ntpdate工具
 	~]# yum -y install ntp ntpdate
 			
@@ -40,8 +41,8 @@
 [https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html](https://www.oracle.com/technetwork/java/javase/downloads/java-archive-javase8-2177648.html)
 
 	~]# yum install jdk-8u202-linux-x64.rpm -y
-	~]# echo "JAVA_HOME=/usr/java/latest" > /etc/profile.d/jdk.sh
-	~]# echo "PATH=$JAVA_HOME/bin:$PATH" >> /etc/profile.d/jdk.sh
+	~]# echo 'JAVA_HOME=/usr/java/latest' > /etc/profile.d/jdk.sh
+	~]# echo 'PATH=$JAVA_HOME/bin:$PATH' >> /etc/profile.d/jdk.sh
 	~]# source /etc/profile.d/jdk.sh
 	~]# java -version
 	java version "1.8.0_202"
@@ -78,7 +79,7 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		server.2=192.168.164.133:2888:3888
 	
 	~]# mkdir ../{data,log}
-	~]# echo 0 > data/myid			#最好从0开始，否则可能会无法实现高可用
+	~]# echo 0 > ../data/myid			#最好从0开始，否则可能会无法实现高可用
 	
 	~]# echo 'ZK_HOME=/usr/local/zookeeper' > /etc/profile.d/zk.sh                               
 	~]# echo 'PATH=$ZK_HOME/bin:$PATH' >> /etc/profile.d/zk.sh
@@ -100,9 +101,15 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		YYY：服务器地址
 		A：表示 Flower 跟 Leader的通信端口，简称服务端内部通信的端口（默认2888）
 		B：表示 是选举端口（默认是3888）
+	autopurge.snapRetainCount=3		#设置保留多少个snapshot，之前的则删除
+	autopurge.purgeInterval=1		#设置多少小时清理一次
+	客户端在与zookeeper交互过程中会产生非常多的日志，而且zookeeper也会将内存中的数据作为snapshot保存下来，这些数据是不会被自动删除的，这样磁盘中这样的数据就会越来越多。不过可以通过这两个参数来设置，让zookeeper自动删除数据。autopurge.purgeInterval就是设置多少小时清理一次。而autopurge.snapRetainCount是设置保留多少个snapshot，之前的则删除。
+		
+	Zookeeper中集群角色有三类，Leader，Flower，Obersver，集群决策由Leader进行，Flower有选举Leader的投票权，而Observer不具有投票权
 	配置observer角色：
 		peerType=observer	#设置observer角色，只需在设置为observer服务器配置
-		server.N=IP:PORT1:PORT2:observer	#所有服务器配置
+		server.N=IP:PORT1:PORT2:observer	#所有服务器配置	
+		
 
 **服务自启：**
 
@@ -237,7 +244,7 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		cluster.name: myes			#集群名称，一定要一致，当集群内节点启动的时候，默认使用组播（多播），寻找集群中的节点
 		node.name: node1											#节点名称
 		path.data: /usr/local/elasticsearch/data					#数据目录		
-		path.logs: /usr/local/elasticsearch/log						#日志目录
+		path.logs: /usr/local/elasticsearch/logs					#日志目录
 		bootstrap.memory_lock: true									#启动时锁定内存
 		network.host: 192.168.164.150								#本机IP
 		http.port: 9200												#开放端口
@@ -248,7 +255,7 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 		-Xms1g
 		-Xmx1g
 	
-	~]# useradd elastic												#elasticsearch 5.0后不能使用root登录
+	~]# useradd elastic												#elasticsearch 5.0后不能使用root启动
 	~]# chown -R elastic:elastic /usr/local/elasticsearch/			#修改用户权限，否则es无权限启动
 	~]# echo "123456" | passwd --stdin elastic
 	
@@ -258,10 +265,13 @@ zookeeper配置参数：[http://zookeeper.apache.org/doc/current/zookeeperAdmin.
 	
 	~]# vim /etc/security/limits.conf 								#修改tcp连接数 #锁定内存
 	~]# tail -n 2 /etc/security/limits.conf
-		* soft nofile 65536
-		* hard nofile 65536
-		* soft memlock unlimited 									
-		* hard memlock unlimited 
+	 
+		
+	[1]: max file descriptors [4096] for elasticsearch process is too low, increase to at least [65535]
+	[2]: memory locking requested for elasticsearch process but memory is not locked
+	[3]: max virtual memory areas vm.max_map_count [65530] is too low, increase to at least [262144]
+	
+	
 	
 	~]# su - elastic 												#es默认不能使用root启动
 	~]# cd /usr/local/elasticsearch/bin

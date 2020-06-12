@@ -176,10 +176,10 @@ Stream Server:
 ​	
 ​	~]# chmod a+x /etc/init.d/nginx
 ​	
-	#将nginx服务加入chkconfig管理列表
-	~]# chkconfig --add /etc/init.d/nginx
-	~]# chkconfig nginx on
-	~]# service nginx start
+​	#将nginx服务加入chkconfig管理列表
+​	~]# chkconfig --add /etc/init.d/nginx
+​	~]# chkconfig nginx on
+​	~]# service nginx start
 
 ## 1.2 yum安装 ##
 

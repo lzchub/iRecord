@@ -1,17 +1,3 @@
-#saltstack
-##1.saltstack底层原理
-```
-saltstack底层是通过ZeroMQ完成的，采用了ZeroMQ的发布订阅模式，也就是pub和sub。pub将消息发送到总线，所有sub接收到来自总线的消息后，根据自己的订阅条件来接收特定的消息。
-salt-master启动时会监听4505,4506两个端口。4506提供认证，文件服务，结果收集等功能，4505提供远程执行命令发送功能。
-minion启动时从配置中得到master地址，连接4506端口进行认证，认证完成后就会订阅4505端口的任务。
-master发送操作指令时，所有minion都会接到，然后检查本机是否匹配，匹配则执行任务，并将结果从4506端口返回给master。
-```
-##2.saltstack安装方式
-```
- 1.local
- 2.master/minion
- 3.ssh
-```
 #docker
 ##1.docker的四种网络模式，及常用命令
 ```
