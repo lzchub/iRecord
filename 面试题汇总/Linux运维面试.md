@@ -1,8 +1,8 @@
 # 自我介绍
 
 	各位面试官好，我叫刘子川，毕业于西华大学，在Linux运维行业有一年多的工作经验，有两次工作经历，
-	第一次是在亚新科技为期3个月的Linux运维实习,主要工作有
-	第二次是在差旅一号，职位是Linux运维工程师,主要工作有
+	第一次是在亚新科技为期3个月的Linux运维实习,主要负责持续集成，以及测试环境的服务部署与维护
+	第二次是在差旅一号，职位是Linux运维工程师,主要工作有线下机房的维护，线上环境的部署维护，日常问题处理
 	
 	今天我来贵公司应聘的职位是linux运维工程师，以上是我的自我介绍，谢谢。	
 
@@ -106,7 +106,7 @@
 	RAID 5，至少3块盘，容量计算 SIZE（最小的盘容量）*（n-1）,损失一块盘
 	特点，读写性能一般，读还好一点，写不好
 	
-	冗余从好到坏：RAID1 RAID10 RAID 5 RAID0
+	冗余从好到坏：RAID1 RAID10 RAID5 RAID0
 	性能从好到坏：RAID0 RAID10 RAID5 RAID1
 	成本从低到高：RAID0 RAID5 RAID1 RAID10
 	
@@ -165,7 +165,7 @@
 
 ### 14.http协议中的keeplive是做什么的？它的适应场景是什么？
 
-	(1)Http底层也是通过TCP传输的。
+	(1)Http(超文本传输协议)底层也是通过TCP传输的。
 	
 	(2)HTTP keep-alive
 	   Http是一个”请求-响应”协议，它的keep-alive主要是为了让多个http请求共享一个Tcp连接，以避免每个Http又新建一个TCP连接。每个Http服务器默认的keep-alive时间可能是不一样的。
@@ -493,7 +493,7 @@
 	正常启动后再慢慢寻找原因修复服务，先保证计算机能启动并且提供其他的正常业务进行。
 
 
-### 52.蓝绿部署/金丝雀、灰度部署/滚动发布
+### 52.蓝绿部署、金丝雀/灰度部署、滚动发布
 
 	蓝绿部署：蓝绿部署指的是不停老版本代码(不影响上一个版本访问)，而是在另外一套环境部署新版本然后进行测试，测试通过后将用户流量切到新版本，其特点为业务无中断，升级风险相对较小。
 	
@@ -540,6 +540,13 @@ https://blog.csdn.net/star890124/article/details/52004138
         
 ```
 
+### 54.Centos查看某个进程的环境变量？
+```c
+通过ps拿到进程PID
+
+~]# cat /proc/PID/environ	#可查看环境变量
+ 
+```
 
 
 # 网络运维
@@ -783,11 +790,11 @@ https://blog.csdn.net/star890124/article/details/52004138
 
 
 ​				
-	信号驱动IO模型：当开启了信号驱动功能时，首先发起一个信号处理的系统调用，如sigaction()，这个系统调用会立即返回-->
-				  但数据在准备好时，会发送SIGIO信号，进程收到这个信号就知道数据准备好了，发起read操作-->
-				  进程再调用read操作，数据就会从内核buffer拷贝到app buffer。--> app buffer 到tcp/ip协议栈-->NIC
-				  在发起信号处理的系统调用后，进程不会被阻塞，但是在read()将数据从kernel buffer复制到app buffer时，进程是被阻塞的。
-	
+​	信号驱动IO模型：当开启了信号驱动功能时，首先发起一个信号处理的系统调用，如sigaction()，这个系统调用会立即返回-->
+​				  但数据在准备好时，会发送SIGIO信号，进程收到这个信号就知道数据准备好了，发起read操作-->
+​				  进程再调用read操作，数据就会从内核buffer拷贝到app buffer。--> app buffer 到tcp/ip协议栈-->NIC
+​				  在发起信号处理的系统调用后，进程不会被阻塞，但是在read()将数据从kernel buffer复制到app buffer时，进程是被阻塞的。
+​	
 	异步IO模型：应用app发起aio_read()-->内核将数据从磁盘读取到内核buffer-->内核buffer拷贝到应用app buffer-->app buffer 到tcp/ip协议栈-->NIC
 	 			全程不被阻塞
 
@@ -1554,8 +1561,8 @@ https://blog.csdn.net/star890124/article/details/52004138
 
 
 ​	
-		客户端显示使用save或bgsave命令来手动启动快照保存机制：
-	
+​		客户端显示使用save或bgsave命令来手动启动快照保存机制：
+​	
 			SAVE：阻塞式的RDB持久化，当执行这个命令时redis的主进程把内存里的数据库状态写入到RDB文件（即上面的dump.rdb）中，直到该文件创建完毕的这段时间内redis将不能处理任何命令请求。
 			BGSAVE：非阻塞式的持久化，它会创建一个子进程专门去把内存中的数据库状态写入RDB文件里，同时主进程还可以处理来自客户端的命令请求。
 					但子进程基本是复制的父进程，这等于两个相同大小的redis进程在系统上运行，会造成内存使用率的大幅增加。
@@ -1627,6 +1634,8 @@ https://blog.csdn.net/star890124/article/details/52004138
 ### 12.为什么Redis单线程却能支撑高并发？
 
 ### 13.Redis的并发竞争问题如何解决？
+
+### 14.如何查看redis设置的最大内存，在不重启redis的情况下如何调整最大内存？
 
 
 
@@ -1735,7 +1744,200 @@ Kafka中每个Topic都会以/brokers/topics/[topic]的形式被记录，如/brok
 ## Prometheus
 ## Jenkins
 ## Docker
+### 1.docker的四种网络模式，及常用命令
+```c
+docker命令
+	容器生命周期管理 — docker [run|start|stop|restart|kill|rm|pause|unpause]
+	容器操作运维 — docker [ps|inspect|top|attach|events|logs|wait|export|port]
+	容器rootfs命令 — docker [commit|cp|diff]
+	镜像仓库 — docker [login|pull|push|search]
+	本地镜像管理 — docker [images|rmi|tag|build|history|save|import]
+	其他命令 — docker [info|version]
+
+四种网络模型：
+	closed:只有本地回环接口，不能访问外部网络。
+	bridge:bridged 容器拥有两个接口（总是成对出现），一个是私有的本地回环接口，另一个私有接口通过网桥（docker0桥）连接到主机的其他容器，相当于把一个接口放在docker0桥上。
+	joind:Joined容器隔离程度低于Bridged容器。joined容器共享一个网络栈（即拥有自己的mount，user，pid 这三个名称空间，共享IPC，net，UTS 这三个名称空间），在这种情况下，容器之间没有任何的隔离。这意味着更少的控制和安全。尽管这不是最安全的原型，但它是第一个打破容器之间界限的。
+	open:Open容器非常的危险。他没有网络容器，并且对主机网络有完全的访问权。包括对重要主机服务的访问权。直接共享宿主机的网络名称空间。
+```
+
+### 2.Docker容器使用了Linux内核中提供的6种命名空间隔离：
+```c
+1) UTS命名空间负责主机名和域名的隔离，使得容器都拥有自己的主机名和域名，可以被看作一个独立的网络节点。
+2) IPC命名空间负责信号量、消息队列和共享内存的隔离，其包含了系统IPC标示符以及实现POSIX消息队列的文件系统，使得同一个IPC命名空间下的进程彼此可见，不同的则相互不可见；
+3) PID命名空间负责进程PID编号的隔离，不同的PID命名空间下的进程可以有相同的PID，每个PID命名空间都有独立的计数程序。
+4) Network命名空间负责网络资源的隔离，这里的隔离并非真正意义的网络隔离，而是把容器的网络独立出来，如同一个独立的网络实体来与外部通信。
+5) Mount命名空间负责挂载点的隔离，不同Mount命名空间下的文件结构发生变化互不影响。
+6) User命名空间负责安全相关的标示符和属性的隔离，包括用户ID、用户组ID、root目录、密钥key以及特殊权限等，该命名空间技术支持进程在容器内外拥有不同级别的权限。
+```
+
+### 3.dockerfile的一些命令 
+```c
+FROM： FROM指令是最重的一个且必须为Dockerfile文件开篇的第一个非注释行，用于为映像文件构建过程指定基准镜像，后续的指令运行于此基准镜像所提供的运行环境。
+COPY： 用于从Docker主机复制文件至创建的新映像文件
+VOLUME： 用于在image中创建一个挂载点目录，以挂载Docker host上的卷或其它容器上的卷。
+EXPOSE： 用于为容器打开指定要监听的端口以实现与外部通信，但不能指定宿主机的端口绑定。
+RUN： 用于指定docker build过程中运行的程序，其可以是任何命令
+CMD： 类似于RUN指令，CMD指令也可用于运行任何命令或应用程序，不过，二者的运行时间点不同，RUN指令运行于映像文件构建过程中，而CMD指令运行于基于Dockerfile构建出的新映像文件启动一个容器时，CMD指令的首要目的在于为启动的容器指定默认要运行的程序
+ENTRYPOINT： 类似CMD指令的功能，用于为容器指定默认运行程序，从而使得容器像是一个单独的可执行程序，与CMD不同的是，由ENTRYPOINT启动的程序不会被docker run命令行指定的参数所覆盖，而且，这些命令行参数会被当作参数传递给ENTRYPOINT指定指定的程序。
+HEALTHCHECK： 对容器进行健康状态检测。
+```
+
+### 4.Docker的架构图
+```c
+C/S架构：Docker Client 同 Docker Daemon 进行交互，其中主要的工作是通过 Daemon 来完成，包括拉取镜像、编译镜像、运行容器、发布容器等。
+Docker Client 和 Docker Daemon 可以运行在同一个系统上，也可以通过远程方式进行访问。
+```
+
+### 5.Docker的镜像是如何运行成容器的？
+```c
+作为静态的镜像，如何才有能力转化为一个动态的 Docker 容器呢？此时，我们可以想象：第一，转化的依据是什么；第二，由谁来执行这个转化操作。
+
+其实，转化的依据是每个镜像的 json 文件，Docker 可以通过解析 Docker 镜像的 json 的文件，获知应该在这个镜像之上运行什样的进程，应该为进程配置怎么样的环境变量，此时也就实现了静态向动态的转变。
+
+谁来执行这个转化工作？答案是 Docker 守护进程。也许大家早就理解这样一句话：Docker 容器实质上就是一个或者多个进程，而容器的父进程就是 Docker 守护进程。这样的，转化工作的执行就不难理解了：Docker 守护进程手握 Docker 镜像的 json 文件，为容器配置相应的环境，并真正运行 Docker 镜像所指定的进程，完成 Docker 容器的真正创建。
+```
+
+
+### 6.Docker你熟悉是吧？你说说Docker的三个核心概念？
+```c
+镜像：Docker 镜像是一个特殊的文件系统，除了提供容器运行时所需的程序、库、资源、配置等文件外，还包含了一些为运行时准备的一些配置参数（如匿名卷、环境变量、用户等）。镜像不包含任何动态数据，其内容在构建之后也不会被改变。通过联合文件系统分层构建，联合挂载，每一层都是只读层。docker 镜像是一个只读的 docker 容器模板，含有启动 docker 容器所需的文件系统结构及其内容，因此是启动一个 docker 容器的基础。docker 镜像的文件内容以及一些运行 docker 容器的配置文件组成了 docker 容器的静态文件系统运行环境：rootfs。
+可以这么理解，docker 镜像是 docker 容器的静态视角，docker 容器是 docker 镜像的运行状态。
+
+容器：容器是从镜像创建的应用运行实例，容器之间是相互隔离、互不可见的。可以把容器看做一个简易版的linux系统环境（包括root权限、进程空间、用户空间和网络空间等），以及运行在这个环境上的应用打包而成的应用盒子。镜像自身是只读的，容器从镜像启动的时候，docker会在镜像的最上层创建一个可写文件层，镜像本身保持不变。
+
+仓库：就是保存镜像的空间，有公有仓库和私有仓库。
+```
+
+### 7.有什么方法可以将外部的数据挂载到容器中？对于臃肿的数据，我要怎么才能只挂载我需要的？
+```c
+容器挂载外部目录有两种方式：
+1.容器自身管理的卷：即我们只需指定外部目录挂载在容器的哪个目录，会在宿主机上对应目录下生成一个随机目录用于挂载
+2.自身管理的卷：我们指定宿主机上的哪个目录挂载到容器中的哪个目录下
+
+可通过运行容器时使用 -v --volume 动态指定，也可在构建镜像时通过volume关键字指定，但这种方式只能使用容器自身管理的卷
+
+```
+
+### 8.Docker镜像管理如何做？我想在启动Docker容器的时候传入一些参数，怎么做？entrypoint和cmd的区别？别的用户怎么得知这个传入的参数呢？
+```c
+docker镜像管理可以通过打tag，上传镜像仓库进行管理
+
+我们可以在启动容器的时候动态的传递参数，比如挂载哪个目录，开放哪个端口等等
+
+RUN/CMD/ENTRYPOINT三个指令的区别：
+
+	RUN：运行在docker build过程中，即从dockerfile变为image的过程中执行
+	CMD：运行中docker run过程中，即从镜像文件转为容器的过程中，但是会被docker run动态指定的指令所覆盖
+	ENTRYPOINT：与CMD类似，但是不会被docker run动态指定的指令覆盖，会把动态传递的指令当做参数传递给entrypoint指定的指令
+
+用户可以通过docker inspect进行查看
+```
+
+### 9.Docker镜像删除命令？如何将所有镜像一次性删除？
+```c
+docker image rm 
+docker rmi 
+
+可写一个循环实现
+```
+
+### 10.什么是docker容器技术，docker与传统虚拟机有什么区别？以及docker的优点
+
+### 11.docker镜像和层有什么区别？
+
+### 12.docker容器有几种状态，如何查看docker容器的运行状态？
+
+### 13.dockerfile中的copy和add命令有什么区别？
+```c
+copy和add都用于将docker主机上的文件复制到新镜像文件中
+add指令与copy不同的是add支持使用tar文件和url路径，若使用本地tar文件，会被展开成目录复制进新镜像文件中，若是URL下的tar文件就不会被展开
+```
+
 ## Kubernetes
+### 1.简述创建pod的流程？
+```c
+创建pod流程：
+1.客户提交创建请求，可以通过API server的Restful API，也可以通过kubectl命令行工具，也可使用配置文件，支持yaml和json格式
+2.API server接收到pod请求后，不会直接去创建pod，存储pod数据到etcd
+3.调度器通过API Server查看到未绑定的pod，尝试为pod分配主机，并将结果记录到etcd中
+4.kubelet根据调度结果执行pod创建操作， 绑定成功后，scheduler会调用APIServer的API在etcd中创建一个boundpod对象，描述在一个工作节点上绑定运行的所有pod信息。运行在每个工作节点上的kubelet也会定期与etcd同步boundpod信息，一旦发现应该在该工作节点上运行的boundpod对象没有更新，则调用Docker API创建并启动pod内的容器。
+
+创建replicaset：
+1.客户提交创建请求
+2.API server接收replicaset创建请求，将数据写入etcd中
+3.controller-manager中的replicasetController在etcd数据库中读到新的replicaset信息后向k8s API server发起请求，创建几个pod，个数自己指定
+4.调度器将pod调度到node，并将信息写到etcd中
+5.kubelet创建pod，调度器会调用APIServer的API在etcd中创建一个boundpod对象，描述在一个工作节点上绑定运行的所有pod信息。运行在每个工作节点上的kubelet也会定期与etcd同步boundpod信息，一旦发现应该在该工作节点上运行的boundpod对象没有更新，则调用Docker API创建并启动pod内的容器。
+
+
+注意：api server负责各个模块之间的通信。集群内的各个功能模块通过APIServer将信息存入etcd，当需要获取和操作这些数据时，则通过APIServer提供的REST接口（用GET、LIST或WATCH）来实现。
+
+```
+### 2.pod的生命周期各个阶段
+```c
+pending：这个阶段说明该pod已经被Kubernetes系统接收，但在调度完成之前需要准备相关的条件，比如下载镜像，创建网络登
+Running：pod已经被调度到相应的node上，从调度层面上已经完成绑定，pod内所有容器已经创建完成，并且至少有一个容器处于运行状态，其他的处于启动或者重启状态，如果pod中所有容器都已经成功结束将不在执行重启动作
+Succeeded：pod中所有的容器都已经成功借宿，并且将不会重启，例如job或者初始化任务
+Failed：pod中所有容器都已经结束，并且至少有一个容器结束失败，所谓的结束失败值是容器的退出码不是0，或者是被系统强制退出的
+Unknown：这个情况主要是由于无法获得pod的状态，常见的原因是无法和pod所在的主机进行通信
+
+实际上还有一中状态Terminating，在代码和文档中都没有说明，但却是存在。这种情况出现杂无法获取所在主机的资源情况，一直在尝试建立连接。
+```
+
+
+### 3.k8s的master与node分别有哪些组件？有什么用？
+```c
+master：
+	API Server：API Server是集群的核心组件，是集群的入口，无论我们是通过APIserver提供的restful api，还是kubectl，亦或是配置清单，都是通过APIserver操作的集群，通过APIserver我们才能往etcd中写入数据
+
+	controller manager：控制器管理器，通过API Server监控etcd中的各节点信息，定时通过APIserver读取节点中的信息，这些信息是由kubelet定时推送给APIserver，并存入etcd中
+
+	scheduler：Kubernetes的调度器，负责 Pod 资源调度。Scheduler监听API Server，当需要创建新的Pod时。Scheduler负责选择该Pod与哪个Node进行绑定。将此绑定信息通过API Server写入到Etcd中。若此时与Node A进行了绑定，那么A上的Kubelet就会从API Server上监听到此事件，那么该Kubelet就会做相应的创建工作。
+
+	etcd：Etcd一种k-v存储仓库，可用于服务发现程序。在Kubernetes中就是用Etcd来存储各种k-v对象的。所以我也认为Etcd是Kubernetes的一个重要组件。当我们无论是创建Deployment也好，还是创建Service也好，各种资源对象信息都是写在Etcd中了。各个组件是通过API Server进行交流的，然而数据的来源是Etcd。所以维持Etcd的高可用是至关重要的。如果Etcd坏了，任何程序也无法正常运行了。
+
+
+node：
+	kubelet：Kubelet负责 Pod 对应的容器的创建，启动等任务，同时与Master节点密切协作。每个Node节点上都会有一个Kubelet负责Master下发到该节点的具体任务，管理该节点上的Pod和容器。而且会在创建之初向API Server注册自身的信息，定时汇报节点的信息。它还通过cAdvisor监控容器和节点资源。
+
+	kube-proxy：实现 Kubernetes Service 的通信与负载均衡机制的重要组件。负责接收并转发请求。Kube-proxy的核心功能是将到Service的访问请求转发到后台的某个具体的Pod。无论是通过ClusterIP+Port的方式，还是NodeIP+NodePort的方式访问Service，最终都会被节点的Iptables规则重定向到Kube-proxy监听服务代理端口，该代理端口实际上就是SocketServer在本地随机打开的一个端口，SocketServer是Kube-proxy为每一个服务都会创建的“服务代理对象”的一部分。当Kube-proxy监听到Service的访问请求后，它会找到最适合的Endpoints，然后将请求转发过去。具体的路由选择依据Round Robin算法及Service的Session会话保持这两个特性。
+
+	run container：一般使用docker
+```
+
+
+### 4.k8s的pause容器的作用？
+```c
+Pause容器 全称infrastucture container（又叫infra）基础容器。
+
+每个Pod里运行着一个特殊的被称之为Pause的容器，其他容器则为业务容器，这些业务容器共享Pause容器的网络栈和Volume挂载卷，因此他们之间通信和数据交换更为高效，在设计时我们可以充分利用这一特性将一组密切相关的服务进程放入同一个Pod中。同一个Pod里的容器之间仅需通过localhost就能互相通信。
+
+pause容器与应用容器共享网络名称空间(IPC,Network,PID)
+
+```
+### 5.k8s集群内pod应如何向外提供访问？
+```c
+service clusterIP：集群内负载，通信使用，外部无法访问
+service nodeport：通过绑定宿主机端口与集群内service端口进行通信
+service loadbalance：没用过
+ingress：通过ingress暴露，若要外部访问还是需要给ingress做一个service nodeport
+```
+
+### 6.pod结束流程？
+```c
+
+1.用户发出删除 pod 命令
+2.Pod 对象随着时间的推移更新，在宽限期（默认情况下30秒），pod 被视为“dead”状态
+3.将 pod 标记为“Terminating”状态
+4.第三步同时运行，监控到 pod 对象为“Terminating”状态的同时启动 pod 关闭过程
+5.第三步同时进行，endpoints 控制器监控到 pod 对象关闭，将pod与service匹配的 endpoints 列表中删除
+6.如果 pod 中定义了 preStop 钩子处理程序，则 pod 被标记为“Terminating”状态时以同步的方式启动执行；若宽限期结束后，preStop 仍未执行结束，第二步会重新执行并额外获得一个2秒的小宽限期
+7.Pod 内对象的容器收到 TERM 信号
+8.宽限期结束之后，若存在任何一个运行的进程，pod 会收到 SIGKILL 信号
+9.Kubelet 请求 API Server 将此 Pod 资源宽限期设置为0从而完成删除操作
+
+```
 
 # 脚本运维
 

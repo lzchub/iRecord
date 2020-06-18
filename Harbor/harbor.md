@@ -1,10 +1,10 @@
 # harbor仓库搭建
 
-###实验环境
+### 实验环境
 
 	192.168.5.35 Centos7.6
 
-###实验准备
+### 实验准备
 
 	~]# systemctl stop firewalld
 	~]# systemctl disable firewalld
@@ -12,7 +12,7 @@
 	~]# sed -i 's/SELINUX=enable/SELINUX=disabled/g' /etc/sysconfig/selinux 
 	~]# setenforce 0
 	
-###harbor搭建
+### harbor搭建
 
 	~]# wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -P /etc/yum.repos.d/
 
@@ -26,14 +26,9 @@
 	~]# chmod +x /usr/local/bin/docker-compose
 
 
-	方法二：
-	~]# yum install -y python-pip
-	~]# pip --version
-	~]# pip install --upgrade pip
-	~]# pip install docker-compose
 
 
-#####下载包：
+##### 下载包：
 ![](./picture/1.png)
 
 	~]# wget https://github.com/goharbor/harbor/releases/download/v1.9.4/harbor-offline-installer-v1.9.4.tgz
@@ -82,11 +77,11 @@
 	~]# ./prepare				#生成harbor运行的必要文件（环境）以及docker-compose.yml文件；执行后会通过网络获取Docker Image，建议提前修改好国内镜像站加速。
 	~]# ./install.sh 			#安装Harbor 
 
-	~]# cd /usr/local/harbor
-	~]# docker-compose stop
-	~]# docker-compose start
+	~]# cd /usr/local/harbor		#需要在harbor目录下，因为要读取配置文件
+	~]# docker-compose stop			#关闭harbor
+	~]# docker-compose start		#启动harbor
 	
-####签发证书
+#### 签发证书
 
 	1. 自建CA
 		~]# cd /etc/pki/CA
@@ -110,7 +105,7 @@
 		~]# cd -
 		~]# openssl ca -in /data/ssl/harbor.csr -out /data/ssl/harbor.crt
 
-####重载配置
+#### 重载配置
 
 	~]# docker-compose down -v
 	~]# vim harbor.yml		#修改配置
@@ -118,9 +113,12 @@
 	~]# docker-compose up -d
 		
 
-####http访问
+#### http访问
 
-	客户端配置
+	客户端配置，直接登录，默认使用https
+
+	Error response from daemon: Get https://harbor.ik8s.io/v2/: dial tcp 192.168.1.20:443: connect: connection refused
+
 	~]# cat /etc/docker/daemon.json 		#配上host，然后加上非安全访问即可
 		{
 		  "insecure-registries":["http://harbor.ik8s.io"]
@@ -133,9 +131,12 @@
 	~]# systemctl daemon-reload
 	~]# systemctl restart docker 
 
-	~]# docker login admin		#登录后会将密码存在 /root/.docker/config.json
+	~]# docker login harbor.ik8s.io 		#登录后会将密码存在 /root/.docker/config.json
+	~]# docker login -uadmin -pHarbor12345 harbor.ik8s.io
 
-####https访问
+#### https访问
+
+	Error response from daemon: Get https://harbor.ik8s.io/v2/: x509: certificate is valid for harbor, not harbor.ik8s.io
 
 	harbor采用https的方式交换数据，Docker客户端处需要配置签署 harbor 证书的 CA 证书。
 
@@ -145,8 +146,4 @@
 
     拷贝CA证书到上述目录中
 
-
-https://www.jianshu.com/p/1bc2d2b9d3fb
-https://blog.csdn.net/u013201439/article/details/81271182
-https://www.cnblogs.com/pangguoping/p/7650014.html
-https://blog.csdn.net/weixin_45649763/article/details/105380999
+	没实现

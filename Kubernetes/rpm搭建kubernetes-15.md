@@ -94,6 +94,9 @@
 
 	~]# echo "1" >/proc/sys/net/bridge/bridge-nf-call-iptables	#不设为1在启动容器时会报错	
 
+	 [ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables contents are not set to 1
+
+
 	~]# kubeadm init --kubernetes-version=v1.15.7		#正在使用的k8s程序组件的版本号，需要与kubelet的版本号相同。 
 		--pod-network-cidr=10.244.0.0/16 				#pod的网络地址，使用flannel插件时，默认是10.244.0.0/16
 		--service-cidr=10.96.0.0/12 						#service的网络地址，默认地址为10.96.0.0/12
@@ -125,6 +128,8 @@
 	~]# kubectl get nodes #查看节点信息
 
 	安装flannel网络插件: flannel是coreos的一个子项目，托管与GitHub
+
+	https://github.com/coreos/flannel
 
 	~]# kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml		#访问不了quay.io需要修改镜像仓库，可使用我的阿里仓库  registry.cn-hangzhou.aliyuncs.com/quay-image/
 
@@ -217,10 +222,13 @@
 	2.暴露服务
 	~]# kubectl apply -f service-ingress-service.yaml
 
+	The Service "nginx-ingress-controller" is invalid: spec.ports[0].nodePort: Invalid value: 80: provided port is not in the valid range. The range of valid ports is 30000-32767
+
 ## Dashboard搭建
 
 	github地址：https://github.com/kubernetes/dashboard		#最新
 			   https://github.com/kubernetes/kubernetes/tree/release-1.15/cluster/addons/dashboard	#适配对应版本
+			   https://github.com/kubernetes/kubernetes/tree/release-1.16/cluster/addons/dashboard
 	
 	1.获取资源清单
 		~]# wget https://raw.githubusercontent.com/kubernetes/dashboard/v1.10.1/src/deploy/recommended/kubernetes-dashboard.yaml
