@@ -425,3 +425,12 @@ jenkins：第一次创建项目时
 
 ![](./picture/6.jpg)
 
+**配置从Jenkins到业务主机下发：**Publish Over SSH 插件
+
+系统管理-->系统配置
+
+![](./picture/7.jpg)
+
+![](./picture/8.jpg)
+
+# 7.Jenkins集群配置
