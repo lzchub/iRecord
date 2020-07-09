@@ -1,4 +1,4 @@
-#1.搭建kubernetes集群
+# 1.搭建kubernetes集群
 
 实验环境：centos7.6
 	
@@ -7,23 +7,23 @@
 	node2:	192.168.5.32
 	node3:	192.168.5.33
 
-###前提：
+### 前提：
 
 	1.借助NTP服务器设置各节点时间精确同步
 		centos7有自动同步时间服务 chronyd，可自己设置时间服务器，/etc/chrony.conf 重启服务等待同步
-
+	
 	2.通过DNS完成各节点主机名解析，测试可写hosts文件
-
+	
 	3.关闭各节点防火墙，关闭selinux
 		~]# systemctl stop firewalld
 		~]# systemctl disable firewalld
 	
 		~]# setenforce 0
 		~]# sed -i 's/SELINUX=enable/SELINUX=disabled/g' /etc/sysconfig/selinux
-
+	
 	4.各节点禁用所有Swap设备
 		~]# swapoff -a		#临时关闭所有swap设备,永久关闭修改/etc/fstab
-
+	
 	5.若要使用ipvs模型的proxy，各节点还需要载入ipvs相关的各模块
 		~]# cat /etc/sysconfig/modules/ipvs.modules
 			#!/bin/bash
@@ -35,30 +35,30 @@
 			                /sbin/modprobe $mod
 			        fi
 			done
-
+	
 		~]# chmod a+x /etc/sysconfig/modules/ipvs.modules
 		~]# bash /etc/sysconfig/modules/ipvs.modules	#手动加载进内核
 		~]# lsmod | grep ip_vs		#查看内核模块是否加载
 
-###初始化master：
+### 初始化master：
 
 	注：CPU至少2核
-
+	
 	~]# wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -P /etc/yum.repos.d/
-
+	
 	选择docker版本：
 	~]# yum list docker-ce --showduplicates
 	~]# yum install -y docker-ce
-
+	
 	#~]# yum install -y --setopt=obsoletes=0 docker-ce-18.06.1.ce-3.el7
-
+	
 	~]# vim /usr/lib/systemd/system/docker.service
 		...
 		ExecStartPost=/usr/sbin/iptables -P FORWARD ACCEPT		#添加此行
 		...
-
+	
 	~]# systemctl daemon-reload 
-
+	
 	~]# cat /etc/yum.repos.d/kubernetes.repo 
 		[kubernetes]
 		name=kubernetes repo
@@ -67,33 +67,33 @@
 		gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 			   https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
 		enabled=1
-
+	
 	#~]# rpm --import yum-key.gpg 
-
+	
 	~]# yum install kubelet-1.15.7 kubeadm-1.15.7 kubectl-1.15.7 -y
-
+	
 	注：
 		kubeadm：是Kubernetes官方提供的用于快速安装Kubernetes集群的工具，伴随Kubernetes每个版本的发布都会同步更新，kubeadm会对集群配置方面的一些实践做调整，通过实验kubeadm可以学习到Kubernetes官方在集群配置上一些新的最佳实践。
 		
 		kubelet：是运行于集群中每个节点上的kubernetes dialing程序，它的核心功能在于通过API Server获取调度至自身运行的Pod资源的PodSpec并依之运行Pod。事实上，以自托管方式部署的Kubernetes集群，除了kubelet和Docker之外的所有组件均以Pod对象的形式运行。
-
+	
 		kubectl: 操作集群的命令行工具。通过 kubectl 可以部署和管理应用，查看各种资源，创建、删除和更新各种组件。
 
 
 	~]# mkdir /etc/docker			#启动镜像加速
-
+	
 	~]# vim /etc/docker/daemon.json
 		{
 	 		"registry-mirrors": ["https://nqq67ahg.mirror.aliyuncs.com"]
 		}
-
+	
 	~]# systemctl daemon-reload
 	~]# systemctl start docker 			#不能先启动kubelet，否则会报错
 	
 	~]# systemctl enable kubelet docker
-
+	
 	~]# echo "1" >/proc/sys/net/bridge/bridge-nf-call-iptables	#不设为1在启动容器时会报错	
-
+	
 	 [ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables contents are not set to 1
 
 
@@ -118,32 +118,32 @@
 		...
 		
 		kubeadm join 192.168.5.30:6443 --token j6st5n.rucdhhru9f00k3d6 --discovery-token-ca-cert-hash sha256:aa81f154a062b080fab45762b322573fbfccc5395b3e6d561ef2afe5db9fdd34		#通过此项加入集群
-
+	
 	#使用的root用户，建议使用普通用户
 	~]# mkdir -p $HOME/.kube
 	~]# cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-
+	
 	~]# kubectl get componentstatus	#查看集群状态信息
 	~]# kubectl get cs
 	~]# kubectl get nodes #查看节点信息
-
+	
 	安装flannel网络插件: flannel是coreos的一个子项目，托管与GitHub
-
+	
 	https://github.com/coreos/flannel
-
+	
 	~]# kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml		#访问不了quay.io需要修改镜像仓库，可使用我的阿里仓库  registry.cn-hangzhou.aliyuncs.com/quay-image/
-
+	
 	~]# kubectl get ns #名称空间
 	~]# kubectl get pods -n kube-system
-
+	
 	ingress-nginx:
 		kubectl apply -f mandatory.yaml
 		kubectl apply -f service-nodeport.yaml
 
 ### 初始化node：
-	
-	~]# wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -P /etc/yum.repos.d/
 
+	~]# wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -P /etc/yum.repos.d/
+	
 	~]# cat /etc/yum.repos.d/kubernetes.repo 
 		[kubernetes]
 		name=kubernetes repo
@@ -158,25 +158,25 @@
 		{
 		  "registry-mirrors": ["https://nqq67ahg.mirror.aliyuncs.com"]
 		}
-
+	
 	~]# systemctl daemon-reload
-
+	
 	#~]# rpm --import yum-key.gpg 
-
+	
 	~]# yum install kubelet-1.15.7 kubeadm-1.15.7 docker-ce -y
-
+	
 	~]# systemctl start docker
 	~]# systemctl enable kubelet docker
-
+	
 	~]# echo "1" >/proc/sys/net/bridge/bridge-nf-call-iptables	#不设为1在启动容器时会报错	
-
+	
 	~]# kubeadm join 192.168.5.30:6443 --token j6st5n.rucdhhru9f00k3d6 --discovery-token-ca-cert-hash sha256:aa81f154a062b080fab45762b322573fbfccc5395b3e6d561ef2afe5db9fdd34
 
 
 	注：忘记taken或者taken过期
 	
 	1.生成一条永久有效的token
-
+	
 		~]# kubeadm token create --ttl 0
 	
 		~]# kubeadm token list
@@ -188,29 +188,29 @@
 	2.获取ca证书sha256编码hash值
 		~]# openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
 			2cc3029123db737f234186636330e87b5510c173c669f513a9c0e0da395515b0
-
+	
 	3.node节点加入
-
+	
 		~]# kubeadm join 192.168.3.30:6443 --token o4avtg.65ji6b778nyacw68 --discovery-token-ca-cert-hash sha256:2cc3029123db737f234186636330e87b5510c173c669f513a9c0e0da395515b0
 
 ### 查看集群DNS(CoreDNS)服务	
- 
+
 	~]# yum install -y bind-utils
 	~]# kubectl get svc -n kube-system
 	NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)         AGE
 	kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP   20h
-
-    ~]# dig A nginx @10.96.0.10
+	
+	~]# dig A nginx @10.96.0.10
 	~]# dig A nginx.default.svc.cluster.local @10.96.0.10
 
 ### 部署ingress-nginx
 
 
 	service的nodeport只能实现基于端口的tcp四层代理，ingress可实现基于http/https的七层代理
-
+	
 	常用反向代理：
 		nginx、envoy、vulcand、haproxy、traefik
-
+	
 	GitHub地址：https://github.com/kubernetes/ingress-nginx/tree/master/deploy
 	
 	1.一键部署
@@ -221,7 +221,7 @@
 	
 	2.暴露服务
 	~]# kubectl apply -f service-ingress-service.yaml
-
+	
 	The Service "nginx-ingress-controller" is invalid: spec.ports[0].nodePort: Invalid value: 80: provided port is not in the valid range. The range of valid ports is 30000-32767
 
 ## Dashboard搭建
@@ -238,37 +238,36 @@
 	  修改镜像拉取地址（若需要其他版本，可到阿里云（https://cr.console.aliyun.com/）或其他可访问到的仓库查找）：registry.cn-hangzhou.aliyuncs.com/quay-image/kubernetes-dashboard:v1.10.1	
 	
 	  service中暴露端口：
-
+	
 		spec:
-  		  type: NodePort
-  	 	  ports:
-   		  - port: 443
-      		targetPort: 8443
-      		nodePort: 30888
-
-	3.访问
-	
-		注意使用的是https，访问时需要为 https://IP:PORT，高版本google可能无法访问，可使用firefox或其他浏览器
-	
-	4.认证
-
-		支持 kubeconfig 和 令牌 认证，我这儿使用令牌认证
-		绑定管理员角色：
-			~]# kubectl apply -f clusterrolebinding-dashboard.yaml
-		得到令牌：
-			~]# kubectl describe secret -n kube-system `kubectl get secret -n kube-system | grep dashboard-admin | awk '{print $1}'`
-	
-	5.得到token输入即可登录
+		  type: NodePort
+	      ports:
+	  	    port: 443
+	  	    targetPort: 8443
+	        nodePort: 30888
+    3.访问
+    
+    	注意使用的是https，访问时需要为 https://IP:PORT，高版本google可能无法访问，可使用firefox或其他浏览器
+    
+    4.认证
+    
+    	支持 kubeconfig 和 令牌 认证，我这儿使用令牌认证
+    	绑定管理员角色：
+    		~]# kubectl apply -f clusterrolebinding-dashboard.yaml
+    	得到令牌：
+    		~]# kubectl describe secret -n kube-system `kubectl get secret -n kube-system | grep dashboard-admin | awk '{print $1}'`
+    
+    5.得到token输入即可登录
 
 
 ## 部署canal提供网络策略功能
 
 	flannel插件提供了pod网络，但是没提供网络策略功能，需要借助calico来实现网络策略，而且官网也说了可以flannel+calico一起使用。
-
+	
 	官网地址：https://docs.projectcalico.org/v3.5/getting-started/kubernetes/installation/flannel
 	
 	~]# wget https://docs.projectcalico.org/v3.5/getting-started/kubernetes/installation/hosted/canal/canal.yaml		#修改镜像拉取地址后直接部署即可
-
+	
 	~]# kubectl apply -f canal.yaml
 
 ## 部署Prometheus
@@ -278,9 +277,9 @@
 	修改镜像：
 		registry.cn-hangzhou.aliyuncs.com/quay-image/kube-state-metrics:v1.3.0
 		registry.cn-hangzhou.aliyuncs.com/quay-image/addon-resizer:1.8.5
-
+	
 	准备PV：需提前搭建nfs服务
-
+	
 		~]# cat nfs-pv.yaml 
 			apiVersion: v1
 			kind: PersistentVolume
@@ -322,10 +321,10 @@
 			  nfs:
 			    path: "/data/nfs/v2"
 			    server: nfs.k8s.io
-
+	
 		~]# cat /etc/hosts
 			IP nfs.k8s.io
-
+	
 		~]# cat prometheus-service.yaml 		#修改service暴露端口
 			kind: Service
 			apiVersion: v1
@@ -432,7 +431,7 @@
 
 
 
-		
+​		
 
 
 
@@ -449,4 +448,4 @@
 
 
 
-	
+​	

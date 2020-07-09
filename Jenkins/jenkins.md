@@ -1,5 +1,7 @@
 # 1. Gitlab搭建
 
+## 1.1 yum安装
+
 官网：https://about.gitlab.com/
 
 rpm地址：https://packages.gitlab.com/gitlab/gitlab-ce
@@ -19,6 +21,46 @@ rpm地址：https://packages.gitlab.com/gitlab/gitlab-ce
 ~]# gitlab-ctl reconfigure		#修改完配置后要执行此操作
 ```
 
+## 1.2 docker安装
+
+```c
+~]# wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -P /etc/yum.repos.d/
+~]# yum install -y docker-ce
+    
+~]# mkdir /etc/docker			#启动镜像加速
+
+~]# vim /etc/docker/daemon.json
+	{
+ 		"registry-mirrors": ["https://nqq67ahg.mirror.aliyuncs.com"]
+	}
+
+~]# systemctl daemon-reload
+~]# systemctl start docker 			#不能先启动kubelet，否则会报错
+    
+~]# docker pull gitlab/gitlab-ce
+
+~]# mkdir /data/{gitlab,jenkins} -pv
+~]# cd /data/gitlab/
+
+~]# mkdir log etc data
+~]# docker run --name gitlab -d -p 8880:80 -p 8443:443 -p 2222:22 --restart always -v /data/gitlab/etc:/etc/gitlab -v /data/gitlab/data:/var/opt/gitlab -v /data/gitlab/log:/var/log/gitlab --privileged=true gitlab/gitlab-ce
+
+~]# docker exec -it gitlab /bin/bash 
+/ # cat /etc/gitlab/gitlab.rb | grep -vE "#|^$"
+    external_url 'http://gitlab.ik8s.io'			#用户登录地址
+	gitlab_rails['gitlab_ssh_host'] = 'gitlab.ik8s.io'		#ssh克隆地址
+	gitlab_rails['gitlab_shell_ssh_port'] = 2222			#ssh克隆端口
+    gitlab_rails['backup_path'] = "/var/opt/gitlab/backups"	 #默认备份路径
+    gitlab_rails['backup_keep_time'] = 604800				#默认存储备份文件时长，超过时长删除备份，单位s，7天
+/ # gitlab-ctl reconfigure
+    
+    
+http://gitlab.ik8s.io:8880
+账号：root/password
+
+https://segmentfault.com/a/1190000019721220
+```
+
 # 2. Gitlab使用
 
 ## 2.1 gitlab常用命令
@@ -29,7 +71,7 @@ gitlab-ctl:
     gitlab-ctl 				#客户端命令行操作行
     gitlab-ctl stop 		#停止 gitlab
     gitlab-ctl start 		#启动 gitlab
-    gitlab-ctl restar 		#重启 gitlab
+    gitlab-ctl restart 		#重启 gitlab
     gitlab-ctl status 		#查看组件运行状态
     gitlab-ctl tail nginx 	#查看某个组件的日志
     
@@ -150,7 +192,7 @@ A/B 测试也是同时运行两个 APP 环境，但是蓝绿部署完全是两�
 ~]# ln -sv jdk1.8.0_211/ jdk
 ~]# cat /etc/profile.d/tomcat.sh
 export HISTTIMEFORMAT="%F %T `whoami` "				#用于给history加上时间用户信息
-export export LANG="en_US.utf-8"
+export LANG="en_US.utf-8"
 export JAVA_HOME=/usr/local/jdk
 export CLASSPATH=.:$JAVA_HOME/jre/lib/rt.jar:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 export PATH=$PATH:$JAVA_HOME/bin
@@ -232,9 +274,13 @@ export PATH=$PATH:$JAVA_HOME/bin
 
 ```
 
-# 5. Jenkins搭建
+# 5. Jenkins
+
+## 5.1 Jenkins搭建
 
 下载rpm包：https://pkg.jenkins.io/redhat-stable/
+
+插件地址：http://updates.jenkins-ci.org/
 
 ```c
 ~]# wget https://pkg.jenkins.io/redhat-stable/jenkins-2.164.3-1.1.noarch.rpm
@@ -257,11 +303,14 @@ export PATH=$PATH:$JAVA_HOME/bin
     JENKINS_HANDLER_IDLE="20"
     JENKINS_ARGS=""
     
-~]# /var/lib/jenkins/		#jenkins数据存储目录
+~]# /var/lib/jenkins/		#jenkins数据存储目录 
+    
     
 ~]# ln -sv /usr/local/jdk/bin/java /usr/bin/java		#若不做此连接，jenkins将找不到java命令
     
 ~]# systemctl start jenkins	
+   
+# 手动部署插件，将插件下载到 /var/lib/jenkins/plugins 下，或者在界面上进行添加，命令行添加注意权限问题
    
 可选参数：   
 JENKINS_ARGS="-server -Xms1g -Xmx1g -Xss512k -Xmn1g
@@ -283,5 +332,96 @@ JENKINS_ARGS="-server -Xms1g -Xmx1g -Xss512k -Xmn1g
 
 ```
 
+## 5.2 Jenkins升级
 
+```c
+~]# wget https://mirrors.tuna.tsinghua.edu.cn/jenkins/war/2.220/jenkins.war
+
+~]# rpm -ql jenkins        
+    /etc/init.d/jenkins
+    /etc/logrotate.d/jenkins
+    /etc/sysconfig/jenkins
+    /usr/lib/jenkins
+    /usr/lib/jenkins/jenkins.war		#将下好的war包替换此包
+    /usr/sbin/rcjenkins
+    /var/cache/jenkins
+    /var/lib/jenkins
+    /var/log/jenkins
+    
+~]# systemctl stop jenkins 
+    
+~]# mv /usr/lib/jenkins/jenkins.war /usr/lib/jenkins/jenkins.war_bak
+
+~]# mv jenkins.war  /usr/lib/jenkins/
+    
+~]# systemctl start jenkins
+
+    
+    
+```
+
+# 6. jenkins+maven+git构建Java项目
+
+安装插件：git、Maven Integration、Publish Over SSH 
+
+**安装maven：**
+
+```c
+http://maven.apache.org/download.cgi
+
+~]# wget https://mirrors.tuna.tsinghua.edu.cn/apache/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+~]# tar xf apache-maven-3.6.3-bin.tar.gz -C /usr/local/
+~]# cd /usr/local/
+~]# ln -sv apache-maven-3.6.3/ maven
+~]# cat /etc/profile.d/mvn.sh 
+	MVN_HOME=/usr/local/maven
+	PATH=$MVN_HOME/bin:$PATH
+~]# . /etc/profile.d/mvn.sh
+~]# mvn -v
+    Apache Maven 3.6.3 (cecedd343002696d0abb50b32b541b8a6ba2883f)
+    Maven home: /usr/local/maven
+    Java version: 1.8.0_211, vendor: Oracle Corporation, runtime: /usr/local/jdk1.8.0_211/jre
+    Default locale: en_US, platform encoding: UTF-8
+    OS name: "linux", version: "3.10.0-957.el7.x86_64", arch: "amd64", family: "unix"
+```
+
+注：需要拉取代码的服务器，需在gitlab上注册ssh-key，即在服务器上生成密钥对，公钥需放在gitlab上，实现无交互拉取代码
+
+**Jenkins配置全局配置：**
+
+```c
+系统管理->全局工具配置
+```
+
+![](./picture/1.jpg)
+
+![](./picture/2.png)
+
+
+
+**jenkins配置秘钥认证从gitlab拉取代码：**
+
+Jenkins服务器生成密钥对：
+
+```c
+~]# ssh-keygen -t rsa  #一路回车
+~]# ll ~/.ssh/			#公钥放在gitlab上，私钥放在Jenkins上，从而实现ssh无交互代码拉取
+    -rw------- 1 root root 1675 Jul  8 05:56 id_rsa
+    -rw-r--r-- 1 root root  397 Jul  8 05:56 id_rsa.pub
+    -rw-r--r-- 1 root root  206 Jul  8 05:59 known_hosts
+```
+
+gitlab：
+
+![](./picture/3.jpg)
+
+jenkins：第一次创建项目时
+
+![](./picture/4.jpg)
+
+![](./picture/5.jpg)
+
+**maven 构建项目：**先清除，然后构建
+
+![](./picture/6.jpg)
 
