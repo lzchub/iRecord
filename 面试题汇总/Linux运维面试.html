@@ -335,8 +335,8 @@ document.addEventListener("DOMContentLoaded", function() {
 <body>
 <h1>自我介绍</h1>
 <pre><code>各位面试官好，我叫刘子川，毕业于西华大学，在Linux运维行业有一年多的工作经验，有两次工作经历，
-第一次是在亚新科技为期3个月的Linux运维实习,主要工作有
-第二次是在差旅一号，职位是Linux运维工程师,主要工作有
+第一次是在亚新科技为期3个月的Linux运维实习,主要负责持续集成，以及测试环境的服务部署与维护
+第二次是在差旅一号，职位是Linux运维工程师,主要工作有线下机房的维护，线上环境的部署维护，日常问题处理
 
 今天我来贵公司应聘的职位是linux运维工程师，以上是我的自我介绍，谢谢。   
 </code></pre>
@@ -439,7 +439,7 @@ RAID 1，至少2块盘，盘的大小可以不一样，以小的为准
 RAID 5，至少3块盘，容量计算 SIZE（最小的盘容量）*（n-1）,损失一块盘
 特点，读写性能一般，读还好一点，写不好
 
-冗余从好到坏：RAID1 RAID10 RAID 5 RAID0
+冗余从好到坏：RAID1 RAID10 RAID5 RAID0
 性能从好到坏：RAID0 RAID10 RAID5 RAID1
 成本从低到高：RAID0 RAID5 RAID1 RAID10
 
@@ -498,7 +498,7 @@ WEB服务器，如果没有太多的数据的话，RAID5,RAID0（单盘）
 </code></pre>
 
 <h3>14.http协议中的keeplive是做什么的？它的适应场景是什么？</h3>
-<pre><code>(1)Http底层也是通过TCP传输的。
+<pre><code>(1)Http(超文本传输协议)底层也是通过TCP传输的。
 
 (2)HTTP keep-alive
    Http是一个”请求-响应”协议，它的keep-alive主要是为了让多个http请求共享一个Tcp连接，以避免每个Http又新建一个TCP连接。每个Http服务器默认的keep-alive时间可能是不一样的。
@@ -525,8 +525,7 @@ WEB服务器，如果没有太多的数据的话，RAID5,RAID0（单盘）
 
 <h3>16.如何发现linux系统是否出现性能瓶颈？请例举出你常用的监控命令以及参数?</h3>
 <pre><code>A. 用w命令看系统负载高不高，如果高可能是CPU不够用，进程太多运行太慢，也可能是磁盘I/O太高了。
-B. 用vmstat 1命令来查看各个指标，着重分析r,b,swpd,si,so,bi,bo,us,wa. 若r列或者us列数值偏高则说明cpu有瓶颈，若b列或者wa列数值偏高同时bi或bo的数字很大，
-   则说明磁盘有压力，若swpd一直变化，并且si和so一直不为0，则说明内存不够了。
+B. 用vmstat 1命令来查看各个指标，着重分析r,b,swpd,si,so,bi,bo,us,wa. 若r列或者us列数值偏高则说明cpu有瓶颈，若b列或者wa列数值偏高同时bi或bo的数字很大，则说明磁盘有压力，若swpd一直变化，并且si和so一直不为0，则说明内存不够了。
 C. 用top命令来分析哪个进程耗费cpu最多，默认按使用cpu多少排序，按M也可以按内存使用多少排序。
 D. 用sar -n DEV 1 10 或者 nload 命令可以查看网卡的流量（若没有nload命令，请使用yum install epel-release; yum install -y nload 安装）
 E. 用iotop命令可以查看磁盘读写速度 （yum install -y iotop 安装）
@@ -754,21 +753,21 @@ SBIT：t位，粘滞位，对于目录，该目录下创建的文件只有属主
 网络接口
 </code></pre>
 
-<h3>53.简述centos7系统systemd管理工具，以及centos6系统service的主要区别？(未答)</h3>
-<h3>54.ss命令为什么比netstat命令快</h3>
+<h3>44.简述centos7系统systemd管理工具，以及centos6系统service的主要区别？(未答)</h3>
+<h3>45.ss命令为什么比netstat命令快</h3>
 <pre><code>netstat命令是去遍历/proc目录下的PID文件来实现统计
 
 而ss快的秘诀在于它利用到了TCP协议栈中tcp_diag。tcp_diag是一个用于分析统计的模块，可以获得Linux内核中第一手的信息，这就确保了ss的快捷高效。
 当然，如果你的系统中没有tcp_diag，ss也可以正常运行，只是效率会变得稍慢（但仍然比 netstat要快）。
 </code></pre>
 
-<h3>55.linux的fork了解吗？什么是写时复制机制？</h3>
+<h3>46.linux的fork了解吗？什么是写时复制机制？</h3>
 <pre><code>Linux的fork()使用写时拷贝(copy-on-write)页实现。写时拷贝是一种可以推迟甚至避免拷贝数据的技术。
 内核此时并不复制整个进程的地址空间，而是让父子进程共享同一个地址空间。只用在需要写入的时候才会复制地址空间，从而使各个进行拥有各自的地址空间。
 也就是说，资源的复制是在需要写入的时候才会进行，在此之前，只有以只读方式共享。这种技术使地址空间上的页的拷贝被推迟到实际发生写入的时候。
 </code></pre>
 
-<h3>56.du和df的区别</h3>
+<h3>47.du和df的区别</h3>
 <pre><code>1.两者区别 
 du：disk usage,是通过搜索文件来计算每个文件的大小然后累加，du能看到的文件只是一些当前存在的，
     没有被删除的。他计算的大小就是当前他认为存在的所有文件大小的累加和。
@@ -779,7 +778,7 @@ df：disk free，通过文件系统来快速获取空间大小的信息，当我
 2.du查看目录大小，df查看磁盘使用情况。
 </code></pre>
 
-<h3>57.提高性能和并发数，需要优化哪些内核参数</h3>
+<h3>48.提高性能和并发数，需要优化哪些内核参数</h3>
 <pre><code>net.ipv4.tcp_max_tw_buckets = 6000              //timewait的数量，默认是180000。
 net.ipv4.ip_local_port_range = 1024 65000   //允许系统打开的端口范围。
 net.ipv4.tcp_tw_reuse = 1                   //允许将TIME-WAIT sockets 重新用于新的TCP 连接。
@@ -792,7 +791,7 @@ net.ipv4.tcp_syn_retries = 1            //在内核放弃建立连接之前发�
 net.ipv4.tcp_keepalive_time = 30        //当keepalive 起用的时候，TCP 发送keepalive 消息的频度。缺省是2 小时。
 </code></pre>
 
-<h3>58.简单介绍一下您所知道的减少和加速web服务器的请求的方法。</h3>
+<h3>49.简单介绍一下您所知道的加速web服务器的请求的方法。</h3>
 <pre><code>A. 针对静态的访问，做过期时间，把静态文件缓存在客户端上
 
 B. 在前端搭建squid反向代理，把静态的文件缓存在squid上
@@ -802,7 +801,7 @@ C. 接入CDN
 D. 合并js、css以及小图片
 </code></pre>
 
-<h3>60.常用Linux命令</h3>
+<h3>50.常用Linux命令</h3>
 <pre><code>cd/cp/ls/rm/mv/cat
 查看负载：top/upload
 内存：free
@@ -812,6 +811,83 @@ D. 合并js、css以及小图片
 脚本常用：awk/sed/grep/cut/uniq/sort/wc
 </code></pre>
 
+<h3>51.centos开机过程中,服务(/etc/init.d中的)因故障卡住，不能开机，怎么办？</h3>
+<pre><code>卡住之后重启电脑（可按ctrl+alt+delete,如果这个被禁用了则想其他方法），然后进入开机启动画面按esc按键
+进入之后按a,然后输入1，单用户启动。（利用单用户启动基本上不会启动任何守护进程的特性来跳过卡住的服务的启动过程）
+利用chkconfig --list 服务名 命令来查看卡住的服务的错误原因并修复。如果短时间内无法修复，则先利用chkconfig 服务名 off 命令先关掉此服务开机启动，然后正常启动计算机
+正常启动后再慢慢寻找原因修复服务，先保证计算机能启动并且提供其他的正常业务进行。
+</code></pre>
+
+<h3>52.蓝绿部署、金丝雀/灰度部署、滚动发布</h3>
+<pre><code>蓝绿部署：蓝绿部署指的是不停老版本代码(不影响上一个版本访问)，而是在另外一套环境部署新版本然后进行测试，测试通过后将用户流量切到新版本，其特点为业务无中断，升级风险相对较小。
+
+金丝雀发布/灰度发布：金丝雀发布也叫灰度发布，是指在黑与白之间，能够平滑过渡的一种发布方式，灰度发布是增量发布的一种类型，灰度发布是在原有版本可用的情况下，
+                  同时部署一个新版本应用作为&quot;金丝雀&quot;(小白鼠)，测试新版本的性能和表现，以保障整体系统稳定的情况下，尽早发现、调整问题。
+
+滚动发布：滚动发布，一般是取出一个或者多个服务器停止服务，执行更新，并重新将其投入使用。周而复始，直到集群中所有的实例都更新成新版本
+</code></pre>
+
+<h3>53.磁盘IOPS与吞吐量如何理解？</h3>
+<p>```c
+IOPS (Input/Output Per Second)即每秒的输入输出量(或读写次数)，是衡量磁盘性能的主要指标之一。IOPS是指单位时间内系统能处理的I/O请求数量，I/O请求通常为读或写数据操作请求。随机读写频繁的应用，如OLTP(Online Transaction Processing)，IOPS是关键衡量指标。另一个重要指标是数据吞吐量(Throughput)，指单位时间内可以成功传输的数据数量。对于大量顺序读写的应用，如VOD(Video On Demand)，则更关注吞吐量指标。简而言之：</p>
+<p>磁盘的 IOPS，也就是在一秒内，磁盘进行多少次 I/O 读写。
+磁盘的吞吐量，也就是每秒磁盘 I/O 的流量，即磁盘写入加上读出的数据的大小。</p>
+<p>IOPS 与吞吐量的关系:
+	每秒 I/O 吞吐量＝ IOPS* 平均 I/O SIZE
+从公式可以看出： I/O SIZE 越大，IOPS 越高，那么每秒 I/O 的吞吐量就越高。因此，我们会认为 IOPS 和吞吐量的数值越高越好。实际上，对于一个磁盘来讲，这两个参数均有其最大值，而且这两个参数也存在着一定的关系。</p>
+<p>传统磁盘本质上一种机械装置，如FC, SAS, SATA磁盘，转速通常为5400/7200/10K/15K rpm不等。影响磁盘的关键因素是磁盘服务时间，即磁盘完成一个I/O请求所花费的时间，它由寻道时间、旋转延迟和数据传输时间三部分构成。</p>
+<p>寻道时间Tseek：是指将读写磁头移动至正确的磁道上所需要的时间。寻道时间越短，I/O操作越快，目前磁盘的平均寻道时间一般在3－15ms。
+旋转延迟Trotation：是指盘片旋转将请求数据所在扇区移至读写磁头下方所需要的时间。旋转延迟取决于磁盘转速，通常使用磁盘旋转一周所需时间的1/2表示。比如，7200 rpm的磁盘平均旋转延迟大约为60*1000/7200/2 = 4.17ms，而转速为15000 rpm的磁盘其平均旋转延迟约为2ms。
+数据传输时间Transfer：是指完成传输所请求的数据所需要的时间，它取决于数据传输率，其值等于数据大小除以数据传输率。目前IDE/ATA能达到133MB/s，SATA II可达到300MB/s的接口数据传输率，数据传输时间通常远小于前两部分时间。</p>
+<p>因此，理论上可以计算出磁盘的最大IOPS，即IOPS = 1000 ms/ (Tseek + Troatation)，忽略数据传输时间。假设磁盘平均物理寻道时间为3ms, 磁盘转速为7200,10K,15K rpm，则磁盘IOPS理论最大值分别为，
+ IOPS = 1000 / (3 + 60000/7200/2)  = 140
+ IOPS = 1000 / (3 + 60000/10000/2) = 167
+ IOPS = 1000 / (3 + 60000/15000/2) = 200</p>
+<p>固态硬盘SSD是一种电子装置， 避免了传统磁盘在寻道和旋转上的时间花费，存储单元寻址开销大大降低，因此IOPS可以非常高，能够达到数万甚至数十万。实际测量中，IOPS数值会受到很多因素的影响，包括I/O负载特征(读写比例，顺序和随机，工作线程数，队列深度，数据记录大小)、系统配置、操作系统、磁盘驱动等等。因此对比测量磁盘IOPS时，必须在同样的测试基准下进行，即便如何也会产生一定的随机不确定性。通常情况下，IOPS可细分为如下几个指标：
+	Toatal IOPS，混合读写和顺序随机I/O负载情况下的磁盘IOPS，这个与实际I/O情况最为相符，大多数应用关注此指标。
+	Random Read IOPS，100%随机读负载情况下的IOPS。
+	Random Write IOPS，100%随机写负载情况下的IOPS。
+	Sequential Read IOPS，100%顺序负载读情况下的IOPS。
+	Sequential Write IOPS，100%顺序写负载情况下的IOPS。</p>
+<p>IOPS的测试benchmark工具主要有Iometer, IoZone, FIO等，可以综合用于测试磁盘在不同情形下的IOPS。</p>
+<p>参考文章：https://blog.csdn.net/liuaigui/article/details/6168186
+https://blog.csdn.net/hanchengxi/article/details/19089589?utm<em>medium=distribute.pc</em>relevant<em>t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase&amp;depth<em>1-utm</em>source=distribute.pc</em>relevant_t0.none-task-blog-BlogCommendFromMachineLearnPai2-1.nonecase
+https://blog.csdn.net/star890124/article/details/52004138</p>
+<p>```</p>
+<h3>54.Centos查看某个进程的环境变量？</h3>
+<p>```c
+通过ps拿到进程PID</p>
+<p>~]# cat /proc/PID/environ	#可查看环境变量</p>
+<p>```</p>
+<h3>55.后台服务变慢，可能有哪些原因？</h3>
+<p>```c
+1.操作系统层面
+    CPU、内存、IO、带宽
+2.应用层面
+    程序bug导致资源未释放
+3.数据库层面
+    慢sql
+    用户可能操作大量写数据导致数据库压力激增引起卡顿
+4.网络问题
+    网络延迟导致客户端显示卡顿</p>
+<p>```</p>
+<h3>56.QPS、TPS</h3>
+<p>```c
+QPS Queries Per Second  是每秒查询率 ,是一台服务器每秒能够响应的查询次数，是对一个特定的查询服务器在规定时间内所处理流量多少的衡量标准, 即每秒的响应请求数，也即是最大吞吐能力。</p>
+<p>TPS Transactions Per Second  也就是事务数/秒。一个事务是指一个客户机向服务器发送请求然后服务器做出反应的过程。客户机在发送请求时开始计时，收到服务器响应后结束计时，以此来计算使用的时间和完成的事务个数.</p>
+<p>QPS和TPS区别
+个人理解如下：</p>
+<pre><code>1、Tps即每秒处理事务数，包括了
+
+    用户请求服务器  
+    服务器自己的内部处理  
+    服务器返回给用户
+    这三个过程，每秒能够完成N个这三个过程，Tps也就是N；
+
+2、Qps基本类似于Tps，但是不同的是，对于一个页面的一次访问，形成一个Tps；但一次页面请求，可能产生多次对服务器的请求，服务器对这些请求，就可计入“Qps”之中。
+</code></pre>
+
+<p>```</p>
 <h1>网络运维</h1>
 <h3>1.什么是arp协议？什么是arp欺骗？</h3>
 <pre><code>ARP协议，全称“Address Resolution Protocol”,中文名是地址解析协议，使用ARP协议可实现通过IP地址获得对应主机的物理地址（MAC地址）。
@@ -824,8 +900,7 @@ ARP协议要求通信的主机双方必须在同一个物理网段（即局域�
 
 ICMP：ICMP全称为互联网控制报文协议，它常用于传递错误信息，ICMP协议是IP层的一部分，它的报文也是通过IP数据包来传输的。
 
-TTL：TTL（time-to-live）是IP数据包中的一个字段，它指定了数据包最多能经过几次路由器。从我们源主机发出去的数据包在到达目的主机的路上要经过许多个路由器的转发，
-     在发送数据包的时候源主机会设置一个TTL的值，每经过一个路由器TTL就会被减去一，当TTL为0的时候该数据包会被直接丢弃（不再继续转发），并发送一个超时ICMP报文给源主机。
+TTL：TTL（time-to-live）是IP数据包中的一个字段，它指定了数据包最多能经过几次路由器。从我们源主机发出去的数据包在到达目的主机的路上要经过许多个路由器的转发，在发送数据包的时候源主机会设置一个TTL的值，每经过一个路由器TTL就会被减去一，当TTL为0的时候该数据包会被直接丢弃（不再继续转发），并发送一个超时ICMP报文给源主机。
 
 traceroute命令用来发现IP接力路径(route)上的各个路由器。它向目的地发送IP包，第一次的时候，将TTL设置为1，引发第一个路由器的超时（Time Exceeded）错误。
 这样，第一个路由器回复ICMP包，从而让出发主机知道途径的第一个路由器的信息。随后TTL被设置为2、3、4，...，直到到达目的主机。
@@ -848,7 +923,7 @@ traceroute命令用来发现IP接力路径(route)上的各个路由器。它向�
 <pre><code>源端口（16位）、目的端口（16位）
 序列号（32位）：传输数据过程中，为每一个封包分配一个序号，保证网络传输数据的顺序性
 确认号（32位）：用来确认确实有收到相关封包，内容表示期望收到下一个报文的序列号，用来解决丢包的问题
-头部长度（4位）：标识该TCP头部有多少个32bit字节(4字节)。因为4位最大能表示15，所以TCP头部最长是60字节；保留位（6位）；标志位（6位）；滑动窗口（16位）
+头部长度（4位）：标识该TCP头部有多少个32bit(4字节)。因为4位最大能表示15，所以TCP头部最长是60字节；保留位（6位）；标志位（6位）；滑动窗口（16位）
 校验码（16位）、紧急指针（16位）
 </code></pre>
 
@@ -882,7 +957,6 @@ TCP 特点: 使用流模式,保证数据传输顺序,面向连接,可靠,速度�
     ③差错控制：解决数据被破坏、重复、时序和丢失的问题
 (4)基于字节流
 
-
 UDP 特点: 使用数据报格式,面向报文,无连接,对系统的资源要求少,不可靠,速度快,容易丢包,UDP不保证数据传输顺序,可以发送广播
 </code></pre>
 
@@ -904,8 +978,7 @@ UDP 特点: 使用数据报格式,面向报文,无连接,对系统的资源要�
 <pre><code>四次分手：
     1.客户端主动断开连接，发送FIN包，此时FIN标志位置为1，seq=x，x为从建立连接到传输了多少包后得到的序列号，客户端进入FIN_WAIT_1状态
       此时客户端讲不能再给服务端发送数据
-    2.服务端接收到客户端的断开请求后，发送ACK应答包，此时ACK标志位置为1，ack=x+1，seq=y，y为建立连接后到发送多少包后得到的序列号，服务端进入CLOSE_WAIT状态，
-      此时服务端会将未发送完成的数据继续发送给客户端，客户端收到服务端的包后进入FIN_WAIT_2状态
+    2.服务端接收到客户端的断开请求后，发送ACK应答包，此时ACK标志位置为1，ack=x+1，seq=y，y为建立连接后到发送多少包后得到的序列号，服务端进入CLOSE_WAIT状态，此时服务端会将未发送完成的数据继续发送给客户端，客户端收到服务端的包后进入FIN_WAIT_2状态
     3.传输完成后，服务端会发送一个FIN包，此时FIN标志位置为1，ack=x+1，seq=w，w未第二次分手发送包后得到的序列号，服务端进入LAST_ACK状态
       此时双方都不能在传输数据
     4.客户端收到第三次分手的包后，会发送ACK应答包，表示已经收到，此时ACK标志位置为1，ack=w+1，seq=x+1，客户端进入TIME_WAIT状态
@@ -1032,6 +1105,7 @@ net.ipv4.tcp_max_tw_buckets = 5000
   dest_port ： 目的port
 </code></pre>
 
+<p>​	</p>
 <h3>16.五种IO模型？简述基于tcp协议的套接字通信流程？</h3>
 <pre><code>出于安全考虑，系统不允许应用空间直接调用硬件，需要发起系统调用，通过内核去调用
 同步阻塞IO：应用app发起read()系统调用--&gt;内核将数据从磁盘读取到内核buffer--&gt;内核buffer拷贝到应用app buffer--&gt;app buffer 到tcp/ip协议栈--&gt;NIC
@@ -1045,17 +1119,16 @@ IO复用模型：应用app发起系统调用select/poll/epoll，所有套接字�
             内核会监视所有select负责的的socket，当socket的数据准备好后，就立即返回--&gt;
             进程再调用read操作，数据就会从内核buffer拷贝到app buffer。--&gt; app buffer 到tcp/ip协议栈--&gt;NIC
             第三步会被阻塞，数据拷贝到app buffer或出错才会被唤醒 
-
-
-信号驱动IO模型：当开启了信号驱动功能时，首先发起一个信号处理的系统调用，如sigaction()，这个系统调用会立即返回--&gt;
-              但数据在准备好时，会发送SIGIO信号，进程收到这个信号就知道数据准备好了，发起read操作--&gt;
-              进程再调用read操作，数据就会从内核buffer拷贝到app buffer。--&gt; app buffer 到tcp/ip协议栈--&gt;NIC
-              在发起信号处理的系统调用后，进程不会被阻塞，但是在read()将数据从kernel buffer复制到app buffer时，进程是被阻塞的。
-
-异步IO模型：应用app发起aio_read()--&gt;内核将数据从磁盘读取到内核buffer--&gt;内核buffer拷贝到应用app buffer--&gt;app buffer 到tcp/ip协议栈--&gt;NIC
-            全程不被阻塞
 </code></pre>
 
+<p>​				
+​	信号驱动IO模型：当开启了信号驱动功能时，首先发起一个信号处理的系统调用，如sigaction()，这个系统调用会立即返回--&gt;
+​				  但数据在准备好时，会发送SIGIO信号，进程收到这个信号就知道数据准备好了，发起read操作--&gt;
+​				  进程再调用read操作，数据就会从内核buffer拷贝到app buffer。--&gt; app buffer 到tcp/ip协议栈--&gt;NIC
+​				  在发起信号处理的系统调用后，进程不会被阻塞，但是在read()将数据从kernel buffer复制到app buffer时，进程是被阻塞的。
+​	
+​	异步IO模型：应用app发起aio_read()--&gt;内核将数据从磁盘读取到内核buffer--&gt;内核buffer拷贝到应用app buffer--&gt;app buffer 到tcp/ip协议栈--&gt;NIC
+​	 			全程不被阻塞</p>
 <h3>17.mmap与sendfile技术？</h3>
 <pre><code>数据完成传输过程：
 客户端请求--&gt;服务器内核空间--&gt;服务器用户空间app--&gt;app发起系统调用如read--&gt;内核访问磁盘获取数据并拷贝到内核buffer--&gt;内核buffer拷贝到app buffer--&gt;app buffer拷贝到TCP/IP协议栈socket buffer--&gt;socket buffer数据从NIC出去
@@ -1492,21 +1565,959 @@ mixed：混合模式，一般的语句修改使用statment格式保存binlog，�
 6、在解析过程中会判断是否有主键，如果没有就用二级索引，如果没有就用全部扫描。
 </code></pre>
 
+<h3>20.MySQL的innodb如何定位锁问题，MySQL如何减少主从复制延迟？</h3>
+<pre><code>mysql的innodb如何定位锁问题:
+    在使用 show engine innodb status 检查引擎状态时，发现了死锁问题
+    在5.5中，information_schema 库中增加了三个关于锁的表（MEMORY引擎）
+
+    innodb_trx         ## 当前运行的所有事务
+
+    innodb_locks     ## 当前出现的锁
+
+    innodb_lock_waits  ## 锁等待的对应关系
+
+
+mysql如何减少主从复制延迟:
+    如果延迟比较大，就先确认以下几个因素：
+    1. 从库硬件比主库差，导致复制延迟
+    2. 主从复制单线程，如果主库写并发太大，来不及传送到从库就会导致延迟。更高版本的mysql可以支持多线程复制
+    3. 慢SQL语句过多
+    4. 网络延迟
+    5. master负载主库读写压力大，导致复制延迟，架构的前端要加buffer及缓存层
+    6. slave负载一般的做法是，使用多台slave来分摊读请求，再从这些slave中取一台专用的服务器只作为备份用，不进行其他任何操作.另外， 2个可以减少延迟的参数:
+       #参数含义：当slave从主数据库读取log数据失败后，等待多久重新建立连接并获取数据  
+       –slave-net-timeout=seconds 单位为秒 默认设置为 3600秒
+       #参数含义：当重新建立主从连接时，如果连接建立失败，间隔多久后重试
+       –master-connect-retry=seconds 单位为秒 默认设置为 60秒
+
+       通常配置以上2个参数可以减少网络问题导致的主从数据同步延迟
+</code></pre>
+
+<h3>21.MySQL数据库主从同步延迟解决方案</h3>
+<pre><code>最简单的减少slave同步延时的方案就是在架构上做优化，尽量让主库的DDL快速执行
+
+还有就是主库是写，对数据安全性较高，比如sync_binlog=1，innodb_flush_log_at_trx_commit=1 之类的设置，而slave则不需要这么高的数据安全，完全可以将sync_binlog设置为0或者关闭binlog
+innodb_flushlog也可以设置为0来提高sql的执行效率。另外就是使用比主库更好的硬件设备作为slave
+</code></pre>
+
 <h1>应用运维</h1>
 <h2>Nginx</h2>
+<h3>1.Nginx的应用场景？</h3>
+<pre><code>1、http服务器。Nginx是一个http服务可以独立提供http服务。可以做网页静态服务器。
+2、虚拟主机。可以实现在一台服务器虚拟出多个网站，例如个人网站使用的虚拟机。
+3、反向代理，负载均衡。当网站的访问量达到一定程度后，单台服务器不能满足用户的请求时，需要用多台服务器集群可以使用nginx做反向代理。
+并且多台服务器可以平均分担负载，不会应为某台服务器负载高宕机而某台服务器闲置的情况。
+</code></pre>
+
+<h3>2.LVS、Nginx、HAproxy有什么区别？工作中你怎么选择？</h3>
+<pre><code>LVS是四层负载软件
+Nginx，HAproxy能够实现四层负载，也能实现七层负载
+
+Nginx和lvs负载均衡比较：
+
+1）nginx工作在网络的七层，所以他可以针对http应用本身来做分流策略，比如针对域名，目录等，而lvs并不具备这些功能，所以nginx这点可利用的地方就多于lvs
+2）nginx对网络的依赖性比较小，理论上只要能ping通，网页访问正常，nginx就能连的通，lvs比较依赖于网络环境，至少需要一个公网ip来做VIP
+3）nginx测试可以查看错误日志，而lvs出错，很多都是网络问题，没有错误日志，解决比较麻烦
+4）nginx可以检测到服务器内部的故障，比如根据服务器处理网页返回的状态码、超时等等，并且会把返回错误的请求重新提交到另一个节点。
+   lvs的原理使其不能重发请求。比如用户正在上传一个文件，而处理该上传的节点刚 好在上传过程中出现故障，nginx会把上传切到另一台服务器重新处理，而lvs就直接断掉了
+
+lvs的特点：
+A. 抗负载能力强，因为lvs工作方式的逻辑是非常之简单，而且工作在网络4层仅做请求分发之用，没有流量，所以在效率上基本不需要太过考虑。
+B. 配置性低，这通常是一大劣势，但同时也是一大优势，因为没有太多可配置的选项，所以除了增减服务器，并不需要经常去触碰它，大大减少了人为出错的几率。
+C. 工作稳定，因为其本身抗负载能力很强，所以稳定性高也是顺理成章，另外各种lvs都有完整的双机热备方案，所以一点不用担心均衡器本身会出什么问题，
+   节点出现故障的话，lvs会自动判别，所以系统整体是非常稳定的。
+D. 无流量，上面已经有所提及了。lvs仅仅分发请求，而流量并不从它本身出去，所以可以利用它这点来做一些线路分流之用。没有流量同时也保住了均衡器的IO性能不会受到大流量的影响。
+E. 基本上能支持所有应用，因为lvs工作在4层，所以它可以对几乎所有应用做负载均衡，包括http、数据库、聊天室等等。
+
+Nginx的特点是：
+A. 工作在网络的7层之上，可以针对http应用做一些分流的策略，比如针对域名、目录结构，它的正则规则比HAProxy更为强大和灵活，这也是它目前广泛流行的主要原因之一
+B. Nginx对网络稳定性的依赖非常小，理论上能ping通就就能进行负载功能，这个也是它的优势之一；相反LVS对网络稳定性依赖比较大，这点本人深有体会；
+C. Nginx安装和配置比较简单，测试起来比较方便，它基本能把错误用日志打印出来。LVS的配置、测试就要花比较长的时间了，LVS对网络依赖比较大。
+D. 可以承担高负载压力且稳定，在硬件不差的情况下一般能支撑几万次的并发量，负载度比LVS相对小些。
+E. Nginx可以通过端口检测到服务器内部的故障，比如根据服务器处理网页返回的状态码、超时等等，并且会把返回错误的请求重新提交到另一个节点，不过其中缺点就是不支持url来检测。
+比如用户正在上传一个文件，而处理该上传的节点刚好在上传过程中出现故障，Nginx会把上传切到另一台服务器重新处理，而LVS就直接断掉了，如果是上传一个很大的文件或者很重要的文件的话，
+用户可能会因此而不满。
+F. Nginx不仅仅是一款优秀的负载均衡器/反向代理软件，它同时也是功能强大的Web应用服务器。LNMP也是近几年非常流行的web架构，在高流量的环境中稳定性也很好。
+G. Nginx现在作为Web反向加速缓存越来越成熟了，速度比传统的Squid服务器更快，可以考虑用其作为反向代理加速器。
+H. Nginx也可作为静态网页和图片服务器，这方面的性能也无对手。还有Nginx社区非常活跃，第三方模块也很多。
+I. Nginx新版本已经支持代理tcp各种协议，不再仅仅局限在代理http、https以及email。
+</code></pre>
+
+<h3>3.你常用的Nginx模块，用来做什么?</h3>
+<pre><code>rewrite模块，实现重写功能
+access模块：来源控制
+ssl模块：安全加密
+ngx_http_gzip_module：网络传输压缩模块
+ngx_http_proxy_module 模块实现代理
+ngx_http_upstream_module模块实现定义后端服务器列表
+ngx_cache_purge实现缓存清除功能
+</code></pre>
+
+<h3>4.nginx的优化有哪些?</h3>
+<pre><code>隐藏版本信息
+nginx事件处理模型优化
+优化绑定不同的nginx进程到不同的CPU上
+优化nginx进程个数的策略
+FastCGI相关参数调优
+配置nginx gzip压缩实现性能优化
+</code></pre>
+
+<h3>5.nginx有哪几种调度算法，解释一下ip hash和轮询有啥不一样？</h3>
+<pre><code>常用的有3种调度算法（轮询、ip hash、权重）。
+
+轮询：upstream按照轮询（默认）方式进行负载，每个请求按时间顺序逐一分配到不同的后端服务器，如果后端服务器down掉，能自动剔除。
+
+ip hash：每个请求按访问ip的hash结果分配，这样每个访客固定访问一个后端服务器，可以解决session的问题。
+
+权重：指定轮询几率，权重（weight）和访问比率成正比，用于后端服务器性能不均的情况。
+</code></pre>
+
+<h3>6.nginx你用到了哪些模块，在proxy模块中你配置过哪些参数？</h3>
+<pre><code>用到过（负载均衡upstream、反向代理proxy_pass、location、rewrite等）。
+
+proxy模块中配置过:proxy_set_header、proxy_connect_timeout、proxy_send_timeout
+</code></pre>
+
+<h3>7.nginx中rewrite有哪几个flag标志位（last、break、redirect、permanent），说一下都什么意思？</h3>
+<pre><code>last : 相当于Apache的[L]标记，表示完成当前的rewrite规则
+break : 停止执行当前虚拟主机的后续rewrite指令集
+redirect : 返回302临时重定向，地址栏会显示跳转后的地址
+permanent : 返回301永久重定向，地址栏会显示跳转后的地址
+301和302不能简单的只返回状态码，还必须有重定向的URL，这就是return指令无法返回301,302的原因了。这里 last 和 break 区别有点难以理解：
+
+    last一般写在server和if中，而break一般使用在location中
+    last不终止重写后的url匹配，即新的url会再从server走一遍匹配流程，而break终止重写后匹配
+    break和last都能组织继续执行后面的rewrite指令
+</code></pre>
+
+<h3>8.nginx中location匹配顺序？</h3>
+<pre><code>匹配优先级：=，^~，~/~*，不带符号
+
+location = / {
+[ configuration A ]
+}
+
+location / {
+    [ configuration B ]
+}
+
+location /user/ {
+    [ configuration C ]
+}
+
+location ^~ /images/ {
+    [ configuration D ]
+}
+
+location ~* \.(gif|jpg|jpeg)$ {
+    [ configuration E ]
+}
+
+
+请求/精准匹配A，不再往下查找。
+
+请求/index.html匹配B。首先查找匹配的前缀字符，找到最长匹配是配置B，接着又按照顺序查找匹配的正则。结果没有找到，因此使用先前标记的最长匹配，即配置B。
+
+请求/user/index.html匹配C。首先找到最长匹配C，由于后面没有匹配的正则，所以使用最长匹配C。
+
+请求/user/1.jpg匹配E。首先进行前缀字符的查找，找到最长匹配项C，继续进行正则查找，找到匹配项E。因此使用E。
+
+请求/images/1.jpg匹配D。首先进行前缀字符的查找，找到最长匹配D。但是，特殊的是它使用了^~修饰符，不再进行接下来的正则的匹配查找，因此使用D。这里，如果没有前面的修饰符，其实最终的匹配是E。大家可以想一想为什么。
+
+请求/documents/about.html匹配B。因为B表示任何以/开头的URL都匹配。在上面的配置中，只有B能满足，所以匹配B。
+</code></pre>
+
 <h2>LVS</h2>
+<h3>1.LVS三种负载均衡技术？</h3>
+<pre><code>VS/NAT模式：也就是网络地址转换技术实现虚拟服务器，当用户请求到达调度器时，调度器将请求报文的目标地址（即虚拟IP地址）改写成选定的Real Server地址，
+           同时报文的目标端口也改成选定的Real Server的相应端口，最后将报文请求发送到选定的Real Server。在服务器端得到数据后，Real Server返回数据给用户时，
+           需要再次经过负载调度器将报文的源地址和源端口改成虚拟IP地址和相应端口，然后把数据发送给用户，完成整个负载调度过程。
+           可以看出，在NAT方式下，用户请求和响应报文都必须经过Director Server地址重写，当用户请求越来越多时，调度器的处理能力将称为瓶颈。
+VS/TUN模式：就是IP隧道技术实现虚拟服务器。它的连接调度和管理与VS/NAT方式一样，只是它的报文转发方法不同，VS/TUN方式中，
+           调度器采用IP隧道技术将用户请求转发到某个Real Server，而这个Real Server将直接响应用户的请求，不再经过前端调度器，此外，对Real Server的地域位置没有要求，
+           可以和Director Server位于同一个网段，也可以是独立的一个网络。因此，在TUN方式中，调度器将只处理用户的报文请求，集群系统的吞吐量大大提高。
+           这种调度方式下，Real Server必须能与客户端进行通信，且Real Server需配置VIP
+VS/DR模式：也就是用直接路由技术实现虚拟服务器。它的连接调度和管理与VS/NAT和VS/TUN中的一样，但它的报文转发方法又有不同，VS/DR通过改写请求报文的目的MAC地址，
+           将请求发送到Real Server，而Real Server将响应直接返回给客户，免去了VS/TUN中的IP隧道开销。这种方式是三种负载调度机制中性能最高最好的，
+           但是必须要求Director Server与Real Server都有一块网卡连在同一物理网段上。
+</code></pre>
+
+<h3>2.LVS负载均衡算法？</h3>
+<pre><code>回答负载调度算法，IPVS实现在八种负载调度算法，我们常用的有四种调度算法（轮叫调度、加权轮叫调度、最少链接调度、加权最少链接调度）。
+
+轮叫调度（Round-Robin Scheduling）
+加权轮叫调度（Weighted Round-Robin Scheduling）
+最小连接调度（Least-Connection Scheduling）
+加权最小连接调度（Weighted Least-Connection Scheduling）
+基于局部性的最少链接（Locality-Based Least Connections Scheduling）
+带复制的基于局部性最少链接（Locality-Based Least Connections with Replication Scheduling）
+目标地址散列调度（Destination Hashing Scheduling）
+源地址散列调度（Source Hashing Scheduling）
+</code></pre>
+
 <h2>KeepAlived</h2>
+<h3>1.Keepalive的工作原理和如何做到健康检查?</h3>
+<pre><code>Keepalived是以VRRP协议为实现基础的，VRRP全称 Virtual Router Redundancy Protocol，即虚拟路由冗余协议。
+
+虚拟路由冗余协议，可以认为是实现路由器高可用的协议，即将N台提供相同功能的路由器组成一个路由器组，这个组里面有一个master和多个backup，
+master上面有一个对外提供服务的vip（该路由器所在局域网内其他机器的默认路由为该vip），master会发组播，当backup收不到vrrp包时就认为master宕掉了，
+这时就需要根据VRRP的优先级来选举一个backup当master。这样的话就可以保证路由器的高可用了。
+
+在一个虚拟路由器中，只有作为MASTER的VRRP路由器会一直发送VRRP通告信息,BACKUP不会抢占MASTER，除非它的优先级更高。当MASTER不可用时(BACKUP收不到通告信息)
+多台BACKUP中优先级最高的这台会被抢占为MASTER。这种抢占是非常快速的(&lt;1s)，以保证服务的连续性，由于安全性考虑，VRRP包使用了加密协议进行加密。
+BACKUP不会发送通告信息，只会接收通告信息
+
+keepalived主要有三个模块，分别是core、check和vrrp。
+core模块为keepalived的核心，负责主进程的启动、维护以及全局配置文件的加载和解析。
+check负责健康检查，包括常见的各种检查方式。
+vrrp模块是来实现VRRP协议的。
+</code></pre>
+
 <h2>Tomcat</h2>
+<h3>1.讲述一下Tomcat8005、8009、8080三个端口的含义？</h3>
+<pre><code>8005：用于关闭tomcat
+8009：为AJP协议端口，即容器使用，如Apache能通过AJP协议访问Tomcat的8009端口
+8080：一般的web服务器使用http协议，如nginx可通过该端口访问tomcat服务。
+</code></pre>
+
+<h2>Apache</h2>
+<h3>1.apache与nginx的优缺点</h3>
+<pre><code>nginx 相对 apache 的优点：
+    轻量级，同样起web 服务，比apache 占用更少的内存及资源
+    抗并发，nginx 处理请求是异步非阻塞的，而apache 则是阻塞型的，在高并发下nginx 能保持低资源低消耗高性能
+    高度模块化的设计，编写模块相对简单
+    社区活跃，各种高性能模块出品迅速啊
+
+apache 相对nginx 的优点：
+    rewrite ，比nginx 的rewrite 强大
+    模块超多，基本想到的都可以找到
+    少bug ，nginx 的bug 相对较多
+    超稳定
+</code></pre>
+
+<h3>2.apache的三种工作模式</h3>
+<pre><code>prefork模式：prefork模式下，一个以root身份运行的主httpd进程(父进程)负责fork一堆以普通身份运行的子httpd进程。父进程只负责管理子进程，
+子进程才是负责监听和处理web请求的进程，当有请求到达，空闲的子进程会迎接该请求并和该客户端建立连接。
+prefork的缺点就是用进程去处理请求，相比于线程，进程太过重量级，对于繁忙的站点来说，不断处理新请求，就需要不断地在进程之间进行切换，进程切换动作对cpu来说是没有生产力的，
+切换太频繁会浪费很多cpu资源。另一方面，httpd的各子进程之间不共享内存，在一定程度上性能也够好。但它也有优点，基于进程的处理方式，稳定性和调节能力比较好。
+
+worker模式：worker模式是对prefork模式的改进，在进程方面，它和prefork一样，有root身份的父httpd进程，普通身份的子httpd进程。
+httpd启动时，初始化创建的子进程数量由StartServers指令决定(worker模式下默认为3)。但不同的是，在每个子进程下还有一堆线程。
+这些线程包括工作线程(worker thread)和一个额外的监听线程(listener thread)。
+监听线程负责轮询(poll模式)监控开放的服务端口，接收请求并建立连接，然后将连接套接字放入套接字队列中，当工作线程&quot;闲&quot;下来时，将套接字从套接字队列中读走并开始处理。
+每当工作线程闲下来，都会通知监听线程它当前空闲，这样一来，监听线程就知道它所在子进程中是否还有空闲的工作线程，如果没有空闲工作线程，即满负荷状态，
+则监听线程暂时不会去接受新连接请求，因为即使接进来放到套接字队列中，也没有工作线程可以立即处理它们。
+
+event模式：event模式的优点在前面就已经说了。它是在worker模式上改进的，也是&quot;主进程--&gt;子进程--&gt;工作线程+监听线程&quot;的方式。
+它改进的地方是使用了事件驱动IO复用模型(基于epoll)，强化了监听线程的工作能力。相比worker模式，它最直观的提升是大大改善了处理长连接(keep alive)的方式，可以一个线程处理多个连接请求。
+非event模式处理长连接的方式总会有占着茅坑不拉屎的浪费，而event模式下，当工作线程对某次请求的响应结束后，会将处于长连接状态的套接字交给监听线程。
+如果这个套接字的客户端没有继续发送请求，正常情况下会一直等到直到长连接超时，然后会关闭套接字，断开长连接。如果客户端又发送了请求，由于基于epoll，
+这个套接字会自己站出来告诉监听线程它有事件发生，于是监听线程会把这个套接字交给第一个空闲的工作线程。
+</code></pre>
+
+<h2>DNS</h2>
+<h3>1.简述dns的查询过程</h3>
+<pre><code>1.查看本地缓存、host文件是否有缓存记录
+2.查看本机指向的DNS服务器是否有域名缓存记录
+3.像顶级域 根域发起查询请求
+4.层层查找返回结果
+
+1-2递归查询（必须有结果）
+2-4迭代查询（一次一次查询直到有结果）
+</code></pre>
+
+<h2>CDN</h2>
+<h3>1.什么是CDN？</h3>
+<pre><code>CDN，Content Distribute Network，可以直译成内容分发网络，CDN解决的是如何将数据快速可靠从源站传递到用户的问题。用户获取数据时，不需要直接从源站获取，通过CDN对于数据的分发，
+用户可以从一个较优的服务器获取数据，从而达到快速访问，并减少源站负载压力的目的。
+</code></pre>
+
+<h3>2.为什么不直接让用户从源站拿取数据呢？</h3>
+<pre><code>我们常说的互联网实际上由两层组成，一层是以TCP/IP为核心的网络层即Internet（因特网），另一层则是以万维网WWW为代表的应用层。数据从服务器端交付到用户端，至少有4个地方可能会造成网络拥堵。
+1. “第一公里”，这是指万维网流量向用户传送的第一个出口，是网站服务器接入互联网的链路。这个出口带宽决定了一个网站能为用户提供的访问速度和并发访问量。当用户请求量超出网站的出口带宽，就会在出口处造成拥塞。
+2. “最后一公里”，万维网流量向用户传送的最后一段链路，即用户接入互联网的链路。用户接入的带宽影响用户接收流量的能力。随着电信运营商的大力发展，用户的接入带宽得到了很大改善，“最后一公里”问题基本得到解决。
+3. ISP互联，即因特网服务提供商之间的互联，比如中国电信和中国联通两个网络运营商之间的互联互通。当某个网站服务器部署在运营商A的机房，运营商B的用户要访问该网站，那就必须经过A、B之间的互联互通点进行跨网访问。
+   从互联网的架构来看，不同运营商之间的互联互通带宽，对任何一个运营商网络流量来说，占比都非常小。因此，这里也通常是网络传输的拥堵点。
+4. 长途骨干传输。首先是长距离传输时延问题，其次是骨干网络的拥塞问题，这些问题都会造成万维网流量传输的拥堵。
+
+从以上对于网络拥堵的情况分析，如果网络上的数据都使用从源站直接交付到用户的方法，那么将极有可能会出现访问拥塞的情况。
+如果能有一种技术方案，将数据缓存在离用户最近的地方，使用户以最快的速度获取，那这对于减少网站的出口带宽压力，减少网络传输的拥堵情况，将起到很大的作用。CDN正是这样一种技术方案。
+</code></pre>
+
+<h3>3.CDN原理？</h3>
+<pre><code>1.当终端用户（北京）向www.a.com下的某资源发起请求时，首先向LDNS（本地DNS）发起域名解析请求。
+2.Local DNS检查缓存中是否有www.a.com的IP地址记录。如果有，则直接返回给终端用户；如果没有，则向授权DNS查询。
+3.当授权DNS解析www.a.com时，返回域名CNAME www.a.tbcdn.com对应IP地址。
+4.域名解析请求发送至阿里云DNS调度系统，并为请求分配最佳节点IP地址。
+5.Local DNS获取DNS返回的解析IP地址。
+6.用户获取解析IP地址。
+7.用户向获取的IP地址发起对该资源的访问请求。
+    如果该IP地址对应的节点已缓存该资源，则会将数据直接返回给用户，例如，图中步骤7和8，请求结束。
+    如果该IP地址对应的节点未缓存该资源，则节点向源站发起对该资源的请求。获取资源后，结合用户自定义配置的缓存策略，将资源缓存至节点，
+</code></pre>
+
 <h2>Redis</h2>
+<h3>1.redis一共有多少个库，常用的数据类型?</h3>
+<pre><code>一共16个库（0-15），常用的数据类型有:string/list/set/hash/sorted
+</code></pre>
+
+<h3>2.Redis的持久化方式有哪些？说说它们的区别？</h3>
+<pre><code>RDB:在指定的时间间隔内将内存中的数据集快照写入磁盘，也就是行话讲的Snapshot快照，它恢复时是将快照文件读到内存中。
+    Redis会单独创建（fork）一个子进程来进行持久化，会先将数据写入到一个临时文件中，待持久化过程都结束了，再用这个临时文件替换上次持久化好的文件。
+    整个过程中，主进程不进行任何IO操作，这就确保了极高的性能，如果需要进行大规模数据的恢复，且对于数据恢复的完整性不是非常敏感，那RDB方式要比AOF方式更加的高效。Redis默认使用RDB持久化。
+
+    优点：
+        1.RDB是一个非常紧凑的文件。
+        2.RDB在保存RDB文件时父进程唯一需要做的就是fork出一个子进程，接下来的工作全由子进程来做，父进程不需要再做其他IO操作，所以RDB持久化方式可以最大化redis的性能。
+          与AOF相比，在恢复大数据集的时候，RDB方式会更快一些。
+    缺点：      
+        1.数据丢失风险大
+        2.RDB需要经常fork子进程来保存数据集到硬盘上，当数据集比较大的时候，fork的过程是非常耗时的，可能会导致Redis在一些毫秒级不能响应客户端请求。
+</code></pre>
+
+<p>​	
+​		客户端显示使用save或bgsave命令来手动启动快照保存机制：
+​	
+​			SAVE：阻塞式的RDB持久化，当执行这个命令时redis的主进程把内存里的数据库状态写入到RDB文件（即上面的dump.rdb）中，直到该文件创建完毕的这段时间内redis将不能处理任何命令请求。
+​			BGSAVE：非阻塞式的持久化，它会创建一个子进程专门去把内存中的数据库状态写入RDB文件里，同时主进程还可以处理来自客户端的命令请求。
+​					但子进程基本是复制的父进程，这等于两个相同大小的redis进程在系统上运行，会造成内存使用率的大幅增加。
+​	
+​	AOF（Append Only File）：以日志的形式来记录每个写操作，将Redis执行过程的所有写指令记录下来（读操作不记录），只许追加文件但不可以改写文件，
+​		Redis启动之初会读取该文件重新构建数据，换言之，Redis重启的话就根据日志文件的内容将写指令从前到后执行一次以完成数据的恢复工作。
+​	
+		优点：
+			1.AOF文件是一个只进行追加的日志文件
+			2.Redis可以在AOF文件体积变得过大时，自动地在后台对AOF进行重写
+			3.AOF文件有序地保存了对数据库执行的所有写入操作，这些写入操作以Redis协议的格式保存，因此AOF文件的内容非常容易被人读懂，对文件进行分析也很容易
+		缺点：
+			1.对于相同的数据集来说，AOF文件的体积通常要大于RDB文件的体积
+			2.根据所使用的fsync策略，AOF的速度可能会慢于RDB</p>
+<h3>3.主从复制原理？</h3>
+<pre><code>Redis全量复制一般发生在Slave初始化阶段，这时Slave需要将Master上的所有数据都复制一份。具体步骤如下：
+    1）从服务器连接主服务器，发送SYNC命令；
+    2）主服务器接收到SYNC命名后，开始执行BGSAVE命令生成RDB文件并使用缓冲区记录此后执行的所有写命令；
+    3）主服务器BGSAVE执行完后，向所有从服务器发送快照文件，并在发送期间继续记录被执行的写命令；
+    4）从服务器收到快照文件后丢弃所有旧数据，载入收到的快照（全量复制）；
+    5）主服务器快照发送完毕后开始向从服务器发送缓冲区中的写命令；
+    6）从服务器完成对快照的载入，开始接收命令请求，并执行来自主服务器缓冲区的写命令（增量复制）；
+</code></pre>
+
+<h3>4.Redis的高可用方案你了解哪些？</h3>
+<pre><code>sentinel：哨兵机制，3.0版本前
+redis-cluster：集群，3.0版本后
+redis+keepalived
+</code></pre>
+
+<h3>5.列举redis支持的过期策略?</h3>
+<pre><code>定时过期：每个设置过期时间的key都需要创建一个定时器，到过期时间就会立即清除。该策略可以立即清除过期的数据，对内存很友好；
+         但是会占用大量的CPU资源去处理过期的数据，从而影响缓存的响应时间和吞吐量。
+惰性过期：只有当访问一个key时，才会判断该key是否已过期，过期则清除。该策略可以最大化地节省CPU资源，却对内存非常不友好。
+         极端情况可能出现大量的过期key没有再次被访问，从而不会被清除，占用大量内存。
+定期过期：每隔一定的时间，会扫描一定数量的数据库的expires字典中一定数量的key，并清除其中已过期的key。该策略是前两者的一个折中方案。
+         通过调整定时扫描的时间间隔和每次扫描的限定耗时，可以在不同情况下使得CPU和内存资源达到最优的平衡效果。
+
+Redis中同时使用了惰性过期和定期过期两种过期策略。
+</code></pre>
+
+<h3>6.Redis的内存淘汰策略？</h3>
+<pre><code>Redis的内存淘汰策略是指在Redis的用于缓存的内存不足时，怎么处理需要新写入且需要申请额外空间的数据。
+
+noeviction：当内存不足以容纳新写入数据时，新写入操作会报错。
+allkeys-lru：当内存不足以容纳新写入数据时，在键空间中，移除最近最少使用的key。
+allkeys-random：当内存不足以容纳新写入数据时，在键空间中，随机移除某个key。
+volatile-lru：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，移除最近最少使用的key。
+volatile-random：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，随机移除某个key。
+volatile-ttl：当内存不足以容纳新写入数据时，在设置了过期时间的键空间中，有更早过期时间的key优先移除。
+</code></pre>
+
+<h3>7.Redis集群实现原理？</h3>
+<pre><code> Redis 集群键分布算法使用数据分片（sharding）而非一致性哈希（consistency hashing）来实现：
+ 一个 Redis 集群包含 16384 个哈希槽（hash slot）， 它们的编号为0、1、2、3……16382、16383，这个槽是一个逻辑意义上的槽，实际上并不存在。
+ redis中的每个key都属于这 16384 个哈希槽的其中一个，存取key时都要进行key-&gt;slot的映射计算。它们任何两个master节点之间都是相互连通的（ping-pong）。
+ 客户端可以与任何一个节点相连接，然后就可以访问集群中的任何一个节点，对其进行存取和其他操作。且每个master可有多个slaver，当master挂掉后slaver可以迅速顶替master，保证集群高可用性。
+</code></pre>
+
+<h3>8.Redis有哪些架构模式？讲讲各自的特点</h3>
+<h3>9.使用过Redis分布式锁么，它是怎么实现的？</h3>
+<h3>10.使用过Redis做异步队列么，你是怎么用的？有什么缺点？</h3>
+<h3>11.什么是缓存穿透？如何避免？什么是缓存雪崩？如何避免</h3>
+<h3>12.为什么Redis单线程却能支撑高并发？</h3>
+<h3>13.Redis的并发竞争问题如何解决？</h3>
+<h3>14.如何查看redis设置的最大内存，在不重启redis的情况下如何调整最大内存？</h3>
 <h2>RabbitMQ</h2>
 <h2>Kafka</h2>
+<h3>1.消息队列点对点模式以及发布订阅模式？</h3>
+<p>```c
+点对点：消息生产者生产消息发送到queue中，然后消息消费者从queue中取出并且消费消息。这里要注意：消息被消费以后，queue中不再有存储，所以消息消费者不可能消费到已经被消费的消息。Queue支持存在多个消费者，但是对一个消息而言，只会有一个消费者可以消费。</p>
+<p>发布/订阅：消息生产者（发布）将消息发布到topic中，同时有多个消息消费者（订阅）消费该消息。和点对点方式不同，发布到topic的消息会被所有订阅者消费。
+```</p>
+<h3>2.kafka名词解释？</h3>
+<pre><code>Producer ：消息生产者，就是向kafka broker发消息的客户端。
+
+Consumer ：消息消费者，向kafka broker取消息的客户端
+
+Topic ：咋们可以理解为一个队列。
+
+Consumer Group （CG）：这是kafka用来实现一个topic消息的广播（发给所有的consumer）和单播（发给任意一个consumer）的手段。一个topic可以有多个CG。    topic的消息会复制（不是真的复制，是概念上的）到所有的CG，但每个CG只会把消息发给该CG中的一个consumer。如果需要实现广播，只要每个consumer有一个独立的CG就可以了。要实现单播只要所有的consumer在同一个CG。用CG还可以将consumer进行自由的分组而不需要多次发送消息到不同的topic。
+
+Broker ：一台kafka服务器就是一个broker。一个集群由多个broker组成。一个broker可以容纳多个topic。
+
+Partition：为了实现扩展性，一个非常大的topic可以分布到多个broker（即服务器）上，一个topic可以分为多个partition，每个partition是一个有序的队列。partition中的每条消息都会被分配一个有序的id（offset）。kafka只保证按一个partition中的顺序将消息发给consumer，不保证一个topic的整体（多个partition间）的顺序。
+
+Offset：kafka的存储文件都是按照offset.kafka来命名，用offset做名字的好处是方便查找。例如你想找位于2049的位置，只要找到2048.kafka的文件即可。当然the first offset就是00000000000.kafka
+</code></pre>
+
+<h3>3.zookeeper对kafka集群的作用是什么？</h3>
+<p>```c
+1、Broker注册
+Broker是分布式部署并且相互之间相互独立，但是需要有一个注册系统能够将整个集群中的Broker管理起来，此时就使用到了Zookeeper。在Zookeeper上会有一个专门用来进行Broker服务器列表记录的节点：/brokers/ids</p>
+<p>每个Broker在启动时，都会到Zookeeper上进行注册，即到/brokers/ids下创建属于自己的节点，如/brokers/ids/[0...N]。</p>
+<p>Kafka使用了全局唯一的数字来指代每个Broker服务器，不同的Broker必须使用不同的Broker ID进行注册，创建完节点后，每个Broker就会将自己的IP地址和端口信息记录到该节点中去。其中，Broker创建的节点类型是临时节点，一旦Broker宕机，则对应的临时节点也会被自动删除。</p>
+<p>2、Topic注册
+在Kafka中，同一个Topic的消息会被分成多个分区并将其分布在多个Broker上，这些分区信息及与Broker的对应关系也都是由Zookeeper在维护，由专门的节点来记录，如：
+/borkers/topics</p>
+<p>Kafka中每个Topic都会以/brokers/topics/[topic]的形式被记录，如/brokers/topics/login和/brokers/topics/search等。Broker服务器启动后，会到对应Topic节点（/brokers/topics）上注册自己的Broker ID并写入针对该Topic的分区总数，如/brokers/topics/login/3-&gt;2，这个节点表示Broker ID为3的一个Broker服务器，对于&quot;login&quot;这个Topic的消息，提供了2个分区进行消息存储，同样，这个分区节点也是临时节点。</p>
+<p>3、生产者负载均衡
+由于同一个Topic消息会被分区并将其分布在多个Broker上，因此，生产者需要将消息合理地发送到这些分布式的Broker上，那么如何实现生产者的负载均衡，Kafka支持传统的四层负载均衡，也支持Zookeeper方式实现负载均衡。</p>
+<p>(1) 四层负载均衡，根据生产者的IP地址和端口来为其确定一个相关联的Broker。通常，一个生产者只会对应单个Broker，然后该生产者产生的消息都发往该Broker。这种方式逻辑简单，每个生产者不需要同其他系统建立额外的TCP连接，只需要和Broker维护单个TCP连接即可。但是，其无法做到真正的负载均衡，因为实际系统中的每个生产者产生的消息量及每个Broker的消息存储量都是不一样的，如果有些生产者产生的消息远多于其他生产者的话，那么会导致不同的Broker接收到的消息总数差异巨大，同时，生产者也无法实时感知到Broker的新增和删除。</p>
+<p>(2) 使用Zookeeper进行负载均衡，由于每个Broker启动时，都会完成Broker注册过程，生产者会通过该节点的变化来动态地感知到Broker服务器列表的变更，这样就可以实现动态的负载均衡机制。</p>
+<p>4、消费者负载均衡
+与生产者类似，Kafka中的消费者同样需要进行负载均衡来实现多个消费者合理地从对应的Broker服务器上接收消息，每个消费者分组包含若干消费者，每条消息都只会发送给分组中的一个消费者，不同的消费者分组消费自己特定的Topic下面的消息，互不干扰。</p>
+<p>5、分区 与 消费者 的关系</p>
+<p>消费组 (Consumer Group)：consumer group 下有多个 Consumer（消费者）。对于每个消费者组 (Consumer Group)，Kafka都会为其分配一个全局唯一的Group ID，Group 内部的所有消费者共享该 ID。订阅的topic下的每个分区只能分配给某个 group 下的一个consumer(当然该分区还可以被分配给其他group)。同时，Kafka为每个消费者分配一个Consumer ID，通常采用&quot;Hostname:UUID&quot;形式表示。</p>
+<p>在Kafka中，规定了每个消息分区 只能被同组的一个消费者进行消费，因此，需要在 Zookeeper 上记录 消息分区 与 Consumer 之间的关系，每个消费者一旦确定了对一个消息分区的消费权力，需要将其Consumer ID 写入到 Zookeeper 对应消息分区的临时节点上，例如：
+/consumers/[group<em>id]/owners/[topic]/[broker</em>id-partition_id]</p>
+<p>其中，[broker<em>id-partition</em>id]就是一个 消息分区 的标识，节点内容就是该 消息分区 上 消费者的Consumer ID。</p>
+<p>6、消息 消费进度Offset 记录
+在消费者对指定消息分区进行消息消费的过程中，需要定时地将分区消息的消费进度Offset记录到Zookeeper上，以便在该消费者进行重启或者其他消费者重新接管该消息分区的消息消费后，能够从之前的进度开始继续进行消息消费。Offset在Zookeeper中由一个专门节点进行记录，其节点路径为:
+/consumers/[group<em>id]/offsets/[topic]/[broker</em>id-partition_id]
+节点内容就是Offset的值。</p>
+<p>7、消费者注册
+消费者服务器在初始化启动时加入消费者分组的步骤如下:</p>
+<p>注册到消费者分组。每个消费者服务器启动时，都会到Zookeeper的指定节点下创建一个属于自己的消费者节点，例如/consumers/[group<em>id]/ids/[consumer</em>id]，完成节点创建后，消费者就会将自己订阅的Topic信息写入该临时节点。</p>
+<p>对消费者分组中的消费者的变化注册监听。每个消费者都需要关注所属消费者分 中其他消费者服务器的变化情况，即对/consumers/[group_id]/ids节点注册子节点变化的Watcher监听，一旦发现消费者新增或减少，就触发消费者的负载均衡。</p>
+<p>对Broker服务器变化注册监听。消费者需要对/broker/ids/[0-N]中的节点进行监听，如果发现Broker服务器列表发生变化，那么就根据具体情况来决定是否需要进行消费者负载均衡。</p>
+<p>进行消费者负载均衡。为了让同一个Topic下不同分区的消息尽量均衡地被多个 消费者 消费而进行 消费者 与 消息 分区分配的过程，通常，对于一个消费者分组，如果组内的消费者服务器发生变更或Broker服务器发生变更，会发出消费者负载均衡。</p>
+<p>```</p>
 <h2>Ansible</h2>
+<h3>1.ansible中常用的模块及作用？</h3>
+<pre><code>ping：测试主机连通性
+shell：在远程主机上执行命令，支持管道，command不支持
+copy：用于将文件复制到远程主机
+file：创建文件，创建连接文件，删除文件等
+yum：用于yum安装包
+cron：管理计划任务
+service：管理服务
+script：在远程主机上执行脚本
+...
+</code></pre>
+
 <h2>ELK Stack</h2>
 <h2>Zabbix</h2>
 <h2>Prometheus</h2>
 <h2>Jenkins</h2>
 <h2>Docker</h2>
+<h3>1.docker的四种网络模式，及常用命令</h3>
+<p>```c
+docker命令
+	容器生命周期管理 — docker [run|start|stop|restart|kill|rm|pause|unpause]
+	容器操作运维 — docker [ps|inspect|top|attach|events|logs|wait|export|port]
+	容器rootfs命令 — docker [commit|cp|diff]
+	镜像仓库 — docker [login|pull|push|search]
+	本地镜像管理 — docker [images|rmi|tag|build|history|save|import]
+	其他命令 — docker [info|version]</p>
+<p>四种网络模型：
+	closed:只有本地回环接口，不能访问外部网络。
+	bridge:bridged 容器拥有两个接口（总是成对出现），一个是私有的本地回环接口，另一个私有接口通过网桥（docker0桥）连接到主机的其他容器，相当于把一个接口放在docker0桥上。
+	joind:Joined容器隔离程度低于Bridged容器。joined容器共享一个网络栈（即拥有自己的mount，user，pid 这三个名称空间，共享IPC，net，UTS 这三个名称空间），在这种情况下，容器之间没有任何的隔离。这意味着更少的控制和安全。尽管这不是最安全的原型，但它是第一个打破容器之间界限的。
+	open:Open容器非常的危险。他没有网络容器，并且对主机网络有完全的访问权。包括对重要主机服务的访问权。直接共享宿主机的网络名称空间。
+```</p>
+<h3>2.Docker容器使用了Linux内核中提供的6种命名空间隔离：</h3>
+<p><code>c
+1) UTS命名空间负责主机名和域名的隔离，使得容器都拥有自己的主机名和域名，可以被看作一个独立的网络节点。
+2) IPC命名空间负责信号量、消息队列和共享内存的隔离，其包含了系统IPC标示符以及实现POSIX消息队列的文件系统，使得同一个IPC命名空间下的进程彼此可见，不同的则相互不可见；
+3) PID命名空间负责进程PID编号的隔离，不同的PID命名空间下的进程可以有相同的PID，每个PID命名空间都有独立的计数程序。
+4) Network命名空间负责网络资源的隔离，这里的隔离并非真正意义的网络隔离，而是把容器的网络独立出来，如同一个独立的网络实体来与外部通信。
+5) Mount命名空间负责挂载点的隔离，不同Mount命名空间下的文件结构发生变化互不影响。
+6) User命名空间负责安全相关的标示符和属性的隔离，包括用户ID、用户组ID、root目录、密钥key以及特殊权限等，该命名空间技术支持进程在容器内外拥有不同级别的权限。</code></p>
+<h3>3.dockerfile的一些命令</h3>
+<p><code>c
+FROM： FROM指令是最重的一个且必须为Dockerfile文件开篇的第一个非注释行，用于为映像文件构建过程指定基准镜像，后续的指令运行于此基准镜像所提供的运行环境。
+COPY： 用于从Docker主机复制文件至创建的新映像文件
+VOLUME： 用于在image中创建一个挂载点目录，以挂载Docker host上的卷或其它容器上的卷。
+EXPOSE： 用于为容器打开指定要监听的端口以实现与外部通信，但不能指定宿主机的端口绑定。
+RUN： 用于指定docker build过程中运行的程序，其可以是任何命令
+CMD： 类似于RUN指令，CMD指令也可用于运行任何命令或应用程序，不过，二者的运行时间点不同，RUN指令运行于映像文件构建过程中，而CMD指令运行于基于Dockerfile构建出的新映像文件启动一个容器时，CMD指令的首要目的在于为启动的容器指定默认要运行的程序
+ENTRYPOINT： 类似CMD指令的功能，用于为容器指定默认运行程序，从而使得容器像是一个单独的可执行程序，与CMD不同的是，由ENTRYPOINT启动的程序不会被docker run命令行指定的参数所覆盖，而且，这些命令行参数会被当作参数传递给ENTRYPOINT指定指定的程序。
+HEALTHCHECK： 对容器进行健康状态检测。</code></p>
+<h3>4.Docker的架构图</h3>
+<p><code>c
+C/S架构：Docker Client 同 Docker Daemon 进行交互，其中主要的工作是通过 Daemon 来完成，包括拉取镜像、编译镜像、运行容器、发布容器等。
+Docker Client 和 Docker Daemon 可以运行在同一个系统上，也可以通过远程方式进行访问。</code></p>
+<h3>5.Docker的镜像是如何运行成容器的？</h3>
+<p>```c
+作为静态的镜像，如何才有能力转化为一个动态的 Docker 容器呢？此时，我们可以想象：第一，转化的依据是什么；第二，由谁来执行这个转化操作。</p>
+<p>其实，转化的依据是每个镜像的 json 文件，Docker 可以通过解析 Docker 镜像的 json 的文件，获知应该在这个镜像之上运行什样的进程，应该为进程配置怎么样的环境变量，此时也就实现了静态向动态的转变。</p>
+<p>谁来执行这个转化工作？答案是 Docker 守护进程。也许大家早就理解这样一句话：Docker 容器实质上就是一个或者多个进程，而容器的父进程就是 Docker 守护进程。这样的，转化工作的执行就不难理解了：Docker 守护进程手握 Docker 镜像的 json 文件，为容器配置相应的环境，并真正运行 Docker 镜像所指定的进程，完成 Docker 容器的真正创建。
+```</p>
+<h3>6.Docker你熟悉是吧？你说说Docker的三个核心概念？</h3>
+<p>```c
+镜像：Docker 镜像是一个特殊的文件系统，除了提供容器运行时所需的程序、库、资源、配置等文件外，还包含了一些为运行时准备的一些配置参数（如匿名卷、环境变量、用户等）。镜像不包含任何动态数据，其内容在构建之后也不会被改变。通过联合文件系统分层构建，联合挂载，每一层都是只读层。docker 镜像是一个只读的 docker 容器模板，含有启动 docker 容器所需的文件系统结构及其内容，因此是启动一个 docker 容器的基础。docker 镜像的文件内容以及一些运行 docker 容器的配置文件组成了 docker 容器的静态文件系统运行环境：rootfs。
+可以这么理解，docker 镜像是 docker 容器的静态视角，docker 容器是 docker 镜像的运行状态。</p>
+<p>容器：容器是从镜像创建的应用运行实例，容器之间是相互隔离、互不可见的。可以把容器看做一个简易版的linux系统环境（包括root权限、进程空间、用户空间和网络空间等），以及运行在这个环境上的应用打包而成的应用盒子。镜像自身是只读的，容器从镜像启动的时候，docker会在镜像的最上层创建一个可写文件层，镜像本身保持不变。</p>
+<p>仓库：就是保存镜像的空间，有公有仓库和私有仓库。
+```</p>
+<h3>7.有什么方法可以将外部的数据挂载到容器中？对于臃肿的数据，我要怎么才能只挂载我需要的？</h3>
+<p>```c
+容器挂载外部目录有两种方式：
+1.容器自身管理的卷：即我们只需指定外部目录挂载在容器的哪个目录，会在宿主机上对应目录下生成一个随机目录用于挂载
+2.自身管理的卷：我们指定宿主机上的哪个目录挂载到容器中的哪个目录下</p>
+<p>可通过运行容器时使用 -v --volume 动态指定，也可在构建镜像时通过volume关键字指定，但这种方式只能使用容器自身管理的卷</p>
+<p>```</p>
+<h3>8.Docker镜像管理如何做？我想在启动Docker容器的时候传入一些参数，怎么做？entrypoint和cmd的区别？别的用户怎么得知这个传入的参数呢？</h3>
+<p>```c
+docker镜像管理可以通过打tag，上传镜像仓库进行管理</p>
+<p>我们可以在启动容器的时候动态的传递参数，比如挂载哪个目录，开放哪个端口等等</p>
+<p>RUN/CMD/ENTRYPOINT三个指令的区别：</p>
+<pre><code>RUN：运行在docker build过程中，即从dockerfile变为image的过程中执行
+CMD：运行中docker run过程中，即从镜像文件转为容器的过程中，但是会被docker run动态指定的指令所覆盖
+ENTRYPOINT：与CMD类似，但是不会被docker run动态指定的指令覆盖，会把动态传递的指令当做参数传递给entrypoint指定的指令
+</code></pre>
+
+<p>用户可以通过docker inspect进行查看
+```</p>
+<h3>9.Docker镜像删除命令？如何将所有镜像一次性删除？</h3>
+<p>```c
+docker image rm 
+docker rmi </p>
+<p>可写一个循环实现
+```</p>
+<h3>10.什么是docker容器技术，docker与传统虚拟机有什么区别？以及docker的优点</h3>
+<h3>11.docker镜像和层有什么区别？</h3>
+<h3>12.docker容器有几种状态，如何查看docker容器的运行状态？</h3>
+<h3>13.dockerfile中的copy和add命令有什么区别？</h3>
+<p><code>c
+copy和add都用于将docker主机上的文件复制到新镜像文件中
+add指令与copy不同的是add支持使用tar文件和url路径，若使用本地tar文件，会被展开成目录复制进新镜像文件中，若是URL下的tar文件就不会被展开</code></p>
 <h2>Kubernetes</h2>
+<h3>1.简述创建pod的流程？</h3>
+<p>```c
+创建pod流程：
+1.客户提交创建请求，可以通过API server的Restful API，也可以通过kubectl命令行工具，也可使用配置文件，支持yaml和json格式
+2.API server接收到pod请求后，不会直接去创建pod，存储pod数据到etcd
+3.调度器通过API Server查看到未绑定的pod，尝试为pod分配主机，并将结果记录到etcd中
+4.kubelet根据调度结果执行pod创建操作， 绑定成功后，scheduler会调用APIServer的API在etcd中创建一个boundpod对象，描述在一个工作节点上绑定运行的所有pod信息。运行在每个工作节点上的kubelet也会定期与etcd同步boundpod信息，一旦发现应该在该工作节点上运行的boundpod对象没有更新，则调用Docker API创建并启动pod内的容器。</p>
+<p>创建replicaset：
+1.客户提交创建请求
+2.API server接收replicaset创建请求，将数据写入etcd中
+3.controller-manager中的replicasetController在etcd数据库中读到新的replicaset信息后向k8s API server发起请求，创建几个pod，个数自己指定
+4.调度器将pod调度到node，并将信息写到etcd中
+5.kubelet创建pod，调度器会调用APIServer的API在etcd中创建一个boundpod对象，描述在一个工作节点上绑定运行的所有pod信息。运行在每个工作节点上的kubelet也会定期与etcd同步boundpod信息，一旦发现应该在该工作节点上运行的boundpod对象没有更新，则调用Docker API创建并启动pod内的容器。</p>
+<p>注意：api server负责各个模块之间的通信。集群内的各个功能模块通过APIServer将信息存入etcd，当需要获取和操作这些数据时，则通过APIServer提供的REST接口（用GET、LIST或WATCH）来实现。</p>
+<p>```</p>
+<h3>2.pod的生命周期各个阶段</h3>
+<p>```c
+pending：这个阶段说明该pod已经被Kubernetes系统接收，但在调度完成之前需要准备相关的条件，比如下载镜像，创建网络登
+Running：pod已经被调度到相应的node上，从调度层面上已经完成绑定，pod内所有容器已经创建完成，并且至少有一个容器处于运行状态，其他的处于启动或者重启状态，如果pod中所有容器都已经成功结束将不在执行重启动作
+Succeeded：pod中所有的容器都已经成功借宿，并且将不会重启，例如job或者初始化任务
+Failed：pod中所有容器都已经结束，并且至少有一个容器结束失败，所谓的结束失败值是容器的退出码不是0，或者是被系统强制退出的
+Unknown：这个情况主要是由于无法获得pod的状态，常见的原因是无法和pod所在的主机进行通信</p>
+<p>实际上还有一中状态Terminating，在代码和文档中都没有说明，但却是存在。这种情况出现杂无法获取所在主机的资源情况，一直在尝试建立连接。
+```</p>
+<h3>3.k8s的master与node分别有哪些组件？有什么用？</h3>
+<p>```c
+master：
+	API Server：API Server是集群的核心组件，是集群的入口，无论我们是通过APIserver提供的restful api，还是kubectl，亦或是配置清单，都是通过APIserver操作的集群，通过APIserver我们才能往etcd中写入数据</p>
+<pre><code>controller manager：控制器管理器，通过API Server监控etcd中的各节点信息，定时通过APIserver读取节点中的信息，这些信息是由kubelet定时推送给APIserver，并存入etcd中
+
+scheduler：Kubernetes的调度器，负责 Pod 资源调度。Scheduler监听API Server，当需要创建新的Pod时。Scheduler负责选择该Pod与哪个Node进行绑定。将此绑定信息通过API Server写入到Etcd中。若此时与Node A进行了绑定，那么A上的Kubelet就会从API Server上监听到此事件，那么该Kubelet就会做相应的创建工作。
+
+etcd：Etcd一种k-v存储仓库，可用于服务发现程序。在Kubernetes中就是用Etcd来存储各种k-v对象的。所以我也认为Etcd是Kubernetes的一个重要组件。当我们无论是创建Deployment也好，还是创建Service也好，各种资源对象信息都是写在Etcd中了。各个组件是通过API Server进行交流的，然而数据的来源是Etcd。所以维持Etcd的高可用是至关重要的。如果Etcd坏了，任何程序也无法正常运行了。
+</code></pre>
+
+<p>node：
+	kubelet：Kubelet负责 Pod 对应的容器的创建，启动等任务，同时与Master节点密切协作。每个Node节点上都会有一个Kubelet负责Master下发到该节点的具体任务，管理该节点上的Pod和容器。而且会在创建之初向API Server注册自身的信息，定时汇报节点的信息。它还通过cAdvisor监控容器和节点资源。</p>
+<pre><code>kube-proxy：实现 Kubernetes Service 的通信与负载均衡机制的重要组件。负责接收并转发请求。Kube-proxy的核心功能是将到Service的访问请求转发到后台的某个具体的Pod。无论是通过ClusterIP+Port的方式，还是NodeIP+NodePort的方式访问Service，最终都会被节点的Iptables规则重定向到Kube-proxy监听服务代理端口，该代理端口实际上就是SocketServer在本地随机打开的一个端口，SocketServer是Kube-proxy为每一个服务都会创建的“服务代理对象”的一部分。当Kube-proxy监听到Service的访问请求后，它会找到最适合的Endpoints，然后将请求转发过去。具体的路由选择依据Round Robin算法及Service的Session会话保持这两个特性。
+
+run container：一般使用docker
+</code></pre>
+
+<p>```</p>
+<h3>4.k8s的pause容器的作用？</h3>
+<p>```c
+Pause容器 全称infrastucture container（又叫infra）基础容器。</p>
+<p>每个Pod里运行着一个特殊的被称之为Pause的容器，其他容器则为业务容器，这些业务容器共享Pause容器的网络栈和Volume挂载卷，因此他们之间通信和数据交换更为高效，在设计时我们可以充分利用这一特性将一组密切相关的服务进程放入同一个Pod中。同一个Pod里的容器之间仅需通过localhost就能互相通信。</p>
+<p>pause容器与应用容器共享网络名称空间(IPC,Network,PID)</p>
+<p>```</p>
+<h3>5.k8s集群内pod应如何向外提供访问？</h3>
+<p><code>c
+service clusterIP：集群内负载，通信使用，外部无法访问
+service nodeport：通过绑定宿主机端口与集群内service端口进行通信
+service loadbalance：没用过
+ingress：通过ingress暴露，若要外部访问还是需要给ingress做一个service nodeport</code></p>
+<h3>6.pod结束流程？</h3>
+<p>```c</p>
+<p>1.用户发出删除 pod 命令
+2.Pod 对象随着时间的推移更新，在宽限期（默认情况下30秒），pod 被视为“dead”状态
+3.将 pod 标记为“Terminating”状态
+4.第三步同时运行，监控到 pod 对象为“Terminating”状态的同时启动 pod 关闭过程
+5.第三步同时进行，endpoints 控制器监控到 pod 对象关闭，将pod与service匹配的 endpoints 列表中删除
+6.如果 pod 中定义了 preStop 钩子处理程序，则 pod 被标记为“Terminating”状态时以同步的方式启动执行；若宽限期结束后，preStop 仍未执行结束，第二步会重新执行并额外获得一个2秒的小宽限期
+7.Pod 内对象的容器收到 TERM 信号
+8.宽限期结束之后，若存在任何一个运行的进程，pod 会收到 SIGKILL 信号
+9.Kubelet 请求 API Server 将此 Pod 资源宽限期设置为0从而完成删除操作</p>
+<p>```</p>
+<h1>脚本运维</h1>
+<h3>1.统计一下/var/log/nginx/access.log 日志中访问量最多的前十个IP?</h3>
+<p>```c
+~]# cat access_log | awk ‘{print $1}’ | uniq -c |sort -rn | head -10</p>
+<p>~]# awk '{print $1}' /var/log/nginx/access.log| sort | uniq -c | sort -nr -k1 | head -n 10
+```</p>
+<h3>2.批量创建10个系统账号user01-user10并设置密码(密码为随机8位字符串)?</h3>
+<p>```c
+(1)01-10
+~]# echo {01..10}
+~]# seq -w 10</p>
+<p>(8)8位随机字符串
+~]# echo $RANDOM | md5sum | cut -c 1-8
+~]# openssl rand -base64 6
+~]# date +%s%N | cut -c 1-8		#全为数字
+~]# cat /proc/sys/kernel/random/uuid 
+~]# head /dev/urandom | cksum | cut -c 1-8	#随机数字串</p>
+<h1>!/bin/bash</h1>
+<p>. /etc/init.d/functions</p>
+<p>for i in <code>seq -w 10</code>
+do
+    pass=&quot;<code>echo $RANDOM | md5sum | cut -c 2-9</code>&quot;
+    echo &quot;$pass&quot; &gt;&gt; /tmp/userpass.txt
+    useradd user$i &amp;&gt; /dev/null
+    echo $pass | passwd --stdin user$i &amp;&gt; /dev/null
+    if [ $? -eq 0 ];then
+        action &quot;useradd user$i&quot; /bin/true
+    else
+        action &quot;useradd user$i&quot; /bin/false
+    fi
+done
+```</p>
+<h3>3.将/opt目录下的大于15KB的文件都移到/tmp目录下</h3>
+<p><code>c
+~]# find /opt/ -size +15k -exec mv {} /tmp/ \;</code></p>
+<h3>4.把/home目录下的大于10k的普通文件删除</h3>
+<p><code>c
+~]# find /home -type f -size +10k -exec rm -f {} \;</code></p>
+<h3>5.现有A文件，判断A文件中大于5的数字，并输出</h3>
+<p><code>c
+~]# for num in `cat A | tr '[a-zA-Z]' ' ' | sed 's/ /\n/g'`;do [ $num -gt 5 ]&amp;&amp;echo $num;done
+~]# for num in `sed 's/[^0-9]/ /g' A | sed 's/ /\n/g'`;do [ $num -gt 5 ]&amp;&amp;echo $num;done</code></p>
+<h3>6.在bash shell中$?,$#,$* 代表什么，其中$#和$*的区别</h3>
+<p>```c
+$? 是显示最后命令的退出状态，0表示没有错误，其他表示有错误</p>
+<p>$# 是传给脚本的参数个数</p>
+<p>$@ 跟$*类似，但是可以当作数组用</p>
+<p>$* 显示所有向脚本传递的参数</p>
+<p>所以,$#是一个数字,而$*是一个字符串。</p>
+<p>$0 这个程式的执行名字
+$n 这个程式的第n个参数值，n=1..9
+$$ 这个程式的PID(脚本运行的当前进程ID号)
+$! 执行上一个背景指令的PID(后台运行的最后一个进程的进程ID号)
+$- 显示shell使用的当前选项，与set命令功能相同
+```</p>
+<h3>7.查看http的并发请求数与其TCP连接状态</h3>
+<p><code>c
+~]# netstat -tn | awk '/^tcp/ {b[$NF]++} END {for(a in b) print a,b[a]}'</code></p>
+<h3>8.查看/var/log下的普通文件数</h3>
+<p><code>c
+~]# ls /var/log/ -lR | grep '^-' | wc -l</code></p>
+<h3>9.每天晚上12点，打包目录/var/www/html 到/data 目录（每次按时间生成不同的备份包）</h3>
+<p>```c</p>
+<h1>!/bin/bash</h1>
+<p>cd /var/www &amp;&amp; tar czvf /data/html-<code>date +%Y%m%d</code>.tar.gz html/</p>
+<p>~]# crontab -e
+0 0 * * * /bin/sh /root/a.sh
+ ```</p>
+<h3>10.请执行命令取出 linux 中 ens33 的 IP 地址</h3>
+<p><code>~]# ifconfig | sed -n '2p' | awk '{print $2}'
+ ~]# ifconfig | sed -n '2p' | cut -d ' ' -f 10
+ ~]# ifconfig | awk 'NR==2' | awk '{print $2}'</code></p>
+<p>### 11.用正则表达式匹配IP地址
+<code>c
+~]# ifconfig | grep -o '[1-9]\{1\}[0-9]\{0,2\}\.[0-9]\{1,3\}.[0-9]\{1,3\}\.[0-9]\{1,3\}' 
+~]# ifconfig | grep -o -E &quot;([0-9]\.|[1-9][0-9]\.|1[0-9][0-9]\.|2[0-9][0-9]\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-9]{2})&quot;</code></p>
+<p>### 12.检测httpd文件内容是否被篡改
+ ```c
+在网站文件上线时先给所有文件生成MD5值
+~]# find /var/www/html -type f | xargs md5sum &gt;&gt; /tmp/md5list
+~]# md5sum -c /tmp/md5list  #检测文件是否被篡改
+~]# find /var/www/html -type f | wc -l #检测是否恶意增减文件</p>
+<p>DIR=/var/www/html
+MD5=/tmp/md5list</p>
+<h1>dir is exist</h1>
+<p>[ ! -d $DIR ]&amp;&amp;{
+    echo &quot;$DIR is not exist&quot;| mail -s &quot;httpd alarm&quot; root@localhost
+}</p>
+<p>if [ <code>md5sum -c $MD5 | grep &quot;FAILED&quot; | wc -l</code> -ne 0 ];then
+    echo &quot;httpd file is danger&quot;
+else
+    echo &quot;httpd file is OK&quot;
+fi
+ ```</p>
+<p>### 13.取变量或字符串长度方法
+ <code>c
+~]# a=abcdef
+~]# echo $a | wc -c    #包含了\0，实际应该减少1
+~]# echo ${#a}      
+~]# expr length &quot;$a&quot;</code></p>
+<h3>14.如何进行整数的计算</h3>
+<p><code>expr a++
+((a++))
+let a++
+echo 5+3.5|bc</code></p>
+<p>### 15.使用一条命令输出1+2+3+4+5+6+7+8+9+10=55
+<code>c
+echo `echo {1..10} | tr &quot; &quot; &quot;+&quot;`=`echo {1..10} | tr &quot; &quot; &quot;+&quot; | bc`
+echo `seq -s &quot;+&quot; &quot;10&quot;`=`seq -s &quot;+&quot; &quot;10&quot; | bc`</code></p>
+<p>### 16.判断网站url是否正常
+```</p>
+<h1>!/bin/bash</h1>
+<p>RETVAL=0</p>
+<p>[ ! -f /etc/init.d/functions ]&amp;&amp;{
+    echo &quot;/etc/init.d/functions is not exist&quot;
+    exit 1
+}
+. /etc/init.d/functions</p>
+<p>usage()
+{
+    echo &quot;Usage:$0 url&quot;
+    exit 1
+}</p>
+<h1>check url func</h1>
+<p>check_url()
+{
+    wget -T 10 --spider -t 2 $1 &amp;&gt; /dev/null
+    #curl -s -o /dev/null www.baidu.com
+    #curl -m 3 --head www.baiu.com | grep 200 &amp;&gt; /dev/null 
+    RETVAL=$?
+    if [ $RETVAL -eq 0 ];then
+        action &quot;$1 url&quot; /bin/true
+    else
+        action &quot;$1 url&quot; /bin/false
+    fi
+}</p>
+<p>main() 
+{
+    if [ $# -ne 1 ];then
+        usage
+    fi
+    check_url $1
+}</p>
+<p>main $*</p>
+<p>https://cloud.tencent.com/developer/article/1150915
+```</p>
+<p>### 17.输出颜色字符
+ ```c</p>
+<h1>!/bin/bash</h1>
+<p>RED=&quot;\033[31m&quot;
+GREEN=&quot;\033[32m&quot;
+YELLOW=&quot;\033[33m&quot;
+BLUE=&quot;\033[34m&quot;
+PINK=&quot;\033[35m&quot;
+RES=&quot;\033[0m&quot;</p>
+<p>usage()
+{
+    echo &quot;USAGE:$0 |red|green|yellow|blue|pink&quot;
+    exit 1
+}</p>
+<p>if [ $# -ne 1 ];then
+    usage
+fi</p>
+<p>case $1 in
+    red)
+        echo -e &quot;$RED hello red $RES&quot;
+        ;;
+    green)
+        echo -e &quot;$GREEN hello green $RES&quot;
+        ;;
+    yellow)
+        echo -e &quot;$YELLOW hello yellow $RES&quot;
+        ;;
+    blue)
+        echo -e &quot;$BLUE hello blue $RES&quot;
+        ;;
+    pink)
+        echo -e &quot;$PINK hello pink $RES&quot;
+        ;;
+    *)
+        usage
+esac
+ ```</p>
+<p>### 18.从文件逐行读取内容
+ ```c
+方法一:
+while read line
+do
+  echo $line
+done &lt; filename</p>
+<p>方法二:
+exec &lt; filename
+while read line
+do
+  echo $line
+done
+ ```</p>
+<p>### 19.批量创建文件,随机八个字符，以_finsh.html结尾，且批量修改文件名称
+ ```c</p>
+<h1>!/bin/bash</h1>
+<p>DIR=~/test</p>
+<p>[ ! -d $DIR ]&amp;&amp;{
+    mkdir -p $DIR
+    echo &quot;$DIR mkdir success.&quot;
+}</p>
+<h1>create file.html</h1>
+<p>for i in <code>seq 10</code>
+do
+    touch $DIR/<code>echo $RANDOM | md5sum | cut -c 1-8</code>_finsh.html
+    [ $? -eq 0 ]&amp;&amp;{
+        echo &quot;file create success.&quot;
+    }
+done</p>
+<h1>change file_finsh.html to file.jpg</h1>
+<p>for j in <code>ls $DIR/*.html</code>
+do
+   mv $j <code>echo $j | sed 's/_finsh.html/.jpg/g'</code></p>
+<h1>ls | awk -F '_' '{print &quot;mv &quot; $0,$1&quot;.jpg&quot;}' | bash</h1>
+<h1>rename &quot;_finsh.html&quot; &quot;.jpg&quot; $i</h1>
+<p>done
+ ```</p>
+<p>### 20.当内存小于等于100M时报警，并发送邮件给管理员
+```</p>
+<h1>!/bin/bash</h1>
+<h1>mem alarm</h1>
+<h1>get mem</h1>
+<p>mem=<code>free -m|grep &quot;Mem&quot;|awk '{print $NF}'</code></p>
+<h1>compare</h1>
+<p>if [ $mem -gt 100 ];then
+    echo &quot;mem is ok&quot;
+else
+    echo &quot;current mem is $mem.&quot;|mail -s &quot;mem alarm&quot; root@localhost
+fi
+```</p>
+<p>### 21.写一个脚本解决DOS攻击生产案例
+```
+提示：根据web日志或者或者网络连接数，监控当某个IP并发连接数或者短时内PV达到100，即调用防火墙命令封掉对应的IP，监控频率每隔3分钟。
+防火墙命令为：iptables -I INPUT -s 10.0.1.10 -j DROP。</p>
+<h1>!/bin/bash</h1>
+<p>FILE<em>LOG=/var/log/httpd/access</em>log</p>
+<h1>cat $FILE_LOG | awk '{print $1}' | sort | uniq -c &gt; /tmp/ip.txt</h1>
+<p>exec &lt; /tmp/ip.txt
+while read line
+do
+  pv=<code>echo $line | awk '{print $1}'</code> 
+  ip=<code>echo $line | awk '{print $2}'</code>
+  if [ $pv -gt 100 -a <code>iptables -L | grep -w &quot;$ip&quot; | wc -l</code> -eq 0 ];then
+    iptables -I INPUT -s $ip -j DROP
+    [ $? -eq 0 ]&amp;&amp;{
+        echo &quot;drop $ip success.&quot;
+    }
+  fi
+done
+```</p>
+<h3>22.已知下面的字符串是通过RANDOM随机数变量md5sum|cut-c 1-8截取后的结果，请破解这些字符串对应的md5sum前的RANDOM对应数字？</h3>
+<p>```c
+ 21029299
+ 00205d1c
+ a3da1677
+ 暴力破解，由于random随机生成1-32000多</p>
+<h1>!/bin/bash</h1>
+<p>for n in <code>seq 33000</code>
+do
+  md5=<code>echo $RANDOM | md5sum | cut -c 1-8</code>
+  if [ &quot;$md5&quot; == &quot;$1&quot; ];then
+    echo &quot;$n yes&quot;  <br />
+    exit
+  fi
+    echo &quot;$n no&quot;
+done
+```</p>
+<p>### 23.实现mysql数据库的分库分表备份
+```c</p>
+<h1>!/bin/bash</h1>
+<p>USER=root
+PASS=960711
+SOCKET=/var/lib/mysql/mysql.sock
+CMD=&quot;mysql -u$USER -p$PASS -S $SOCKET&quot;
+DUMP=&quot;mysqldump -u$USER -p$PASS&quot;
+DBLIST=<code>$CMD -e &quot;show databases;&quot; | sed 1d | egrep -v &quot;schema&quot;</code>
+DIR=/tmp</p>
+<p>. /etc/init.d/functions</p>
+<p>for dbname in $DBLIST
+do
+ #  $DUMP $dbname &gt; $DIR/${dbname}<em><code>date +%F</code>.sql
+  TLIST=<code>$CMD -e &quot;show tables from $dbname;&quot; | sed 1d</code><br />
+  for tname in $TLIST
+  do
+    [ ! -d $DIR/$dbname ] &amp;&amp; mkdir -p $DIR/$dbname
+    $DUMP $dbname $tname &gt; $DIR/$dbname/${tname}</em><code>date +%F</code>.sql
+    if [ $? -eq 0 ];then
+      action &quot;$dbname $tname dump&quot; /bin/true
+    else
+      action &quot;$dbnaem $tname dump&quot; /bin/false
+    fi
+  done
+done
+```</p>
+<h3>24.排序</h3>
+<p>```c
+1、按单词出现频率降序排序！
+2、按字母出现频率降序排序！
+ The months of learning in Old Boy education are the few months that I think the time efficient is the most.I had also studied at other training institutions before,but I was hard to understand what the tutor said and hard to follow.It was just too much to learn with no outline.</p>
+<p>string=The months of learning in Old Boy education are the few months that I think the time efficient is the most.I had also studied at other training institutions before, but I was hard to understand what the tutor said and hard to follow. It was just too much to learn with no outline.</p>
+<p>方法很多，大家自己试验
+~]# echo $string | sed 's/ /\n/g' | tr &quot;.|,&quot; &quot; &quot; | sort | uniq -c | sort -nr
+~]# echo $string | sed 's/[ ,.]//g' | grep -o &quot;.&quot; | sort | uniq -c | sort -nr
+```</p>
+<h3>25.处理以下文件内容,将域名取出并进行计数排序</h3>
+<p>```
+http://www.etiantian.org/index.html
+http://www.etiantian.org/1.html
+http://post.etiantian.org/index.html
+http://mp3.etiantian.org/index.html
+http://www.etiantian.org/3.html
+http://post.etiantian.org/2.html
+将域名先放入文件 domain.txt</p>
+<p>~]# awk -F &quot;/&quot; '{S[$3]+=1}END{for(k in S) print k,S[k]}' domain.txt | sort -k2
+```</p>
+<h3>26.有如下文本:</h3>
+<p>a 1
+b 3
+c 2
+d 7
+b 5
+a 3
+g 2
+f 6
+f 9
+d 9
+输出为:
+d 16
+f 15
+b 8
+a 4
+g 2
+c 2</p>
+<p>```</p>
+<p>~]# awk '{S[$1]+=$2}END{for(k in S) print k,S[k]}' test.txt | sort -nr -k2
+```</p>
+<p>### 27.删除一个文件中行号为奇数的行
+ <code>c
+~]# sed '1~2'd file</code></p>
+<h3>28.打印1-100奇数</h3>
+<p><code>~]# seq 1 2 100</code></p>
+<h3>29.使用tcpdump监听主机为192.168.1.1，tcp端口为80的数据，并将输出结果保存输出到dump.log</h3>
+<p><code>c
+~]# tcpdump 'host 192.168.1.1 and port 80' &gt; tcpdump.log</code></p>
+<h3>30.如何将本地80 端口的请求转发到8080 端口，当前主机IP 为192.168.2.1</h3>
+<p><code>c
+~]# iptables</code></p>
 
 </body>
 </html>

@@ -5,34 +5,73 @@
 	《Google's Python Class》
 	《简明Python教程》
 
-# 1.开发环境：Pyenv 
+# 1.开发环境
+
+Python安装：源码
+
+```c
+1.下载
+    ~]# wget https:/www.python.org/ftp/python/3.7.3/Python-3.7.3.tar.xz
+   
+2.依赖安装
+    ~]# yum -y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel libffi-devel gcc gcc-c++ 
+        
+3.安装
+    ~]# tar xf Python-3.7.3.tar.xz
+    ~]# cd Python-3.7.3
+    ~]# ./configure --prefix=/usr/local/python37 --enable-optimizations
+
+4.配置环境变量
+    ~]# cat /etc/profile.d/python37.sh 
+        PY_HOME=/usr/local/python37
+        PATH=$PATH:$PY_HOME/bin   
+	~]# . /etc/profile.d/python37.sh 
+    ~]# ln -sv /usr/local/python37/bin/python3 /usr/bin/python3
+            
+5.编辑vim格式
+	~]# cd ~
+	~]# vim .vimrc
+		set nu
+        set ts=4		#tab为4个空格长度
+		syntax on		
+		set expandtab	#将tab换为空格
+		set autoindent
+		set ruler
+		set nohls
+        inoremap _main if __name__ == '__main__':			#映射快捷键，输入模式
+		map <F2> gg9999dd									#映射快捷键，命令模式	
+```
+
+
+
+## 1.1 Pyenv (Linux) 
 
 	~]# yum install -y git
 	~]# yum install -y gcc make patch gdbm-devel openssl-devel sqlite-devel readline-devel zlib-devel bzip2-devel 
 	~]# useradd python
 	~]# passwd python
 	~]# su - python
-
+	
 	~]$ curl -L https://github.com/pyenv/pyenv-installer/raw/master/bin/pyenv-installer | bash
 	~]$ vi  ~/.bashrc
 		...
 		export PATH="/home/python/.pyenv/bin:$PATH"
 		eval "$(pyenv init -)"
 		eval "$(pyenv virtualenv-init -)"
-
+	
 	~]$ . ~/.bashrc
-
+	
 	~]$ pyenv install --list 		#列出所有可用版本
 	~]$ pyenv version				#当前使用的版本
 	~]$ pyenv versions				#当前已有的所有版本	
 	~]$ pyenv [global|shell|local]	#全局、shell、当前目录及其子目录
-
+	
 	~]$ pyenv install 3.5.3 -v 		#安装py 3.5.3版本，联机到官网下载
-
+	
 	~]$ cd ~/.pyenv/
 	~]$ mkdir cache			#将三种格式的安装包放在该目录下，tar.gz | tar.xz | tgz	会随机选择一种进行安装
 
-## 虚拟环境： 
+**虚拟环境：** 
 
 	~]$ mkdir ~/chuan/projects/cmdb
 	~]$ cd ~/chuan/projects/cmdb
@@ -40,41 +79,57 @@
 	~]$ pyenv versions
 	~]$ pyenv local chuan353
 
-## pip工具配置：
+**pip工具配置：**
 
 	~]$ mkdir ~/.pip
 	~]$ cat pip.conf 
 		[global]
 		index-url=https://pypi.tuna.tsinghua.edu.cn/simple/
-
+	
+		index-url=https://pypi.doubanio.com/simple/
+	
+	注：Windows就在对用用户主目录下，如chuan用户就在C盘用户chuan下面建立pip/pip.ini文件即可
+	
 	~]$ pip install -i https://pypi.tuna.tsinghua.edu.cn/simple gevent		#临时使用一次
 
-## 使用脚本安装和升级pip：
+**使用脚本安装和升级pip：**
 
 	~]# wget https://bootstrap.pypa.io/get-pip.py
 	~]# python get-pip.py
 	~]# pip -V　　#查看pip版本
 
-## jupyter：
+**jupyter：**
 
 	~]$ pip install ipython
 	~]$ pip install jupyter
 	~]$ mkdir /home/python/.jupyter	
 	~]$ jupyter notebook password		#修改登录密码
 	~]$ jupyter notebook --ip=0.0.0.0	
-
+	
 	可以直接访问：
 		http://192.168.164.162:8888		#默认为8888端口
-
+	
 	~]$ pip freeze > reuqire.txt	#可导出当前环境的所有包
 	~]$ pip install -r require.txt	#将文件中的所有包导入
 
+## 1.2 pycharm
 
-## Python for Windows
+**Python for Windows：**
 
 	https://www.python.org/ftp/python/3.6.1/python-3.6.1-amd64.exe
 
+**pycharm：**
+
+```c
+https://www.jetbrains.com
+```
+
+
+
+
+
 # 2.Python基础学习
+
 ## 2.1 基础类型
 
 	1. 字节（bytes），字节组成的有序的不可变字节序列
@@ -90,7 +145,7 @@
 
 	线性结构的查询时间复杂度是 O(n)，即随着数据规模的增大而耗时增加
 	set、dict等结构，内部使用hash值作为key，时间复杂度可以做到 O(1)，查询时间和数据规模无关
-
+	
 	可hash
 		数值型：int，float，complex
 		布尔型：True，False
@@ -118,4 +173,3 @@
 	            list1[j+1]=temp
 	
 	print(list1)
-	
