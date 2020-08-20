@@ -1,4 +1,4 @@
-#1.安装kubernetes集群
+# 1.安装kubernetes集群
 
 实验环境：centos7.6
 	
@@ -35,7 +35,7 @@
 		~]# bash /etc/sysconfig/modules/ipvs.modules	#手动加载进内核
 		~]# lsmod | grep ip_vs		#查看内核模块是否加载
 
-初始化master：
+**初始化master：**
 
 	注：CPU至少2核
 	
@@ -180,9 +180,12 @@
 	ingress-nginx:
 		kubectl apply -f mandatory.yaml
 		kubectl apply -f service-nodeport.yaml
+		
+	删除节点：
+	~]# kubectl delete node nodename 
 
-nodes：
-	
+**nodes：**
+
 	~]# wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -P /etc/yum.repos.d/
 	
 	~]# cat /etc/yum.repos.d/kubernetes.repo 
@@ -223,8 +226,6 @@ nodes：
 			dxnj79.rnj561a137ri76ym   <invalid>   2018-11-02T14:06:43+08:00   authentication,signing   <none>        system:bootstrappers:kubeadm:default-node-token
 			o4avtg.65ji6b778nyacw68   <forever>   <never>                     authentication,signing   <none>        system:bootstrappers:kubeadm:default-node-token
 
- 
-
 	2.获取ca证书sha256编码hash值
 		~]# openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
 			2cc3029123db737f234186636330e87b5510c173c669f513a9c0e0da395515b0
@@ -234,13 +235,16 @@ nodes：
 	
 		~]# kubeadm join 192.168.65.52:6443 --token o4avtg.65ji6b778nyacw68 --discovery-token-ca-cert-hash sha256:2cc3029123db737f234186636330e87b5510c173c669f513a9c0e0da395515b0
 
-##1.2 镜像加速
-	~]# cat /etc/docker/daemon.json 
-	{
-	        "registry-mirrors":["https://registry.docker-cn.com"]
-	}
+## 1.2 镜像加速
 
-#2.基本操作
+```c
+~]# cat /etc/docker/daemon.json 
+{
+        "registry-mirrors":["https://registry.docker-cn.com"]
+}
+```
+
+# 2.基本操作
 
 	1.查询集群环境相关信息：
 		~]# kubectl version [--short=true]
@@ -279,9 +283,7 @@ nodes：
 	
 	10.资源查询对象清单
 		~]# kubectl explain RESOURCE [options] 	#查看各种资源信息
-
-
-​	
+		
 	11.标签操作
 		~]# kubectl label pod pod-test ver=stable			#动态打标
 		~]# kubectl label -f pod-resources.yaml ver=stable	
@@ -290,13 +292,14 @@ nodes：
 	12.通过资源清单创建资源对象
 		~]# kubectl apply -f SOURCE_NAME.yaml	#可多次使用
 		~]# kubectl create -f SOURCE_NAME.yaml
-	
+		
+
 	13.临时动态编辑资源对象，而不用修改资源清单
 		~]# kubectl edit (RESOURCE/NAME | -f FILENAME) [options]
 	
 	注：service，pod 地址都只能K8S集群内访问
 
-##2.1 DNS服务	
+## 2.1 DNS服务	
 
 	~]# yum install -y bind-utils
 	~]# kubectl get svc -n kube-system
@@ -306,7 +309,7 @@ nodes：
 	~]# dig A nginx @10.96.0.10
 	~]# dig A nginx.default.svc.cluster.local @10.96.0.10
 
-##2.2 动态扩缩容
+## 2.2 动态扩缩容
 
 	~]# kubectl get pods -l app=myapp -w	#动态更新信息
 	
@@ -320,7 +323,7 @@ nodes：
 	~]# curl http://localhost:8080/api/v1/namespaces/default/services/myapp-svc
 	~]# curl http://localhost:8080/apis/apps/v1/namespaces/default/deployments/myapp-deploy
 
-## Ingress-nginx安装配置
+# 3.Ingress-nginx安装配置
 
 
 	service的nodeport只能实现基于端口的tcp四层代理，ingress可实现基于http/https的七层代理
@@ -343,7 +346,7 @@ nodes：
 	k8s:1.16.2
 	https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
 
-## Dashboard搭建
+# 4.Dashboard搭建
 
 	github地址：https://github.com/kubernetes/dashboard
 	
@@ -375,8 +378,7 @@ nodes：
 	
 	5.得到token输入即可登录
 
-
-##部署canal提供网络策略功能
+# 5.部署canal提供网络策略功能
 
 	flannel插件提供了pod网络，但是没提供网络策略功能，需要借助calico来实现网络策略，而且官网也说了可以flannel+calico一起使用。
 	官网地址：https://docs.projectcalico.org/v3.5/getting-started/kubernetes/installation/flannel
@@ -385,9 +387,8 @@ nodes：
 	修改镜像拉取地址后直接部署即可
 	~]# kubectl apply -f canal.yamld
 
-
-​	
-	~]# kube-apiversions
+```c	
+~]# kube-apiversions
 	admissionregistration.k8s.io/v1beta1
 	apiextensions.k8s.io/v1beta1
 	apiregistration.k8s.io/v1
@@ -418,8 +419,7 @@ nodes：
 	storage.k8s.io/v1
 	storage.k8s.io/v1beta1
 	v1
-
-
+```
 
 	for file in aggregated-metrics-reader.yaml auth-delegator.yaml auth-reader.yaml metrics-apiservice.yaml metrics-server-deployment.yaml metrics-server-service.yaml resource-reader.yaml;do wget https://raw.githubusercontent.com/kubernetes-incubator/metrics-server/master/deploy/1.8%2B/$file;done
 	
@@ -433,7 +433,7 @@ nodes：
 	        - --kubelet-preferred-address-types=InternalIP,Hostname,InternalDNS,ExternalDNS,ExternalIP
 	        imagePullPolicy: IfNotPresent
 
-kubernetes资源：
+**kubernetes资源：**
 
 	一切皆为资源
 	
@@ -444,33 +444,38 @@ kubernetes资源：
 	
 	名称空间级资源：
 
-
-pod接入流量方法：
+**pod接入流量方法：**
 	
-	service：nodeport
-	hostpod
-	hostnetwork
 
-Pod安全级别：
+	POD通信：
+		service：clusterIP
+		
+	外部访问：
+		service：nodeport
+		hostpod
+		hostnetwork
+		ingress service nodeport
+
+**Pod安全级别：**
 
 	pod.spec.secrutiyContext
 	pod.spec.containers.[].secruityContext
 		capabilities
 
-容器资源需求及资源限制
+**容器资源需求及资源限制(准入控制)：**
 
 	CPU属于可压缩型资源，即资源额度可按需收缩，而内存则时不可压缩资源，对其执行收缩操作可能会导致某种程度的问题
 	CPU资源的计量方式：一个核心相当于1000个微核心，即1=1000m,0.5=500m
 	内存资源的计量方式：默认单位为字节，也可以使用E、P、T、G、M和K后缀单位，或Ei、Pi、Ti、Gi、Mi和Ki后缀形式的单位后缀
 
-Pod服务质量类别：
-	
+**Pod服务质量类别：**
+
 	根据Pod对象的requests和limits属性，Kubernetes把Pod对象归类到BestEffort、Burstable、Guaranteed三个服务质量类别
 	Guaranteed：每个容器都为CPU资源设置了具有相同值的requests和limits属性，以及每个容器都为内存资源设置了具有相同值的requests和limits属性的pod资源会自动归属此类别，这类pod资源具有最高优先级
 	Burstable：至少有一个容器设置了CPU或内存资源的requests属性，但不满足Guaranteed类别要求的pod资源自动归属此类别，它们具有中等优先级
 	BestEffort：未为任何一个容器设置requests或limits属性的pod资源自动归属此类别，它们的优先级为最低级别
 
-开启IPVS规则（每个节点都需要）：
+**开启IPVS规则（每个节点都需要）：**
 
 	~]# cat /etc/sysconfig/modules/ipvs.modules 
 	#!/bin/bash
@@ -504,7 +509,7 @@ Pod服务质量类别：
 		nf_conntrack          139224  10 ip_vs,nf_nat,nf_nat_ipv4,nf_nat_ipv6,xt_conntrack,nf_nat_masquerade_ipv4,nf_conntrack_netlink,nf_conntrack_sip,nf_conntrack_ipv4,nf_conntrack_ipv6
 		libcrc32c              12644  4 xfs,ip_vs,nf_nat,nf_conntrack
 
-配置容器化应用的方式
+**配置容器化应用的方式**
 
 	1.自定义命令行参数：arg
 	
@@ -525,12 +530,51 @@ Pod服务质量类别：
 			~]# kubectl get secret SECRET_NAME -o yaml		#拿到加密后的数据
 			~]# echo DATA | base64 -d	即可解码
 
-kubernetes权限控制
+**kubernetes权限控制**
 
 ```c
-1.认证：client certificates,password,takens
-2.授权：
-3.准入控制：
+1.认证：client certificates,password,takens,一票通过
+2.授权：RBAC，基于角色的访问控制。一票通过
+    RBAC：
+    	subject(用户)：
+    		user account
+    		service account
+    	object(资源)：
+    		resource
+    		subresources
+    		URL
+    	role(角色)，rolebinding(角色绑定)：
+    		role：
+    			role->object
+    		rolebinding：
+    			role->subject
+    
+    	rolebinding:命名空间级别，绑定role
+		clusterbinding:集群级别，绑定clusterrole
+    		
+    
+3.准入控制：一票拒绝
+      LimitRange资源
+          default：可在每个名称空间，定义默认limitrange资源，每个新pod创建时，会自动关联
+          requests：软限制
+          limits：硬限制
+            
+      ResourceQuota资源：可在名称空间级别上限制总资源使用量 CPU,memory,pv大小，PVC数量，pod数量等...
+            
+               
+      PodSecurityPolicy资源：pod安全策略
+            
+            
+```
 
+**kubernetes Scheduler**
+
+```c
+kube-scheduler --> kube-apiserver
+    
+pod:
+	预选
+    优选
+    选定
 ```
 

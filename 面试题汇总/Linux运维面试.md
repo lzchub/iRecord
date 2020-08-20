@@ -1924,7 +1924,10 @@ service loadbalance：没用过
 ingress：通过ingress暴露，若要外部访问还是需要给ingress做一个service nodeport
 ```
 
+
+
 ### 6.pod结束流程？
+
 ```c
 
 1.用户发出删除 pod 命令
