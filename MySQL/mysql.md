@@ -145,20 +145,41 @@ mysql> delete from t order by id limit 2;
 ```c
 mysql> select * from student;
 mysql> select id,name from student;
-mysql> select id,name from student limit 2;
-mysql> select id,name from student limit 0,2;
+mysql> select id,name from student limit 2;	#限制看哪几条数据	分页查询
+mysql> select id,name from student limit 0,2; # 跳过0条查2条
+mysql> select id,name from student limit 2 offset 5;	#跳过5条，查看两条
+mysql> select id,name from student where id between 0 and 2; 
 mysql> select * from student where id=1;
 mysql> select * from student where name='chuan';
 mysql> select * from student where id=1 and name='chuan';
 mysql> select * from student where id=1 or name='chuan';
 mysql> select * from student where id>5 and id<10;
-mysql> select * from test order by id asc/desc;
-mysql> select * from student where id>5 order by id desc;
-mysql> select ClassID from students where age  > (select avg(age) from students);
+mysql> select * from test order by id asc/desc;		# asc升序(默认)，desc降序 
+mysql> select * from student where id>5 order by id desc;	#
+mysql> select ClassID from students where age  > (select avg(age) from students); # 子查询，查询结果作为新查询条件
 mysql> select ClassID，avg(age) FROM students GROUP BY ClassID;
 mysql> select ClassID,avg(age) from students GROUP BY ClassID HANVING avg(age) > 25;
 mysql> explain select * from student where age='20'\G; 		#查询是否走索引
+mysql > select name from student where name like 'zhang%';
+mysql > select name from student where name like 'zhang_';	# _ 只表示一个字符
+mysql> select name from student where name is null;
+mysql> select name from student where name is not null;
+mysql> select distinct date from student;	# distinct 去重
+mysql> select sex,count(sex) from student group by sex;	#分组与聚合函数，常用max/min/avg/sum/count,会忽略null
+mysql> select id as 学号,avg(mark) as 平均分 from student group by id having 平均分>=90; # 分组后的筛选通过having子句  
+多表查询：
+	mysql> select stuname,couname,scmark from student t1,course t2,score t3 where t1.id=t2.id and t2.couid=t3.couid and mark is not null;	
+
+内连接：效果同上
+    mysql> select stuname,couname,scmark from student t1 inner join score t3 on t1.id = t3.id inner join course t2 on t2.couid=t3.couid where scmark is not null;	
     
+外连接：
+    左外连接：join左边的不需要按照条件，全表进行查询 left outer join
+    右外连接：join右边的不需要按照条件，全表进行查询 right outer join
+    全外连接：mysql不支持 full outer join
+    mysql> select name,ifnull(total,0) from student t1 left outer join (select id,count(id) as total from socre group by id) t2 on t1.id=t2.id;
+    
+        
     
 查询执行路径：
 	请求 --> 查询缓存
@@ -190,11 +211,49 @@ where：
     LIMIT：对输出的结果进行数量限制
 ```
 
+### 5.完整示例：
+
+```c
+创建库 school：
+	mysql> create database school default charset utf8;
+
+创建学生表：
+    CREATE TABLE tb_student (
+        stuid INT NOT NULL COMMENT '学生学号',
+        stuname VARCHAR ( 20 ) NOT NULL COMMENT '学生姓名',
+        stusex INT DEFAULT 1 COMMENT '学生性别，1为男生，0为女生',
+        stubirth TIMESTAMP COMMENT '学生生日',
+        stuaddr VARCHAR ( 100 ) COMMENT '学生家庭地址',
+        PRIMARY KEY ( stuid ),
+    	FOREIGN KEY ( colid ) REFERENCES tb_college ( colid )  # 指定外键
+    );
+ 
+    INSERT INTO tb_student ( stuid, stuname, stusex ) VALUES ( 1002, '李四', 1);
+    INSERT INTO tb_student VALUES ( 1003, '王五', 0, '19960711121100', "青城山" 
+
+    ALTER TABLE tb_student ADD CONSTRAINT fk_student_colid FOREIGN KEY ( colid ) REFERENCES tb_college ( colid );		#如果需要手动修改表指定                              
+                                   
+创建专业表：
+	CREATE TABLE tb_college (
+        colid INT auto_increment COMMENT '学院编号',
+        colname VARCHAR ( 20 ) NOT NULL COMMENT '学院名称',
+        website VARCHAR ( 100 ) COMMENT '学院网址',
+        PRIMARY KEY ( colid ) 
+    );
+```
+
+
+
+
+
+
+
 ## 3.2 DDL-数据定义语言
 
 ### 1. create
 
 ```c
+mysql> create database DB_NAME default charset utf8;
 mysql> create table students(id int,name char(20));
 ```
 
@@ -202,13 +261,26 @@ mysql> create table students(id int,name char(20));
 
 ```c
 mysql> alter user root@localhost identified by '123456';
+mysql> ALTER TABLE DB_NAME.TB_NAME ADD COLUMN stuaddr VARCHAR ( 50 );
 ```
 
 ### 3. drop
 
 ```c
 mysql> drop database mydb;
+mysql> drop database if exists DB_NAME;
+mysql> ALTER TABLE DB_NAME.TB_NAME drop COLUMN stuaddr;
 ```
+
+### 4.truncate
+
+```c
+mysql> truncate table TB_NAME;		#会删除全表
+```
+
+
+
+
 
 ## 3.3 DCL-数据控制语言
 
@@ -243,6 +315,134 @@ mysql> grant all on *.* to 'chuan'@'localhost' identified by '123456';#授予任
 ### 3. rollback
 
 ### 4. commit
+
+## 3.4 视图
+
+```c
+视图就是查询的快照，把复杂的sql语句的结果创建为一个视图，我们每次可以直接查看视图即可(简化查询操作)，视图也可以将用户访问权限限制在列上
+
+创建视图：
+create view VW_NAME as
+    select id,name from tb_emp t1 inner join tb_dept t2 on t1.id=t2.id;
+
+使用视图：同sql语句效果类似
+select * from vm_emp_dept;
+
+```
+
+## 3.5 存储过程
+
+```c
+含义：一组预先编译好的SQL语句的集合，理解成批处理语句
+优点：
+    1.提高了代码的重用性
+    2.简化操作
+    3.减少了编译次数并且减少了和数据库服务器的连接次数，提高了效率 
+    
+创建存储过程：
+create procedure SP_NAME(参数列表)
+begin
+    存储过程体(一组合法的SQL语句)
+end
+    
+调用存储过程：
+call SP_NAME(实参列表);
+
+注意：    
+1.参数列表：
+    参数模式 参数名 参数类型
+    参数模式：
+    	IN：该参数可以作为输入，也就是该参数需要调用方传入值
+    	OUT：该参数可以作为输出，也就是该参数可以作为返回值
+    	INOUT：该参数既可以作为输入又可以作为输出，也就是该参数既需要传入值，又可以返回值
+    
+    eg：IN stuname varchar(20)
+
+2.如果存储过程体仅仅只有一句话，begin end可以省略，存储过程体重的每条SQL语句的结尾要求必须加分号。
+  存储过程的结尾可以使用 DELIMITER 重新设置
+  语法：
+  	DELIMITER 结束标记
+    
+```
+
+**实例：**
+
+### 1.空参列表
+
+```c
+# 创建空参存储过程
+DELIMITER $$
+CREATE PROCEDURE isp1()
+BEGIN
+	INSERT INTO tb_student(stuname,stusex) VALUES('阿萨','0'),('爱仕达','0'),('更丰富','0'),('感觉','0');
+END$$
+
+# 调用存储过程
+CALL isp1();
+```
+
+### 2.传入IN参数
+
+```c
+# 创建存储过程
+DELIMITER $$
+CREATE PROCEDURE isp2(IN stuname VARCHAR(20),IN stusex INT)
+BEGIN
+	# 1.定义变量
+	DECLARE result VARCHAR(20) DEFAULT "";
+	
+	# 2.变量赋值
+	SELECT COUNT(*) INTO result
+	FROM tb_student
+	WHERE tb_student.stuname = stuname
+	AND tb_student.stusex = stusex;
+	
+	# 3.使用变量
+	SELECT result;
+END $$
+
+# 调用    
+CALL isp2("张三",1);
+```
+
+### 3.返回OUT参数
+
+```c
+# 创建存储过程
+DELIMITER $$
+CREATE PROCEDURE isp3(IN stuname VARCHAR(20),OUT id INT)
+BEGIN
+
+	SELECT stuid INTO id
+	FROM tb_student
+	WHERE tb_student.stuname = stuname;
+	
+END $$
+    
+# 调用 
+CALL isp3("张三",@id);
+SELECT @id;
+```
+
+### 4.INOUT参数
+
+```c
+# 创建存储过程
+DELIMITER $$
+CREATE PROCEDURE isp4(INOUT a INT,INOUT b INT)
+BEGIN
+	SET a=a*2;
+	SET b=b*2;
+END$$
+
+# 调用 
+SET @m=10;
+SET @n=20;
+CALL isp4(@m,@n);
+SELECT @m,@n;
+```
+
+
 
 # 4. 数据库操作
 
@@ -993,35 +1193,35 @@ mysql> select @@session.tx_isolation;
 
 
 ​	    
-		2.单个数据库备份与恢复-B,--databases
-			#注意若是myisam引擎需要锁库温备，innodb加上--single-transation可以热备
-			~]# mysqldump -uroot -p -hlocalhost -B test > /tmp/test_bak.sql
-			~]# mysql -uroot -p -hlocalhost < /tmp/tset_bak.sql
-			
-			~]# mysqldump -uroot -p123456 -hlocalhost -B test | gzip > /tmp/tset_bak.sql.gz
-			~]# mysqldump -uroot -p123456 -B test study | gzip > /tmp/mul_bak.sql.gz
-			
+​		2.单个数据库备份与恢复-B,--databases
+​			#注意若是myisam引擎需要锁库温备，innodb加上--single-transation可以热备
+​			~]# mysqldump -uroot -p -hlocalhost -B test > /tmp/test_bak.sql
+​			~]# mysql -uroot -p -hlocalhost < /tmp/tset_bak.sql
+​			
+​			~]# mysqldump -uroot -p123456 -hlocalhost -B test | gzip > /tmp/tset_bak.sql.gz
+​			~]# mysqldump -uroot -p123456 -B test study | gzip > /tmp/mul_bak.sql.gz
+​			
 			注:--compact 减少垃圾数据输出，适用于调试,恢复也是采用 全量+二进制日志
 
 
 ​		
-		3.单个数据库备份，不添加-B参数
-			~]# mysqldump -uroot -p123456 test > /tmp/test_bak.sql
-			~]# mysql -uroot -p123456 test < /tmp/test_bak.sql
-			#过滤出备份内容如下，与添加-B区别为此备份不会有建库语句
-			~]# egrep -v "#|\*|--|^$" /tmp/test_bak.sql   
-				DROP TABLE IF EXISTS `student`;
-				CREATE TABLE `student` (
-				  `id` int(11) DEFAULT NULL,
-				  `name` char(10) DEFAULT NULL
-				) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-				LOCK TABLES `student` WRITE;
-				INSERT INTO `student` VALUES (1,'zhang'),(2,'wang'),(3,'li'),(4,'liu');
-				UNLOCK TABLES;
-		
-		4.分库备份
-			~]# mysql -uroot -p123456 -e "show databases;" 2> /dev/null | grep -Evi "database|infor|perfor" | sed -r 's#^([a-z].*$)#mysqldump -uroot -p123456 -B \1 | gzip > /tmp/bak/\1_bak.sql.gz#' | bash
-		
+​		3.单个数据库备份，不添加-B参数
+​			~]# mysqldump -uroot -p123456 test > /tmp/test_bak.sql
+​			~]# mysql -uroot -p123456 test < /tmp/test_bak.sql
+​			#过滤出备份内容如下，与添加-B区别为此备份不会有建库语句
+​			~]# egrep -v "#|\*|--|^$" /tmp/test_bak.sql   
+​				DROP TABLE IF EXISTS `student`;
+​				CREATE TABLE `student` (
+​				  `id` int(11) DEFAULT NULL,
+​				  `name` char(10) DEFAULT NULL
+​				) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+​				LOCK TABLES `student` WRITE;
+​				INSERT INTO `student` VALUES (1,'zhang'),(2,'wang'),(3,'li'),(4,'liu');
+​				UNLOCK TABLES;
+​		
+​		4.分库备份
+​			~]# mysql -uroot -p123456 -e "show databases;" 2> /dev/null | grep -Evi "database|infor|perfor" | sed -r 's#^([a-z].*$)#mysqldump -uroot -p123456 -B \1 | gzip > /tmp/bak/\1_bak.sql.gz#' | bash
+​		
 		5.分表备份
 			test 库
 			study student 表

@@ -7,7 +7,11 @@
 	node2:	192.168.5.32
 	node3:	192.168.5.33
 
+<<<<<<< HEAD
 **前提：**
+=======
+### 前提：
+>>>>>>> cd66ab836d5a25ecda89e87492cc887acf3819ff
 
 	1.借助NTP服务器设置各节点时间精确同步
 		centos7有自动同步时间服务 chronyd，可自己设置时间服务器，/etc/chrony.conf 重启服务等待同步
@@ -40,7 +44,11 @@
 		~]# bash /etc/sysconfig/modules/ipvs.modules	#手动加载进内核
 		~]# lsmod | grep ip_vs		#查看内核模块是否加载
 
+<<<<<<< HEAD
 **初始化master：**
+=======
+### 初始化master：
+>>>>>>> cd66ab836d5a25ecda89e87492cc887acf3819ff
 
 	注：CPU至少2核
 	
@@ -129,7 +137,10 @@
 	
 	安装flannel网络插件: flannel是coreos的一个子项目，托管与GitHub
 	
+<<<<<<< HEAD
 	
+=======
+>>>>>>> cd66ab836d5a25ecda89e87492cc887acf3819ff
 	https://github.com/coreos/flannel
 	
 	~]# kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml		#访问不了quay.io需要修改镜像仓库，可使用我的阿里仓库  registry.cn-hangzhou.aliyuncs.com/quay-image/
@@ -141,7 +152,11 @@
 		kubectl apply -f mandatory.yaml
 		kubectl apply -f service-nodeport.yaml
 
+<<<<<<< HEAD
 **初始化node：**
+=======
+### 初始化node：
+>>>>>>> cd66ab836d5a25ecda89e87492cc887acf3819ff
 
 	~]# wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -P /etc/yum.repos.d/
 	
@@ -194,7 +209,11 @@
 	
 		~]# kubeadm join 192.168.3.30:6443 --token o4avtg.65ji6b778nyacw68 --discovery-token-ca-cert-hash sha256:2cc3029123db737f234186636330e87b5510c173c669f513a9c0e0da395515b0
 
+<<<<<<< HEAD
 **查看集群DNS(CoreDNS)服务**	
+=======
+### 查看集群DNS(CoreDNS)服务	
+>>>>>>> cd66ab836d5a25ecda89e87492cc887acf3819ff
 
 	~]# yum install -y bind-utils
 	~]# kubectl get svc -n kube-system
@@ -242,11 +261,18 @@
 	
 		spec:
 		  type: NodePort
+<<<<<<< HEAD
 	  	  ports:
 	  	    port: 443
     		targetPort: 8443
       		nodePort: 30888
     
+=======
+	      ports:
+	  	    port: 443
+	  	    targetPort: 8443
+	        nodePort: 30888
+>>>>>>> cd66ab836d5a25ecda89e87492cc887acf3819ff
     3.访问
     
     	注意使用的是https，访问时需要为 https://IP:PORT，高版本google可能无法访问，可使用firefox或其他浏览器
@@ -261,7 +287,12 @@
     
     5.得到token输入即可登录
 
+<<<<<<< HEAD
 # 4.部署canal提供网络策略功能
+=======
+
+## 部署canal提供网络策略功能
+>>>>>>> cd66ab836d5a25ecda89e87492cc887acf3819ff
 
 	flannel插件提供了pod网络，但是没提供网络策略功能，需要借助calico来实现网络策略，而且官网也说了可以flannel+calico一起使用。
 	
