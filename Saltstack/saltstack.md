@@ -1,4 +1,4 @@
-#1.安装配置
+# 1.安装配置
 官网：http://saltsatck.com
 官方仓库：http://repo.saltstack.com
 
@@ -9,29 +9,40 @@
 ~]# yum install salt-master salt-minion
 
 配置minion：只需安装salt-minion即可
-	~]# vim /etc/minion
-		master:MASTER_IP
-		id:				#默认为主机名，minion启动后，id不可轻易修改
-配置master：
+~]# vim /etc/minion
+	master:MASTER_IP
+	id:				#默认为主机名，minion启动后，id不可轻易修改
 
+配置master：
 ~]# systemctl start salt-master
 ~]# systemctl start salt-minion
 
-~]# salt-key -A		#master添加所有minion
+~]# salt-key -L
+~]# salt-key -A	-y	#master添加所有minion,salt使用ssl签证方式进行安全验证
 
 ```
-#2.saltstack基础使用
+# 2.saltstack基础使用
+
 ```
 1. 获取所有远程命令模块
-	~]# salt "m*" sys.list_modules
+	~]# salt "m*" sys.list_modules 
 2. 获取模块所有方法列表
-	~]# salt master* sys.list_functions test
-3. 获取方法信息
-	~]# salt master* sys.doc test.ping
+	~]# salt master* sys.list_functions file
+3. 获取模块信息
+	`]# salt master* sys.doc file
+4. 获取模块对应方法信息
+	~]# salt master* sys.doc file.chown
+	
+节点分组：nodegroups
+    ~]# vim /etc/salt/master		#修改完需要重启
+        nodegroups:
+        web: 'L@node1.chuan.com,node2.chuan.com'
+    ~]# salt -N web test.ping  
 
 ```
 
-#3.salt命令参数解析
+# 3.salt命令参数解析
+
 ```
 Usage: salt [options] '<target>' <function> [arguments]
 
@@ -42,72 +53,85 @@ options:
 	--out：定义输出格式，可取（json，yaml，raw，quiet，nested）
 
 target:
-	全局匹配：
+	1.全局匹配：
 		*:代表任意字符串，也可以是空字符串
 		?:代表一个字符，但不能为空
 		[]:字符集合，[a-z]一个字符,[0-9]一个数字
 
-	正则匹配：-E --pcre
+	2.正则匹配：-E --pcre
 		~]# salt -E ".*com$" test.ping
 
-	列表匹配：-L --list 
+	3.列表匹配：-L --list 
 		~]# salt -L "node1.chuan.com node2.chuan.com" cmd.run_all "echo hello"
 	
-	grains：静态数据，当minion启动时收集的Minion本地的相关信息。如操作系统版本，内核版本，CPU，内存，硬盘，设备型号，序列号等
+	4.grains：-G
+		~]# salt -G 'os:Ubuntu' test.version	#目标可以基于使用Grains系统的minion系统信息进行过滤
+		
+		自定义grains方法：
+			1.修改/etc/salt/minion配置文件grains字段 
+				grains:									
+                  roles:
+                    - webserver
+                    - memcache
+            2.直接将配置写入/etc/salt/grains文件         
+                roles:
+                  - webserver
+                  - memcache
+			3.利用grains模块定义
+				~]# salt 'm*' grains.setval cpu_num 8	#会保存为grains文件
+				~]# salt 'm*' grains.setval cpu_info '["Intel","Xen",8]'	#以列表的形式定义
+				~]# salt 'm*' grains.item cpu_info	#查询信息
+				~]# salt 'm*' grains.delval cpu_info	#删除自定义grains，只是删除value，key还是存在，赋值为none
+		
+			定义好后刷新或者重启minion：
+				~]# salt-minion saltutil.refresh_modules	#刷新minion配置
+		
+		静态数据，当minion启动时收集的Minion本地的相关信息。如操作系统版本，内核版本，CPU，内存，硬盘，设备型号，序列号等
 		~]# salt "m*" grains.items	#查看所有grains信息
 		~]# salt "m*" grains.item os	#查看某一项
 		~]# salt -G "os:CentOS" test.ping	#对os为centos的机器进行操作，grains里面的信息都可以使用 --grain 
 		~]# salt -G "os:C*" test.ping   #也可匹配
 		
-		自定义grains：可直接修改/etc/salt/grains文件定义，定义完成后刷新或重启即可
-			~]# salt 'm*' grains.setval cpu_num 8	#会保存为grains文件
-			~]# salt 'm*' grains.setval cpu_info '["Intel","Xen",8]'	#以列表的形式定义
-			~]# salt 'm*' grains.item cpu_info	#查询信息
-			~]# salt 'm*' grains.delval cpu_info	#删除自定义grains，只是删除value，key还是存在，赋值为none
-	
-
 		top.sls使用：
 			'os:CentOS':
 			  - match: grain
 			  - web.apache
 			
-	pillar：同grains，只是pillar可以定义为更加动态的形式	-I --pillar	
+	5.pillar：同grains，只是pillar可以定义为更加动态的形式，修改master pillar_opts参数启用，pillar_roots设置目录
+		~]# salt -I 'key:value' test.ping
+		
 		设置pillar：使用sls文件定义，可以多层级定义
 			如：
 				a:
 				  b:
  				    c: value
 
-			~]# mkdir /srv/pillar -pv
+			~]# mkdir /srv/pillar -pv && cd /srv/pillar
 
 			~]# cat master.sls 
-			pkey: master_pillar
+				role: master
+				
+			~]# cat node.sls
+				role: slave
 
-			]# cat top.sls 
-			base:
-			  'master.chuan.com':
-			    - master
-			    - web.apache
-			  'node1.chuan.com':
-			    - node1
-			    - web.apache
-			  'node2.chuan.com':
-			    - node2
-			    - web.apache
+			~]# cat top.sls 
+                base:
+                  'master.chuan.com':
+                    - master
+                  'node1.chuan.com':
+                    - node
+                  'node2.chuan.com':
+                    - node
 			
 			~]# salt '*' saltutil.refresh_pillar
 			~]# salt '*' pillar.items
 
-	复合匹配：支持and，or，not，@符号规定每部分匹配的类型，前面的类型均可使用
+	6.复合匹配：支持and，or，not，@符号规定每部分匹配的类型，前面的类型均可使用
 		~]# salt -C 'node* and G@os:CentOS not E@.*' test.ping
 		~]# salt -C 'm* or n* not E@.*1.*' test.ping  
-
-	节点组匹配：nodegroups
-		~]# vim /etc/salt/master		#修改完需要重启
-			nodegroups:
-  			  web: 'L@node1.chuan.com,node2.chuan.com'
-		~]# salt -N web test.ping  
-
+		
+	7.CIDR匹配
+		~]# salt -S '192.168.100.0/24' test.ping
 
 		
 function：列出常用 module.function，所有模块文件在/lib/python2.7/site-packages/salt/modules/目录下
@@ -139,13 +163,29 @@ function：列出常用 module.function，所有模块文件在/lib/python2.7/si
 		file.stats：文件信息查询
 			~]# salt '*' file.stats '/etc/fstab' 
 		file.chown：修改文件权限
-	
+		file.managed：复制文件到minion
+		file.directory：建立目录
+		file.symlink：建立软连接
+		file.recurse：下发整个目录
+
 	5.用户管理模块：user
 		user.add：添加用户
 		user.delete：删除用户
-		user.info：用户信息
+		user.info：用户信息		
+
+	6.定时计划模块：cron
+		cron.present：制定定时任务
+
+	7.内核配置模块：sysctl
+		sysctl.present：调整内核参数
+
+	8.pip模块：
+		pip.installed：安装python模块
+
+注意：具体参数可到官网查看
 ```
-#4.自定义模块
+# 4.自定义模块
+
 ```
 modules:
 	~]# mkdir /srv/salt/_modules -pv
@@ -176,8 +216,9 @@ grains_modules:
 
 ```
 
-#5.状态配置文件书写及注意
+# 5.状态配置文件书写及注意
 **基础事项：**
+
 ```
 注意：
 	1.状态配置文件必须以 .sls为后缀
@@ -215,36 +256,8 @@ grains_modules:
 后面会介绍使用top.sls执行
 ```
 
+# 6.jinja2模板
 
-**常用模块：**
-```
-file：
-	file.managed：复制文件到minion
-	file.directory：建立目录
-	file.symlink：建立软连接
-	file.recurse：下发整个目录
-pkg：
-	pkg.installed：软件安装
-
-service:
-	service.running：运行服务
-
-cron：
-	cron.present：制定定时任务
-
-user：
-	user.present：建立用户
-
-sysctl：
-	sysctl.present：调整内核参数
-
-pip：
-	pip.installed：安装python模块
-
-注意：具体参数可到官网查看
-```
-
-#6.jinja2模板
 ```
 变量使用 	{{}}
 	{{var}}
@@ -254,11 +267,11 @@ pip：
 
 参考文档：http://docs.jinkan.org/docs/jinja2/
 
+# 7.实例解析
 
-#saltstack使用yum搭建LAMP
-~]# tree .
-
+## 7.1 saltstack使用yum搭建LAMP
 ```
+~]# tree .
 |-- lamp
 |   |-- files
 |   |   |-- httpd.conf
@@ -292,92 +305,92 @@ pip：
 ~]# salt '*' state.highstate	#执行top.sls
 
 ~]# cat httpd/init.sls 
-include:
-  - .httpd_install
-  - .httpd_conf
-  - .httpd_service
+    include:
+      - .httpd_install
+      - .httpd_conf
+      - .httpd_service
 
 ~]# cat top.sls 
-base:
-  "node1.chuan.com":
-    - match: list
-    - httpd
-    - php
-    - mariadb 
-  "node2.chuan.com":
-    - lamp.lamp 
+    base:
+      "node1.chuan.com":
+        - match: list
+        - httpd
+        - php
+        - mariadb 
+      "node2.chuan.com":
+        - lamp.lamp 
 
 ~]# cat lamp.sls
-lamp-install:
-  pkg.installed:
-    - names:
-      - httpd
-      - php
-      - mariadb-server
-      - php-mysql
+    lamp-install:
+      pkg.installed:
+        - names:
+          - httpd
+          - php
+          - mariadb-server
+          - php-mysql
 
-httpd-conf:
-  file.managed:
-    - name: /etc/httpd/conf/httpd.conf
-    - source: salt://lamp/files/httpd.conf
-    - user: root
-    - group: root
-    - mode: 644
-    - template: jinja
-    - defaults:
-      PORT: 880
+    httpd-conf:
+      file.managed:
+        - name: /etc/httpd/conf/httpd.conf
+        - source: salt://lamp/files/httpd.conf
+        - user: root
+        - group: root
+        - mode: 644
+        - template: jinja
+        - defaults:
+          PORT: 880
 
-php-conf:
-  file.managed:
-    - name: /etc/php.ini
-    - source: salt://lamp/files/php.ini
-    - user: root
-    - group: root
-    - mode: 644
+    php-conf:
+      file.managed:
+        - name: /etc/php.ini
+        - source: salt://lamp/files/php.ini
+        - user: root
+        - group: root
+        - mode: 644
 
-mariadb-conf:
-  file.managed:
-    - name: /etc/my.cnf
-    - source: salt://lamp/files/my.cnf
-    - user: root
-    - group: root
-    - mode: 644
+    mariadb-conf:
+      file.managed:
+        - name: /etc/my.cnf
+        - source: salt://lamp/files/my.cnf
+        - user: root
+        - group: root
+        - mode: 644
 
-httpd-service:
-  service.running:
-    - name: httpd
-    - enable: True
-    - reload: True
-    - watch:
-      - file: httpd-conf
-      - file: php-conf
-    - require:
-      - pkg: lamp-install
+    httpd-service:
+      service.running:
+        - name: httpd
+        - enable: True
+        - reload: True
+        - watch:
+          - file: httpd-conf
+          - file: php-conf
+        - require:
+          - pkg: lamp-install
 
-mariadb-service:
-  service.running:
-    - name: mariadb
-    - enable: True
-    - reload: True
-    - watch:
-      - file: mariadb-conf
-    - require:
-      - pkg: lamp-install
+    mariadb-service:
+      service.running:
+        - name: mariadb
+        - enable: True
+        - reload: True
+        - watch:
+          - file: mariadb-conf
+        - require:
+          - pkg: lamp-install
 
-test-page-php:
-  file.managed:
-  - name: /var/www/html/index.php
-  - source: salt://lamp/files/index.php
-  - user: root
-  - group: root
-  - mode: 644
+    test-page-php:
+      file.managed:
+      - name: /var/www/html/index.php
+      - source: salt://lamp/files/index.php
+      - user: root
+      - group: root
+      - mode: 644
 
-test-page-mariadb:
-  file.managed:
-  - name: /var/www/html/mariadb.php
-  - source: salt://lamp/files/mariadb.php
-  - user: root
-  - group: root
-  - mode: 644
+    test-page-mariadb:
+      file.managed:
+      - name: /var/www/html/mariadb.php
+      - source: salt://lamp/files/mariadb.php
+      - user: root
+      - group: root
+      - mode: 644
 
 ```
