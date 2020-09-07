@@ -1,5 +1,6 @@
-#1.配置DNS服务（正向，反向解析）
-1.安装
+# 1.配置DNS服务（正向，反向解析）
+## 1.1.安装
+
 ```
 ~]# yum info bind
 	...
@@ -13,7 +14,8 @@
 	...
 ~]# yum install -y bind
 ```
-2.配置
+## 1.2.配置
+
 ```
 ~]# vim /etc/named.conf
 	...
@@ -76,8 +78,7 @@ UNCONN   0    0        192.168.179.110:53                    *:*
 UNCONN   0    0                    ::1:53                    :::*   
 ```
 
-
-#2.DNS主从
+# 2.DNS主从
 master：
 
 ```
@@ -112,8 +113,9 @@ zone "chuan.com" IN {
         masters { 192.168.179.110; };
 };
 ```
-#3.子域授权
+# 3.子域授权
 master：
+
 ```
 ...
 ftp     NS      ftp.ns3.chuan.com.

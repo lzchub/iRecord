@@ -272,7 +272,7 @@ mysql> drop database if exists DB_NAME;
 mysql> ALTER TABLE DB_NAME.TB_NAME drop COLUMN stuaddr;
 ```
 
-### 4.truncate
+### 4. truncate
 
 ```c
 mysql> truncate table TB_NAME;		#会删除全表
@@ -1064,7 +1064,7 @@ mysql> select @@session.tx_isolation;
 		--ignore-table=db_name.tbl_name：导出时忽略指定数据库中的指定表，同样可用于忽略视图，
 										 要忽略多个则多次写该选项
 		-d, --no-data：不导出表数据，可以用在仅导出表结构的情况。
-		--events, -E：导出事件调度器
+		--events, -E：导出事件调度器，类似于定时计划
 		--routines, -R：导出存储过程和函数。但不会导出它们的属性值，若要导出它们的属性，
 						可以导出mysql.proc表然后reload
 		--triggers：导出触发器，默认已开启
@@ -1177,7 +1177,7 @@ mysql> select @@session.tx_isolation;
 				
 				NUM=2：记录为change master to语句，此语句被注释
 				--master-data=2
-				--CHANGE MASTER TO MASTER_LOG_FILE='mysql-bin.000001',MASTER_LOG_POS=100;
+				CHANGE MASTER TO MASTER_LOG_FILE='mysql-bin.000001',MASTER_LOG_POS=100;
 		
 			-F,--flush-logs：锁定表完成后，即进行日志刷新操作，刷新到新文件
 		
@@ -1201,7 +1201,7 @@ mysql> select @@session.tx_isolation;
 ​			~]# mysqldump -uroot -p123456 -hlocalhost -B test | gzip > /tmp/tset_bak.sql.gz
 ​			~]# mysqldump -uroot -p123456 -B test study | gzip > /tmp/mul_bak.sql.gz
 ​			
-			注:--compact 减少垃圾数据输出，适用于调试,恢复也是采用 全量+二进制日志
+​			注:--compact 减少垃圾数据输出，适用于调试,恢复也是采用 全量+二进制日志
 
 
 ​		
@@ -1222,15 +1222,15 @@ mysql> select @@session.tx_isolation;
 ​		4.分库备份
 ​			~]# mysql -uroot -p123456 -e "show databases;" 2> /dev/null | grep -Evi "database|infor|perfor" | sed -r 's#^([a-z].*$)#mysqldump -uroot -p123456 -B \1 | gzip > /tmp/bak/\1_bak.sql.gz#' | bash
 ​		
-		5.分表备份
-			test 库
-			study student 表
-			~]# mysqldump -uroot -p123456 test study student > /tmp/test_bak.sql
-			
-			备份表结构，没有数据
-			test库，库后面可加一个或多个表
-			~]# mysqldump -uroot -p123456 -d test > /tmp/test_bak.sql
-			
+​		5.分表备份
+​			test 库
+​			study student 表
+​			~]# mysqldump -uroot -p123456 test study student > /tmp/test_bak.sql
+​			
+​			备份表结构，没有数据
+​			test库，库后面可加一个或多个表
+​			~]# mysqldump -uroot -p123456 -d test > /tmp/test_bak.sql
+​			
 			只备份数据
 			test库，库后面可加一个或多个表
 			~]# mysqldump -uroot -p123456 -t test > /tmp/test_bak.sql

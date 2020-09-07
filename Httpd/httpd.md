@@ -1,5 +1,6 @@
 官网：http://apache.org
-#1.编译安装httpd
+
+# 1.编译安装httpd
 
 	httpd依赖：apr、apr-util、pcre、pcre-devel、expat-devel、gcc
 	
@@ -50,8 +51,7 @@
 	# 输出头文件。
 	~]# ln -s /usr/include /usr/local/apache/include
 
-
-#2.设置长连接
+# 2.设置长连接
 
 	~]# cat keepalive.conf 
 	KeepAlive On				#开启on,关闭off
@@ -76,8 +76,8 @@
 	
 	test page
 
-#3.虚拟主机
-**基于ip：**
+# 3.虚拟主机
+## 3.1 基于ip
 
 	~]# ip addr add 192.168.179.111 dev ens33
 	~]# cat virtualhost.conf 
@@ -102,12 +102,13 @@
 	~]# mkdir /data/www/{ilinux,iunix}/ -pv
 	~]# echo www.ilinux.io > /data/www/ilinux/index.html
 	~]# echo www.iunix.io > /data/www/iunix/index.html 
-	
-	
+
+
+​	
 	注：源码安装要打开主配置中的Include
-	
-**基于端口：**
-	
+
+## 3.2 基于端口
+
 	~]# cat virtualhost.conf 
 	Listen 8080
 	
@@ -128,9 +129,9 @@
 	            require all granted
 	    </Directory>
 	</VirtualHost>
-	
-**基于FQDN：**
-	
+
+## 3.3 基于FQDN
+
 	~]# cat virtualhost.conf 
 	<VirtualHost 192.168.179.110:80>
 	    ServerName www.ilinux.io
@@ -156,12 +157,12 @@
 		linux:
 			/etc/hosts
 
-#4.访问控制
+# 4.访问控制
 **基于用户：**
 
 	~]# htpasswd -c /etc/httpd/.htpasswd tom
 	~]# htpasswd /etc/httpd/.htpasswd jerry    # -c创建文件，第二次不需要添加，否则会覆盖
-
+	
 	~]# cat access.conf 
 	<VirtualHost 192.168.179.110:80>
 	    ServerName www.ilinux.io
@@ -192,10 +193,10 @@
 	            Require group allow
 	        </Directory>
 	</VirtualHost>
-
+	
 	注：所有用户都要将密码写入.htpasswd
 
-#5.内置status状态页
+# 5.内置status状态页
 
 	~]# cat status.conf 
 	<VirtualHost 192.168.179.110:80>
@@ -210,7 +211,7 @@
 	
 	http://www.iunix.io/server-status
 
-#6.实现文件压缩
+# 6.实现文件压缩
 
 	# mod_deflate 依赖模块
 	
@@ -229,7 +230,7 @@
 	#level of compression(highest9-lowest 1)
 	DeflateCompressionLevel 9
 
-#7.实现https服务
+# 7.实现https服务
 
 **CA主机：**
 	
@@ -250,7 +251,7 @@
 	3.颁发证书
 	~]# openssl ca -in /tmp/httpd_csr.pem -out certs/httpd_crt.pem
 	~]# scp certs/httpd_crt.pem root@192.168.179.110:/etc/httpd/ssl/
-	
+
 
 **httpd主机：**
 	
@@ -282,18 +283,16 @@
 	    ServerName www.test.com:443
 	    SSLCertificateFile /etc/httpd/ssl/httpd_crt.pem
 	    SSLCertificateKeyFile /etc/httpd/ssl/httpd_key.pem
-	
 
-#8.压力测试
-	
+# 8.压力测试
+
 	工具：ab、webbench、http_load、jmeter、loadrunner、tcpcopy
 	
 	~]# yum install -y httpd-tools
 	~]# ab -n 100000 -c 10 URL[http://192.168.179.110:80/index.html]
 
-
-#9.处理动态请求（httpd+php）
-##9.1 yum安装
+# 9.处理动态请求（httpd+php）
+## 9.1 yum安装
 **方法一：php编译成模块**
 
 	~]# yum install -y httpd php php-mysql mariadb-server
@@ -368,15 +367,14 @@
 	注：
 		服务配置文件：/etc/php-fpm.conf,/etc/php-fpm.d/*.conf
 		php环境配置文件：/etc/php.ini,/etc/php.d/*.ini
-	
-	
-#9.2编译安装
 
 
-#10.httpd三种模式参数
+# 9.2编译安装
+
+# 10.httpd三种模式参数
 **prefork模式：**
 
-	
+
 	StartServers：初始化创建的子进程数量，默认为5
 	ServerLimit：硬控制最大的子进程数量，默认值为256
 	MaxSpareServers：最大空闲子进程数量，默认值为10
@@ -393,3 +391,5 @@
 	MaxRequestWorkers：指定最大允许的并发连接数。
 	ServerLimit：自动调节时会创建新子进程，但不能超过该限制
 	ThreadLimit：自动调节时会创建新子线程，但也不能超过这指令指定的数量。
+
+**events模式：**
