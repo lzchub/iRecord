@@ -35,7 +35,7 @@
 # 2.CRUD操作
 
 ```c
-~]# mongo --host 127.0.0.1
+~]# mongo --host 127.0.0.1		#默认登录在test库
     
 帮助
 > help
@@ -46,7 +46,7 @@
 
 ```c
 > use stu		#延迟创建数据库，当有数据生成就自动生成库
-> db.student.insert(name:"zhangsan",age:55,sex:"M")		#插入一条数据
+> db.student.insert({name:"zhangsan",age:55,sex:"M"})		#插入一条数据
     
 > show dbs		#插入数据后，库已经生成
   admin   0.000GB
@@ -132,7 +132,210 @@ db.drop()    #删除stu库
     > db.student.ensureIndex({name:1},{unique:ture})			#创建唯一索引
 ```
 
-# 4. MongoDB复制
+# 4.用户管理
+
+| **Read**                 | 允许用户读取指定数据库                                       |
+| ------------------------ | :----------------------------------------------------------- |
+| **readWrite**            | 允许用户读写指定数据库                                       |
+| **dbAdmin**              | 允许用户在指定数据库中执行管理函数，如索引创建、删除，查看统计或访问system.profile |
+| **userAdmin**            | 允许用户向system.users集合写入，可以找指定数据库里创建、删除和管理用户 |
+| **clusterAdmin**         | 只在admin数据库中可用，赋予用户所有分片和复制集相关函数的管理权限。 |
+| **readAnyDatabase**      | 只在admin数据库中可用，赋予用户所有数据库的读权限            |
+| **readWriteAnyDatabase** | 只在admin数据库中可用，赋予用户所有数据库的读写权限          |
+| **userAdminAnyDatabase** | 只在admin数据库中可用，赋予用户所有数据库的userAdmin权限     |
+| **dbAdminAnyDatabase**   | 只在admin数据库中可用，赋予用户所有数据库的dbAdmin权限。     |
+| **root**                 | 只在admin数据库中可用，超级账号，超级权限                    |
+
+```c
+用户创建语法:
+{
+  user: "<name>", 
+  pwd: "<cleartext password>", 
+  customData: { <any information> }, 
+  roles: [ 
+    { role: "<role>", db: "<database>" } | "<role>", 
+	... 
+  ] 
+}
+
+语法说明：
+    user字段：用户的名字;
+    pwd字段：用户的密码;
+    cusomData字段：为任意内容，例如可以为用户全名介绍;
+    roles字段：指定用户的角色，可以用一个空数组给新用户设定空角色；
+    roles 字段：可以指定内置角色和用户定义的角色。
+```
+
+## 4.1 创建用户
+
+### 1.创建管理员用户
+
+```c
+#进入管理数据库
+> use admin
+
+#创建管理用户，root权限
+> db.createUser(
+  {
+    user: "root",
+    pwd: "root",
+    roles: [ { role: "root", db: "admin" } ]
+  }
+  )    
+
+注意：
+    1.创建管理员角色用户的时候，必须到admin下创建。
+    2.删除的时候也要到相应的库下操作。
+
+#查看创建完用户后的collections；
+> show tables; 
+  system.users  # 用户存放位置
+  system.version
+      
+#查看创建的管理员用户
+> show users
+  {
+      "_id" : "admin.root",
+      "user" : "root",
+      "db" : "admin",
+      "roles" : [
+          {
+              "role" : "root",
+              "db" : "admin"
+          }
+      ]
+  }
+
+# 验证用户是否能用
+> db.auth("root","root")
+  1  # 返回 1 即为成功
+```
+
+### 2.创建对某库的只读用户
+
+```c
+# 在test库创建只读用户test
+> use test
+> db.createUser(
+  {
+    user: "test",
+    pwd: "test",
+    roles: [ { role: "read", db: "test" } ]
+  }
+  )
+
+# 测试用户是否创建成功
+> db.auth("test","test")
+> show  users
+
+# 登录test用户，并测试是否只读
+~]# mongo --host 127.0.0.1 --port 27017 -utest -ptest stu    
+> show collections
+> db.createCollection('b')	#会无法创建
+```
+
+### 3.**创建某库的读写用户**
+
+```
+# 创建test1用户，权限为读写
+> db.createUser(
+  {
+    user: "test1",
+    pwd: "test1",
+    roles: [ { role: "readWrite", db: "test" } ]
+  }
+  )
+
+# 查看并测试用户
+> show users;
+> db.auth("test1","test1")
+```
+
+### 4.**创建对多库不同权限的用户**
+
+```
+# 创建对app为读写权限，对test库为只读权限的用户
+> use app
+> db.createUser(
+  {
+    user: "app",
+    pwd: "app",
+    roles: [ { role: "readWrite", db: "app" },
+             { role: "read", db: "test" }
+    ]
+  }
+  )
+
+# 查看并测试用户
+> show users
+> db.auth("app","app")
+```
+
+### 5.**删除用户**
+
+```
+# 删除app用户：先登录到admin数据库
+~]# mongo -uroot –proot 127.0.0.1/admin
+
+# 进入app库删除app用户
+~]# use app
+~]# db.dropUser("app")
+
+```
+
+### 6.命令行中进行登陆
+
+**方法一：登录时验证**
+
+```
+~]$ mongo -uroot -proot admin 
+    MongoDB shell version: 3.2.8
+    connecting to: admin
+
+```
+
+**方法二：在数据库中进行登陆验证**
+
+```
+~]$ mongo 
+    MongoDB shell version: 3.2.8
+    connecting to: test
+    > use admin
+    switched to db admin
+    > db.auth("root","root")
+    1
+    > show tables;
+    system.users
+    system.version
+```
+
+
+
+
+
+## 4.2 集群启用用户认证
+
+```c
+1.修改配置文件/etc/mongod.conf
+  security:
+    authorization: enabled
+    keyFile: /data/mongodb/mongokey.file	#集群模式需要额外添加此行配置，用于集群内认证
+
+2.创建认证文件
+	~]# openssl rand -base64 756 > /data/mongodb/mongokey.file	#所有mongo节点上都需要放置此文件
+	~]# chmod 400 /data/mongodb/mongokey.file		#必须要给予此权限，否则会报错
+    ~]# rm -f /data/mongodb/mongo.lock		#若是集群中途添加认证功能，需删除此文件，否则报错
+ 
+3.重启服务
+    ~]# systemctl restart mongod    
+        
+说明：可以先开启认证重启后再添加用户。但是只能在admin库添加一次，所以如果忘记了，或者权限分配不恰当就无法再更改，所以建议先添加用户再开启认证重启，并且集群不建议在每个单节点添加用户，并且建议单节点关闭初始添加账号的权限，详情见enableLocalhostAuthBypass)
+        
+```
+
+
+
+# 5. MongoDB复制
 
 ```c
 分类：
@@ -140,7 +343,7 @@ db.drop()    #删除stu库
     2.复制集	replica set
 ```
 
-## 4.1 复制集(replica set)
+## 5.1 复制集(replica set)
 
 ```c
 主节点将数据修改操作保存在oplog中，集群节点至少为3个，且应该为奇数个节点，从节点每2s会向主节点发送心跳信息，通过选举出主节点
@@ -309,7 +512,7 @@ rs.reconfig(cfg)
 
 ```
 
-# 5. MongoDB分片
+# 6. MongoDB分片
 
 ```c
 分片架构中的角色：
@@ -329,6 +532,6 @@ rs.reconfig(cfg)
 
 ```
 
-
+# 7.MongoDB的备份与恢复
 
 ​			

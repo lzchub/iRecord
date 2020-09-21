@@ -3,11 +3,11 @@
 	cluster.routing.allocation.disk.watermark.low: 默认 85% 当达到时，replica 不再写入 
 	cluster.routing.allocation.disk.watermark.high: 默认 90% 当达到时，shards 会尝试写入其他节点
 	cluster.routing.allocation.disk.watermark.flood_stage: 默认 95% 当达到时，所有索引变为 readonly状态
-
+	
 	报错：logstash.outputs.elasticsearch] retrying failed action with response code: 403 ({"type"=>"cluster_block_exception", "reason"=>"blocked by: [FORBIDDEN/12/index read-only / allow delete (api)]
 	
 	kibana dev tools:
-
+	
 		PUT _settings
 		{
 		    "index": {
@@ -16,7 +16,7 @@
 		    	}
 		    }
 		}
-
+	
 		#磁盘低水位线为90%（不再分配分片），高水位线为95%（将分片分配到其他节点）
 		PUT _cluster/settings
 		{
@@ -32,3 +32,10 @@
 	1、停掉kafka进程
 	2、将kafka的server.properties中的log.retention.hours=1/60   #将日志数据保留1分钟
 	3、重启kafka
+
+问题三：清理es索引
+
+```c
+~]# curl -XDELETE http://IP:PORT/INDICES_NAME
+```
+

@@ -1,8 +1,8 @@
-#kafka架构图:
+# kafka架构图:
 
 ![](./picture/1.png)
 
-##kafka基础操作
+## 1. kafka基础操作
 
 	#启动kafka
 	~]# kafka-server-start.sh -daemon server.properties
@@ -32,9 +32,15 @@
 	
 	#消费者消费
 	~]# kafka-console-consumer.sh --bootstrap-server 192.168.5.61:9092 --topic test1 --from-beginning
+	
+	# 查看有那些 group ID 正在进行消费
+	~]# kafka-consumer-groups.sh --new-consumer --bootstrap-server 192.168.75.128:9092 --list
+	
+	# 查看指定group.id 的消费者消费情况 
+	~]# kafka-consumer-groups.sh --new-consumer --bootstrap-server 192.168.75.128:9092 --group group --describe
+	
 
-
-##kafka server.properties 配置文件
+## 2.kafka server.properties 配置文件
 
 	############################# Server Basics #############################
 	#每一个broker在集群中的唯一表示，要求是正数。当该服务器的IP地址发生改变时，broker.id没有变化，则不会影响consumers的消息情况
@@ -111,17 +117,17 @@
 	
 	更多配置参考官网：http://kafka.apache.org/documentation/#brokerconfigs
 
-##kafka配置优化
+## 3.kafka配置优化
 
 	https://blog.csdn.net/lizhitao/article/details/42180265
 
-##kafka启动参数调整
+## 4.kafka启动参数调整
 
 	#kafka节点默认需要的内存为1G，如果需要修改内存，可以修改kafka-server-start.sh的配置项。
 	~]# vim /usr/local/kafka/kafka_2.12-2.0.0/bin/kafka-server-start.sh
 		#找到KAFKA_HEAP_OPTS配置项，例如修改如下：
 	    export KAFKA_HEAP_OPTS="-Xmx2G -Xms2G"
 
-##kafka学习系列文章
+## 5.kafka学习系列文章
 
 	https://blog.csdn.net/lizhitao/article/details/39499283
