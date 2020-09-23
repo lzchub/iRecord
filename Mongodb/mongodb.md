@@ -1,4 +1,4 @@
-# 1.MongoDB安装
+# 1. MongoDB安装
 
 ## 1.1 yum安装
 
@@ -32,7 +32,7 @@
 ~]# systemctl start mongod
 ```
 
-# 2.CRUD操作
+# 2. CRUD操作
 
 ```c
 ~]# mongo --host 127.0.0.1		#默认登录在test库
@@ -105,10 +105,10 @@ use stu		#进入stu库
 db.stats()	#查看stu库信息
 db.student.stats()	#查看stu库student collection信息
 db.student.drop()	#删除stu库student collection
-db.drop()    #删除stu库 
+db.dropDatabase()    #删除stu库 
 ```
 
-# 3.索引
+# 3. 索引
 
 ```
 1.单列索引
@@ -132,7 +132,7 @@ db.drop()    #删除stu库
     > db.student.ensureIndex({name:1},{unique:ture})			#创建唯一索引
 ```
 
-# 4.用户管理
+# 4. 用户管理
 
 | **Read**                 | 允许用户读取指定数据库                                       |
 | ------------------------ | :----------------------------------------------------------- |
@@ -528,10 +528,235 @@ rs.reconfig(cfg)
     3.基于hash切片
     
     目标：写离散，读集中
-    	
-
 ```
 
-# 7.MongoDB的备份与恢复
+参考文档：https://www.cnblogs.com/clsn/archive/2004/01/13/8214345.html#auto-id-22
 
-​			
+# 7. MongoDB的备份与恢复
+
+## 7.1 mongoexport/mongoimport
+
+### 1.mongoexport导出
+
+Mongodb中的mongoexport工具可以把一个**collection**导出成JSON格式或CSV格式的文件。可以通过参数指定导出的数据项，也可以根据指定的条件导出数据。
+
+**mongoexport参数：**
+
+| **参数**                     | **参数说明**                           |
+| ---------------------------- | -------------------------------------- |
+| **-h**                       | 指明数据库宿主机的IP                   |
+| **-u**                       | 指明数据库的用户名                     |
+| **-p**                       | 指明数据库的密码                       |
+| **-d**                       | 指明数据库的名字                       |
+| **-c**                       | 指明collection的名字                   |
+| **-f**                       | 指明要导出那些列                       |
+| **-o**                       | 指明到要导出的文件名                   |
+| **-q**                       | 指明导出数据的过滤条件                 |
+| **--type**                   | 指定文件类型                           |
+| **--authenticationDatabase** | 验证数据的名称，即备份用户所在的数据库 |
+
+**导出collection，默认为json格式**：
+
+```c
+~]# mongoexport --host 192.168.100.56 --port 27017 -uroot -proot --authenticationDatabase admin -d stu -c student -o ./stu.json		#必须要指定某个库某个collection
+    
+~]# cat stu.json 
+    {"_id":{"$oid":"5f472c4409e15f31303ae939"},"name":"zhangsan","age":55.0,"sex":"M"}
+    {"_id":{"$oid":"5f653456ed046b4d2fd989b7"},"name":"lisi","age":22.0,"sex":"M"}
+    
+~]# mongoexport --host 192.168.100.56 --port 27017 -utest -ptest --authenticationDatabase stu -d stu -c student -o ./stu2.json
+```
+
+---
+
+**导出collection，为csv格式**：
+
+```c
+~]# mongoexport -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin  -d stu -c student --type=csv -f name,age -o student.csv		#导出为csv格式必须要指定列名
+    
+~]# cat student.csv 
+    name,age
+    zhangsan,55
+    lisi,22
+```
+
+---
+
+### 2.mongoimport导入
+
+Mongodb中的mongoimport工具可以把一个特定格式文件中的内容导入到指定的collection中。该工具可以导入JSON格式数据，也可以导入CSV格式数据。
+
+**mongoimport参数：**
+
+| **参数**                     | **参数说明**                          |
+| ---------------------------- | ------------------------------------- |
+| **-h**                       | 指明数据库宿主机的IP                  |
+| **-u**                       | 指明数据库的用户名                    |
+| **-p**                       | 指明数据库的密码                      |
+| **-d**                       | 指明数据库的名字                      |
+| **-c**                       | 指明collection的名字                  |
+| **-f**                       | 指明要导出那些列                      |
+| **-o**                       | 指明到要导出的文件名                  |
+| **-q**                       | 指明导出数据的过滤条件                |
+| **--drop**                   | 插入之前先删除原有的                  |
+| **--headerline**             | 指明第一行是列名，不需要导入。        |
+| **-j**                       | 同时运行的插入操作数（默认为1），并行 |
+| **--authenticationDatabase** | 验证数据的名称                        |
+
+**json格式导入：**
+
+```c
+
+~]# mongoimport --host 192.168.100.57 --port 27017 -uroot -proot --authenticationDatabase admin -d stu -c student --drop stu2.json 
+```
+
+**csv格式导入：**
+
+```c
+~]# mongoimport -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin -d stu -c student --type=csv --headerline --file student.csv
+```
+
+## 7.2 mongodump/mongorestore
+
+### 1.mongodump导出
+
+**mongodump参数：**
+
+| **参数**                     | **参数说明**                                  |
+| ---------------------------- | --------------------------------------------- |
+| **-h**                       | 指明数据库宿主机的IP                          |
+| **-u**                       | 指明数据库的用户名                            |
+| **-p**                       | 指明数据库的密码                              |
+| **-d**                       | 指明数据库的名字                              |
+| **-c**                       | 指明collection的名字                          |
+| **-o**                       | 指明到要导出的文件名                          |
+| **-q**                       | 指明导出数据的过滤条件                        |
+| **--authenticationDatabase** | 验证数据的名称                                |
+| **--gzip**                   | 备份时压缩                                    |
+| **--oplog**                  | use oplog for taking a point-in-time snapshot |
+
+**全库备份：**
+
+```
+# 备份为目录，目录下为库(目录)，库下为collection
+~]# mongodump -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin  -o /root/backup/all
+```
+
+**备份stu库：**
+
+```
+# 备份为目录，以库名命名，下为collection
+~]# mongodump -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin  -d stu -o /root/backup/db
+```
+
+**备份stu库下的student集合：**
+
+```
+# collection备份出来也是目录
+~]# mongodump -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin  -d stu -c student -o /root/backup/coll
+```
+
+```
+~]# tree .
+.
+├── all
+│   ├── admin
+│   │   ├── system.users.bson
+│   │   ├── system.users.metadata.json
+│   │   ├── system.version.bson
+│   │   └── system.version.metadata.json
+│   └── stu
+│       ├── student.bson
+│       └── student.metadata.json
+├── coll
+│   └── stu
+│       ├── student.bson
+│       └── student.metadata.json
+└── db
+    └── stu
+        ├── student.bson
+        ├── student.metadata.json
+        ├── teachername.bson
+        └── teachername.metadata.json
+```
+
+**压缩备份库：**
+
+```
+~]# mongodump -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin  -d test -o /home/mongod/backup/ --gzip
+```
+
+**压缩备份单表：**
+
+```
+mongodump -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin  -d test -c vast -o /home/mongod/backup/ --gzip
+```
+
+### 2.mongorestore导入
+
+**mongorestore参数：**
+
+| **参数**                     | **参数说明**                                  |
+| ---------------------------- | --------------------------------------------- |
+| **-h**                       | 指明数据库宿主机的IP                          |
+| **-u**                       | 指明数据库的用户名                            |
+| **-p**                       | 指明数据库的密码                              |
+| **-d**                       | 指明数据库的名字                              |
+| **-c**                       | 指明collection的名字                          |
+| **-o**                       | 指明到要导出的文件名                          |
+| **-q**                       | 指明导出数据的过滤条件                        |
+| **--authenticationDatabase** | 验证数据的名称                                |
+| **--gzip**                   | 备份时压缩                                    |
+| **--oplog**                  | use oplog for taking a point-in-time snapshot |
+| **--drop**                   | 恢复的时候把之前的集合drop掉                  |
+
+**全库备份中恢复单库（基于之前的全库备份）：**
+
+```
+~]# mongorestore -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin --drop  /root/backup/all/
+```
+
+**恢复stu库：**
+
+```
+~]# mongorestore -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin -d stu --drop /root/backup/db/
+```
+
+**恢复stu库下的student集合：**
+
+```
+~]# mongorestore -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin -d stu -c student /root/backup/coll/stu/student.bson		#恢复集合必须指定文件，若不使用--drop参数，比配置文件多余的数据不会被清除
+```
+
+**--drop参数实践恢复：**
+
+```
+# 恢复单库
+~]# mongorestore -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin -d stu --drop /root/backup/db/
+# 恢复单表
+~]# mongorestore -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin -d stu -c student --drop /root/backup/coll/stu/student.bson
+```
+
+## 7.3 mongoexport/mongoimport与mongodump/mongorestore的对比
+
+* mongoexport/mongoimport导入/导出的是JSON格式，而mongodump/mongorestore导入/导出的是BSON格式。
+
+* JSON可读性强但体积较大，BSON则是二进制文件，体积小但对人类几乎没有可读性。
+
+* 在一些mongodb版本之间，BSON格式可能会随版本不同而有所不同，所以不同版本之间用mongodump/mongorestore可能不会成功，具体要看版本之间的兼容性。当无法使用BSON进行跨版本的数据迁移的时候，使用JSON格式即mongoexport/mongoimport是一个可选项。跨版本的mongodump/mongorestore并不推荐，实在要做请先检查文档看两个版本是否兼容（大部分时候是的）。
+
+* JSON虽然具有较好的跨版本通用性，但其只保留了数据部分，不保留索引，账户等其他基础信息。使用时应该注意。
+
+* mongoexport/mongoimport只适用导入导出collection，而mongodump/mongorestore适用于全库、单库、集合的备份与恢复。
+
+## 7.4 参考文档
+
+https://www.cnblogs.com/clsn/p/8244206.html
+
+# 8. MongoDB监控
+
+https://www.cnblogs.com/clsn/p/8244206.html
+
+# 9. MongoDB集群性能优化
+
+https://www.cnblogs.com/clsn/p/8244206.html
