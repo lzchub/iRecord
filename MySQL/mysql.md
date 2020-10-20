@@ -552,7 +552,7 @@ mysql> alter user root@localhost identified by '123456';
 		
 	6.查看表结构
 		mysql> desc sequence;
-	
+
 
 ## 4.6 变量查询与修改
 
@@ -935,6 +935,18 @@ mysql> select @@session.tx_isolation;
 		mysql> purge master logs before 'yyyy-mm-dd hh:mi:ss'； 
 	
 	3.使用--expire_logs_days=N选项指定过了多少天日志自动过期清空。
+	
+	手动删除binlog（删除mysql-bin.000010之前的所有binlog）
+	PURGE MASTER LOGS TO 'mysql-bin.000257';
+	
+	查看自动清理天数
+	show variables like "expire_logs_days";
+	
+	设置自动清理天数
+	set global expire_logs_days = 15;
+	
+	手动清理binlog（删除15天之前日志）
+	PURGE MASTER LOGS BEFORE DATE_SUB(CURRENT_DATE, INTERVAL 15 DAY);
 
 **4.二进制日志相关参数**
 
@@ -1204,9 +1216,10 @@ mysql> select @@session.tx_isolation;
 				~]# mysqldump -uroot -p123456 -B test study | gzip > /tmp/mul_bak.sql.gz
 				
 				注:--compact 减少垃圾数据输出，适用于调试,恢复也是采用 全量+二进制日志
-	
-	
-			
+
+
+​	
+​			
 			3.单个数据库备份，不添加-B参数
 				~]# mysqldump -uroot -p123456 test > /tmp/test_bak.sql
 				~]# mysql -uroot -p123456 test < /tmp/test_bak.sql
@@ -1236,7 +1249,7 @@ mysql> select @@session.tx_isolation;
 				只备份数据
 				test库，库后面可加一个或多个表
 				~]# mysqldump -uroot -p123456 -t test > /tmp/test_bak.sql
-			
+
 
 		6.binlog备份与恢复
 			数据备份但不能停止数据库时,-F 刷新binlog,--master-data=1不用刷新binlog，备份时会有记录。
