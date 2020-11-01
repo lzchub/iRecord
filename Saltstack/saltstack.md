@@ -79,13 +79,21 @@ target:
                   - memcache
 			3.利用grains模块定义
 				~]# salt 'm*' grains.setval cpu_num 8	#会保存为grains文件
-				~]# salt 'm*' grains.setval cpu_info '["Intel","Xen",8]'	#以列表的形式定义
+				~]# salt 'm*' grains.setvals cpu_info '["Intel","Xen",8]'	#以列表的形式定义
 				~]# salt 'm*' grains.item cpu_info	#查询信息
 				~]# salt 'm*' grains.delval cpu_info	#删除自定义grains，只是删除value，key还是存在，赋值为none
+				~]# salt 'salt-min*' grains.append name 'node2'	#当前名称后追加值，可以多次追加
 		
 			定义好后刷新或者重启minion：
 				~]# salt-minion saltutil.refresh_modules	#刷新minion配置
 		
+			4.查看grains
+				~]# salt 'SCYD-10.1.33.81' grains.ls			#查看grains名称
+				~]# salt 'SCYD-10.1.33.81' grains.items			#查看grains名称和值
+				~]# salt 'SCYD-10.1.33.81' grains.get roles		#查看对应grains名称和值
+				
+				~]# salt-call grains.append roles idle
+			
 		静态数据，当minion启动时收集的Minion本地的相关信息。如操作系统版本，内核版本，CPU，内存，硬盘，设备型号，序列号等
 		~]# salt "m*" grains.items	#查看所有grains信息
 		~]# salt "m*" grains.item os	#查看某一项

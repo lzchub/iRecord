@@ -162,6 +162,9 @@ mysql> select ClassID,avg(age) from students GROUP BY ClassID HANVING avg(age) >
 mysql> explain select * from student where age='20'\G; 		#查询是否走索引
 mysql > select name from student where name like 'zhang%';
 mysql > select name from student where name like 'zhang_';	# _ 只表示一个字符
+mysql > select name from student where name not like 'zhang_';	# _ 只表示一个字符    
+mysql > select name from student where name not like 'zhang_' and not like 'li_';	# _ 只表示一个字符
+mysql > select name from student where name not regexp 'zhang|li';	# 上条合并    
 mysql> select name from student where name is null;
 mysql> select name from student where name is not null;
 mysql> select distinct date from student;	# distinct 去重
@@ -856,6 +859,21 @@ mysql> select @@session.tx_isolation;
 	log_slow_filter=admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
 	log_slow_rate_limit		#记录日志的速率
 	log_slow_verbosity		#记录日志的详细程度
+	
+	
+	查看慢查询的时间定义
+	show variables like "long%";
+	
+	设置慢查询的时间定义
+	set global long_query_time=1;
+	
+	show variables like "long_query_time";
+	
+	查看慢查询记录功能是否开启
+	show variables like "slow%";
+	
+	开启慢查询记录功能
+	set global slow_query_log=ON;
 
 ## 9.4 二进制日志
 
@@ -1220,20 +1238,20 @@ mysql> select @@session.tx_isolation;
 
 ​	
 ​			
-			3.单个数据库备份，不添加-B参数
-				~]# mysqldump -uroot -p123456 test > /tmp/test_bak.sql
-				~]# mysql -uroot -p123456 test < /tmp/test_bak.sql
-				#过滤出备份内容如下，与添加-B区别为此备份不会有建库语句
-				~]# egrep -v "#|\*|--|^$" /tmp/test_bak.sql   
-					DROP TABLE IF EXISTS `student`;
-					CREATE TABLE `student` (
-					  `id` int(11) DEFAULT NULL,
-					  `name` char(10) DEFAULT NULL
-					) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-					LOCK TABLES `student` WRITE;
-					INSERT INTO `student` VALUES (1,'zhang'),(2,'wang'),(3,'li'),(4,'liu');
-					UNLOCK TABLES;
-			
+​			3.单个数据库备份，不添加-B参数
+​				~]# mysqldump -uroot -p123456 test > /tmp/test_bak.sql
+​				~]# mysql -uroot -p123456 test < /tmp/test_bak.sql
+​				#过滤出备份内容如下，与添加-B区别为此备份不会有建库语句
+​				~]# egrep -v "#|\*|--|^$" /tmp/test_bak.sql   
+​					DROP TABLE IF EXISTS `student`;
+​					CREATE TABLE `student` (
+​					  `id` int(11) DEFAULT NULL,
+​					  `name` char(10) DEFAULT NULL
+​					) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+​					LOCK TABLES `student` WRITE;
+​					INSERT INTO `student` VALUES (1,'zhang'),(2,'wang'),(3,'li'),(4,'liu');
+​					UNLOCK TABLES;
+​			
 			4.分库备份
 				~]# mysql -uroot -p123456 -e "show databases;" 2> /dev/null | grep -Evi "database|infor|perfor" | sed -r 's#^([a-z].*$)#mysqldump -uroot -p123456 -B \1 | gzip > /tmp/bak/\1_bak.sql.gz#' | bash
 			

@@ -309,9 +309,11 @@ db.dropDatabase()    #删除stu库
     system.version
 ```
 
+### 7.查看当前mongo客户端链接数
 
-
-
+```c
+> db.serverStatus().connections
+```
 
 ## 4.2 集群启用用户认证
 
