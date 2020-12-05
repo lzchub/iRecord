@@ -445,6 +445,12 @@ CALL isp4(@m,@n);
 SELECT @m,@n;
 ```
 
+## 3.6 函数操作
+
+```c
+~]# select count(*) from test;		#查询所有行
+```
+
 
 
 # 4. 数据库操作
@@ -859,14 +865,15 @@ mysql> select @@session.tx_isolation;
 	log_slow_filter=admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
 	log_slow_rate_limit		#记录日志的速率
 	log_slow_verbosity		#记录日志的详细程度
-	
-	
-	查看慢查询的时间定义
-	show variables like "long%";
-	
-	设置慢查询的时间定义
-	set global long_query_time=1;
-	
+
+
+​	
+​	查看慢查询的时间定义
+​	show variables like "long%";
+​	
+​	设置慢查询的时间定义
+​	set global long_query_time=1;
+​	
 	show variables like "long_query_time";
 	
 	查看慢查询记录功能是否开启
@@ -1226,47 +1233,45 @@ mysql> select @@session.tx_isolation;
 			~]# mysql -uroot -p -hlocalhost < /tmp/binlog-2020-05-26.sql
 			
 		2.单个数据库备份与恢复-B,--databases
-				#注意若是myisam引擎需要锁库温备，innodb加上--single-transation可以热备
-				~]# mysqldump -uroot -p -hlocalhost -B test > /tmp/test_bak.sql
-				~]# mysql -uroot -p -hlocalhost < /tmp/tset_bak.sql
+	        #注意若是myisam引擎需要锁库温备，innodb加上--single-transation可以热备
+	        ~]# mysqldump -uroot -p -hlocalhost -B test > /tmp/test_bak.sql
+	        ~]# mysql -uroot -p -hlocalhost < /tmp/tset_bak.sql
+	
+	    	~]# mysqldump -uroot -p123456 -hlocalhost -B test | gzip > /tmp/tset_bak.sql.gz
+	    	~]# mysqldump -uroot -p123456 -B test study | gzip > /tmp/mul_bak.sql.gz
+	
+	    	注:--compact 减少垃圾数据输出，适用于调试,恢复也是采用 全量+二进制日志
 				
-				~]# mysqldump -uroot -p123456 -hlocalhost -B test | gzip > /tmp/tset_bak.sql.gz
-				~]# mysqldump -uroot -p123456 -B test study | gzip > /tmp/mul_bak.sql.gz
+		3.单个数据库备份，不添加-B参数
+	        ~]# mysqldump -uroot -p123456 test > /tmp/test_bak.sql
+	        ~]# mysql -uroot -p123456 test < /tmp/test_bak.sql
+	        #过滤出备份内容如下，与添加-B区别为此备份不会有建库语句
+	        ~]# egrep -v "#|\*|--|^$" /tmp/test_bak.sql   
+	            DROP TABLE IF EXISTS `student`;
+	            CREATE TABLE `student` (
+	            `id` int(11) DEFAULT NULL,
+	            `name` char(10) DEFAULT NULL
+	            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+	            LOCK TABLES `student` WRITE;
+	            INSERT INTO `student` VALUES (1,'zhang'),(2,'wang'),(3,'li'),(4,'liu');
+	            UNLOCK TABLES;
 				
-				注:--compact 减少垃圾数据输出，适用于调试,恢复也是采用 全量+二进制日志
+		4.分库备份
+			~]# mysql -uroot -p123456 -e "show databases;" 2> /dev/null | grep -Evi "database|infor|perfor" | sed -r 's#^([a-z].*$)#mysqldump -uroot -p123456 -B \1 | gzip > /tmp/bak/\1_bak.sql.gz#' | bash
 
 
-​	
-​			
-​			3.单个数据库备份，不添加-B参数
-​				~]# mysqldump -uroot -p123456 test > /tmp/test_bak.sql
-​				~]# mysql -uroot -p123456 test < /tmp/test_bak.sql
-​				#过滤出备份内容如下，与添加-B区别为此备份不会有建库语句
-​				~]# egrep -v "#|\*|--|^$" /tmp/test_bak.sql   
-​					DROP TABLE IF EXISTS `student`;
-​					CREATE TABLE `student` (
-​					  `id` int(11) DEFAULT NULL,
-​					  `name` char(10) DEFAULT NULL
-​					) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-​					LOCK TABLES `student` WRITE;
-​					INSERT INTO `student` VALUES (1,'zhang'),(2,'wang'),(3,'li'),(4,'liu');
-​					UNLOCK TABLES;
-​			
-			4.分库备份
-				~]# mysql -uroot -p123456 -e "show databases;" 2> /dev/null | grep -Evi "database|infor|perfor" | sed -r 's#^([a-z].*$)#mysqldump -uroot -p123456 -B \1 | gzip > /tmp/bak/\1_bak.sql.gz#' | bash
-			
-			5.分表备份
-				test 库
-				study student 表
-				~]# mysqldump -uroot -p123456 test study student > /tmp/test_bak.sql
-				
-				备份表结构，没有数据
-				test库，库后面可加一个或多个表
-				~]# mysqldump -uroot -p123456 -d test > /tmp/test_bak.sql
-				
-				只备份数据
-				test库，库后面可加一个或多个表
-				~]# mysqldump -uroot -p123456 -t test > /tmp/test_bak.sql
+	    5.分表备份
+	        test 库
+	        study student 表
+	        ~]# mysqldump -uroot -p123456 test study student > /tmp/test_bak.sql
+	
+	        备份表结构，没有数据
+	        test库，库后面可加一个或多个表
+	        ~]# mysqldump -uroot -p123456 -d test > /tmp/test_bak.sql
+	
+	        只备份数据
+	        test库，库后面可加一个或多个表
+	        ~]# mysqldump -uroot -p123456 -t test > /tmp/test_bak.sql
 
 
 		6.binlog备份与恢复
@@ -1274,7 +1279,7 @@ mysql> select @@session.tx_isolation;
 			--single-transaction适合innoDB引擎
 			~]# mysqldump -uroot -p123456 -B -F test > /tmp/test_bak.sql
 			~]# mysqldump -uroot -p123456 -B --single-transaction --master-data=1 test > /tmp/test_bak.sql
-			
+			~]# mysqldump --single-transaction -R --events --triggers --master-data=2 -u$USER -p$PASSWD -h $HOST --all-databases > mysql_$DATE.sql
 			恢复
 			#只是将test库中恢复的内容重定向到备份文件中，即可恢复数据库 
 			~]# mysqlbinlog -d test mysql-bin.000020 > test_bak.sql 
@@ -1301,6 +1306,10 @@ mysql> select @@session.tx_isolation;
 				test_bak.sql
 			
 				~]# for dbname in `ls /tmp/bak | awk -F "_" '{print $1}'`; do mysql -uroot -p123456 < ${dbname}_bak.sql; done
+				
+		8.压缩备份与恢复
+			mysqldump -hhostname -uusername -ppassword databasename | gzip > backupfile.sql.gz
+			gunzip < backupfile.sql.gz | mysql -uusername -ppassword databasename
 
 ## 10.4 xtrabackup
 
@@ -2724,5 +2733,34 @@ mysql> show slave status\G;
     }
   }
 }
+```
+
+# 14 MySQL 版本升级
+
+## 14.1 二进制包版本升级
+
+```c
+5.7.30 --> 5.7.31
+    
+1.备份数据库数据文件、配置文件
+    
+2.配置MySQL以通过设置innodb_fast_shutdown为 执行慢速关闭 0,在关闭过程中，InnoDB执行完全清除并在关闭之前更改缓冲区合并，这可确保在发布版本之间存在文件格式差异时完全准备好数据文件
+~]# mysql -uroot -p -e "SET GLOBAL innodb_fast_shutdown=0;"
+    
+3.关闭MySQL服务
+~]# mysqladmin -u root -p shutdown
+    
+4.替换mysql安装包，将新版本的二进制包替换旧的二进制包(可以将旧版本包移走即可)
+
+5.使用现有数据目录启动MySQL 5.7服务器
+~]# nohup mysqld_safe --user=mysql --datadir=/data/data/mysql &
+    
+6.运行mysql_upgrade,升级mysql服务
+~]# mysql_upgrade -u root -p
+    
+7.关闭并重启服务
+~]# mysqladmin -u root -p shutdown 
+~]# service mysql start 
+~]# mysql -V  #查看版本
 ```
 

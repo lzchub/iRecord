@@ -32,6 +32,23 @@
 ~]# systemctl start mongod
 ```
 
+## 1.2 二进制包安装
+
+```c
+~]# tar -zxvf mongodb-linux-x86_64-4.0.1.tgz 
+~]# mv mongodb-linux-x86_64-4.0.1 /usr/local/mongodb
+~]# cd /usr/local/mongodb
+~]# mkdir db logs
+~]# cat mongodb.conf
+    dbpath=/usr/local/mongodb/db
+    logpath=/usr/local/mongodb/logs/mongodb.log
+    port=27017
+    fork=true
+~]# ./bin/mongo --host ip --port 27017
+```
+
+
+
 # 2. CRUD操作
 
 ```c
@@ -315,28 +332,6 @@ db.dropDatabase()    #删除stu库
 > db.serverStatus().connections
 ```
 
-## 4.2 集群启用用户认证
-
-```c
-1.修改配置文件/etc/mongod.conf
-  security:
-    authorization: enabled
-    keyFile: /data/mongodb/mongokey.file	#集群模式需要额外添加此行配置，用于集群内认证
-
-2.创建认证文件
-	~]# openssl rand -base64 756 > /data/mongodb/mongokey.file	#所有mongo节点上都需要放置此文件
-	~]# chmod 400 /data/mongodb/mongokey.file		#必须要给予此权限，否则会报错
-    ~]# rm -f /data/mongodb/mongo.lock		#若是集群中途添加认证功能，需删除此文件，否则报错
- 
-3.重启服务
-    ~]# systemctl restart mongod    
-        
-说明：可以先开启认证重启后再添加用户。但是只能在admin库添加一次，所以如果忘记了，或者权限分配不恰当就无法再更改，所以建议先添加用户再开启认证重启，并且集群不建议在每个单节点添加用户，并且建议单节点关闭初始添加账号的权限，详情见enableLocalhostAuthBypass)
-        
-```
-
-
-
 # 5. MongoDB复制
 
 ```c
@@ -345,17 +340,34 @@ db.dropDatabase()    #删除stu库
     2.复制集	replica set
 ```
 
-## 5.1 复制集(replica set)
+## 5.1 复制集搭建(replica set)
 
 ```c
 主节点将数据修改操作保存在oplog中，集群节点至少为3个，且应该为奇数个节点，从节点每2s会向主节点发送心跳信息，通过选举出主节点
     
 复制集节点分类：
-    0优先级的节点：冷备节点，不会被选举成主节点，但能参加选举
-    被隐藏的从节点：首先是一个0优先级的节点，除此外对客户端不可见
-	延迟复制的节点：首先是一个0优先级的节点，且复制时间落后于主节点一个固定市场
-    arbiter：无任何权限，用于节点仲裁
     
+	1. 0优先级节点：这种节点的特点是优先级为0，可参与选举，拥有副本数据，但不被选举成为主节点，可读不可写；这种节点我们也叫冷备节点；通常用于异地容灾使用；
+
+　　2. 被隐藏的从节点：这种节点的特点是，可参与选举，拥有副本数据，但不被选举成为主节点，对客户端不可读写也不可见；通常用于同步同一副本集中的其他节点的不同工作流的场景中；
+
+　　3. 延迟复制的从节点：这种节点的特点是，副本数据落后主节点一个时间窗口，也就说这种节点上的副本数据总是过期的；除此它可参与选举，不可被选举为主节点；主要用于特殊功用；比如在主节点上执行了一个删除操作，我们可以在延迟复制的从节点上把数据找回；
+
+　　4. arbiter节点：这种就是我们说的仲裁节点，它可参与选举，不拥有副本数据，不被选举成为主节点，不可读写；主要作用是辅助判定主节点是否存活，辅助从节点完成选举，实现故障转移；
+
+    对于副本集成员属性，特别需要说明下这几个：priority、hidden、slaveDelay、tags、votes。
+
+    priority：对于副本节点，可以通过该属性来增大或者减小该节点被选举成为主节点的可能性，取值范围为0-1000（如果是arbiters，则取值只有0或者1），数据越大，成为主节点的可能性越大，如果被配置为0，那么他就不能被选举成为主节点，而且也不能主动发起选举。这种特性一般会被用在有多个数据中心的情况下，比如一个主数据中心，一个备份数据中心，主数据中心速度会更快，如果主节点挂掉，我们肯定希望新主节点也在主数据中心产生，那么我们就可以设置在备份数据中心的副本节点优先级为0。
+    
+    hidden：隐藏节点会从主节点同步数据，但对客户端不可见，在mongo shell 执行 db.isMaster() 方法也不会展示该节点，隐藏节点必须Priority为0，即不可以被选举成为主节点。但是如果有配置选举权限的话，可以参与选举。因为隐藏节点对客户端不可见，所以跟客户端不会互相影响，可以用来备份数据或者跑一些后端定时任务之类的操作
+    
+    slaveDelay：延迟同步即延迟从主节点同步数据，比如延迟时间配置的1小时，现在时间是 09:52，那么延迟节点中只同步到主节点 08:52 之前的数据。另外需要注意延迟节点必须是隐藏节点，且Priority为0。那这个延迟节点有什么用呢？有过数据库误操作惨痛经历的开发者肯定知道答案，那就是为了防止数据库误操作，比如更新服务前，一般会先执行数据库更新脚本，如果脚本有问题，且操作前未做备份，那数据可能就找不回了。但如果说配置了延迟节点，那误操作完，还有该节点可以兜底，只能说该功能真是贴心
+    
+    tags：支持对副本集成员打标签，在查询数据时会用到，比如找到对应标签的副本节点，然后从该节点读取数据，这点也非常有用，可以根据标签对节点分类，查询数据时不同服务的客户端指定其对应的标签的节点，对某个标签的节点数量进行增加或减少，也不怕会影响到使用其他标签的服务    
+        
+    votes：表示节点是否有权限参与选举，最大可以配置7个副本节点参与选举。
+
+        
 oplog：
     大小固定的文件，存储在local数据库中
     	初始同步
@@ -377,105 +389,123 @@ Mongo的数据同步类型：
     复制：      
 ```
 
-**复制集配置：**
+**复制集搭建：**
 
 ```c
-
-~]# cat /etc/mongod.conf		#3个节点使用相同配置,IP按需修改
-    ...
+~]# tar -zxvf mongodb-linux-x86_64-4.0.1.tgz 
+~]# mv mongodb-linux-x86_64-4.0.1 /usr/local/mongodb
+~]# cd /usr/local/mongodb
+~]# mkdir db logs
+~]# cat mongodb.conf		#所有主节点都需要配置此配置
+    systemLog:
+	   #日志输出目的地，可以指定为“file”或者“syslog”,表述输出到日志文件，如果不指定，则会输出到标准输出中
+       destination: file	
+       path: "/usr/local/mongodb/logs/mongod.log"
+       #如果为 true，当 mongod/mongos 重启后，将在现有日志的尾部继续添加日志。否则，将会备份当前日志文件，然后创建一个新的日志文件；默认为 false。
+       logAppend: true
+    storage:
+       dbPath: "/usr/local/mongodb/db"
+       #开启journal日志持久存储，journal日志用来数据恢复,是mongod最基础的特性,常用于故障恢复。64位系统默认为 true
+       journal:	 
+          enabled: true
+       #每个库一个目录,默认值为 false
+       directoryPerDB: true				
+    processManagement:
+       fork: true		#运行在后台
+       pidFilePath: /data/data/mongodb_27017/mongod_27017.pid
+    net:
+       port: 27017
+       bindIp: 0.0.0.0
+    setParameter:
+       enableLocalhostAuthBypass: false
     replication:
-       replSetName: "reptestdb" # 设置复制集名称
-    ...
+       replSetName: new-dms			#复制集名称，每个节点必须一致
+       oplogSizeMB: 16384			#单位为M
+    security:
+       authorization: enabled
+       keyFile: /usr/local/mongodb/keyfile
+
+    更详细参数参考官网：https://docs.mongodb.com/manual/reference/configuration-options/
+
+
+~]# /usr/local/mongodb/bin/mongod -f ../mongo.conf		#三个节点启动服务
            
-#主节点配置复制集           
-> config = {_id:'rs0',members:[
-    {_id:0,host: '192.168.240.21:27017'},
-    {_id:1,host: '192.168.240.21:28018'},
-    {_id:2,host: '192.168.240.21:29019'}
-]}
-> rs.initiate(config)           
-{
-        "ok" : 1,
-        "operationTime" : Timestamp(1562308842, 1),
-        "$clusterTime" : {
-                "clusterTime" : Timestamp(1562308842, 1),
-                "signature" : {
-                        "hash" : BinData(0,"AAAAAAAAAAAAAAAAAAAAAAAAAAA="),
-                        "keyId" : NumberLong(0)
-                }
-        }
-}           
+#主节点配置复制集
+~]# /usr/local/mongodb/bin/mongo --host 192.168.183.129 --port 27017 		#随便登录一个节点
+    > config = {_id:'my-res',members:[
+        {_id:0,host: '192.168.183.129:27017'},
+        {_id:1,host: '192.168.183.130:27017'},
+        {_id:2,host: '192.168.183.131:27017'}
+    ]}
+
+    > rs.initiate(config)           
+    {
+            "ok" : 1,
+            "operationTime" : Timestamp(1562308842, 1),
+            "$clusterTime" : {
+                    "clusterTime" : Timestamp(1562308842, 1),
+                    "signature" : {
+                            "hash" : BinData(0,"AAAAAAAAAAAAAAAAAAAAAAAAAAA="),
+                            "keyId" : NumberLong(0)
+                    }
+            }
+    }           
 
 #从节点确认ok
-> rs.slaveOk()
-    
-#主节点给某个从节点设定优先级
-> cfg=rs.conf()
-> cfg.members[1].priority=2
-> rs.reconfig(cfg)		#重新载入配置
-    
-#主节点添加仲裁节点
-> rs.addArb()		#直接添加为仲裁节点，节点不会同步数据
-
-> cfg=rs.conf()		#将从节点转换为仲裁节点
-> cfg.members[1].arbiterOnly=true
-> rs.reconfig(cfg)
-
+~]# /usr/local/mongodb/bin/mongo --host 192.168.183.130 --port 27017	#从节点登录
+	> rs.slaveOk()
 ```
 
 **复制集常用管理操作**
 
-**查看复制集状态：**
+**1. 主节点修改集群节点属性：**
+
+```c
+#主节点给某个从节点设定优先级
+（优先级为0的节点，无法成为主节点）
+> cfg=rs.conf()
+> cfg.members[1].priority=2	
+> cfg.members[1].votes=0	#votes=0无选举权限
+> rs.reconfig(cfg)		#重新载入配置
+```
+
+**2. 查看复制集状态：**
 
 ```
 rs.isMaster()
 rs.status()
 ```
 
-**查看复制集配置：**
+**3. 查看复制集配置：**
 
 ```
 rs.config()
+rs.conf()
 ```
 
-**添加普通节点：**
+**4. 添加普通节点：**
 
 ```
 rs.add("ip:port")
+rs.add({host:"ip:27017",priority:1,votes:1})
 ```
 
-**删除一个节点：**
+**5. 删除一个节点：**
 
 ```
 rs.remove("ip:port")
 ```
 
-**新增仲裁节点：**
+**6. 新增仲裁节点：**
 
 ```
 rs.addArb("ip:port")
-```
-
-**调整副本集优先级（优先级为0的节点，无法成为主节点）：**
-
-```
-cfg = rs.conf()
-cfg.members[0].priority = 0.5
-cfg.members[1].priority = 2
-cfg.members[2].priority = 2
+cfg=rs.conf()		#将从节点转换为仲裁节点
+cfg.members[1].arbiterOnly=true
 rs.reconfig(cfg)
 ```
 
-**配置非投票节点（votes和priority必须为0）：**
-
-```
-cfg = rs.conf();
-cfg.members[3].votes = 0; 
-cfg.members[3].priority = 0;
-rs.reconfig(cfg);
-```
-
-**更改Oplog大小：**
+**7. 更改Oplog大小：**
 
 ```
 use local
@@ -483,19 +513,22 @@ db.oplog.rs.stats().maxSize
 db.adminCommand({replSetResizeOplog: 1, size: 16000})
 ```
 
-**重新触发选主：**
+**8. 重新触发选主：**
 
 ```
 rs.stepDown()
+
+#关闭主节点，也可触发
+db.shutdownServer()
 ```
 
-**一段时间内不能成为主：**
+**9. 一段时间内不能成为主：**
 
 ```
 rs.freeze(120)
 ```
 
-**启用链式复制：**
+**10. 启用链式复制：**
 
 ```
 cfg = rs.config()
@@ -506,13 +539,136 @@ rs.reconfig(cfg)
 **副本重新选举的影响条件：**
 
 ```c
-
 1.心跳信息
 2.优先级
 3.optime：与主节点同步的时间差
 4.网络连接
+```
+
+## 5.2 集群启用账户认证
+
+```c
+1.修改配置文件/etc/mongod.conf
+  security:
+    authorization: enabled
+    keyFile: /usr/local/mongodb/mongokey.file	#集群模式需要额外添加此行配置，用于集群内认证
+
+2.创建认证文件
+	~]# openssl rand -base64 756 > /usr/local/mongodb/mongokey.file	#所有mongo节点上都需要放置此文件
+	~]# chmod 400 /usr/local/mongodb/mongokey.file		#必须要给予此权限，否则会报错，从节点也必须有次文件
+    ~]# rm -f /usr/local/mongodb/db/mongod.lock		#若是集群中途添加认证功能，需删除此文件，否则报错
+ 
+3.重启服务
+    ~]# systemctl restart mongod    
+        
+说明：可以先开启认证重启后再添加用户。但是只能在admin库添加一次，所以如果忘记了，或者权限分配不恰当就无法再更改，所以建议先添加用户再开启认证重启，并且集群不建议在每个单节点添加用户，并且建议单节点关闭初始添加账号的权限，详情见enableLocalhostAuthBypass)
+   
+4.创建账号
+   > db.createUser(
+  	{
+    user: "root",
+    pwd: "root",
+    roles: [ { role: "root", db: "admin" } ]
+  	}
+  )  
+        
+5.重新登录，加入从节点，从节点也要开启认证
+```
+
+
+
+# 6.MongoDB主从
+
+## 6.1 主从搭建
+
+注：mongo4.x已不支持主从模式
+
+**master：**
+
+```c
+~]# tar -zxvf mongodb-linux-x86_64-3.0.1.tgz 
+~]# mv mongodb-linux-x86_64-3.0.1 /usr/local/mongodb
+~]# cd /usr/local/mongodb
+~]# mkdir db logs
+~]# cat mongodb.conf
+    dbpath=/usr/local/mongodb3/db
+    logpath=/usr/local/mongodb3/logs/mongod_27017.log
+    pidfilepath=/tmp/mongod_27017.pid
+    fork = true				#运行在后台
+    port = 27017
+    logappend=true
+    storageEngine=wiredTiger  #mongodb3之后支持mmapv1/wiredTiger两种引擎,默认值为mmapv1,wiredTiger引擎更加优秀。
+    master=true
+    keyFile=/usr/local/mongodb3/keyfile
+    auth=true			#启用密码认证
+    
+~]# ./bin/mongo --host ip --port 27017
+	use admin
+	db.createUser({ user: "root", pwd: "mongoroot0tU#uI7H",roles: [{role: "root", db: "admin"}]})
+    
+~]#  ./mongo --host 192.168.183.129 --port 27017 -uroot -pmongoroot0tU#uI7H --authenticationDatabase admin
+    
+	use test
+    db.createUser({user: "testuser", pwd: "cosepg0tU#uI7H",roles: [{role: "readWrite", db: "test"}]})
+```
+
+**slave：**
+
+```c
+~]# tar -zxvf mongodb-linux-x86_64-3.0.1.tgz 
+~]# mv mongodb-linux-x86_64-3.0.1 /usr/local/mongodb
+~]# cd /usr/local/mongodb
+~]# mkdir db logs
+~]# cat mongodb.conf
+    dbpath=/usr/local/mongodb3/db
+    logpath=/usr/local/mongodb3/logs/mongod_27017.log
+    pidfilepath=/tmp/mongod_27017.pid
+    fork = true
+    port = 27017
+    logappend=true
+    storageEngine=wiredTiger
+    slave=true
+    source=192.168.183.129:27017
+    keyFile=/usr/local/mongodb3/keyfile
+    auth=true
+       
+~]# ./mongo --host 192.168.183.129 --port 27017 -uroot -pmongoroot0tU#uI7H --authenticationDatabase admin
+    rs.slaveOk()
+        
+    db.printReplicationInfo()
+        
+```
+
+
 
 ```
+1.在slave查看同步信息,与db.printReplicationInfo()相似
+~]# db.printSlaveReplicationInfo()   
+    
+2.如果长时间没有同步上master
+(1)、重启服务
+(2)、~]# use admin
+	 ~]# db.runCommand({resync:1})
+	 
+3.如果master挂掉，无法重启，先将slave提升成master
+
+	1.停止slave服务
+	2.删除本地数据库，slave相关的信息就存在本地数据库中
+		~]# cd /var/lib/mongo
+		~]# rm -rf local.*
+	3.修改配置文件
+		~]# vi /etc/mongod.conf
+		#删除下面几行
+		#slave=true
+		#source=masterip
+		#autoresync=true
+		#增加一行
+		master=true
+		
+	4.启动mongo
+```
+
+
 
 # 6. MongoDB分片
 
