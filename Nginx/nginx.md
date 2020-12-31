@@ -171,15 +171,13 @@ Stream Server:
 		        usage
 		esac
 		exit $RETVAL
-
-
-​	
-​	~]# chmod a+x /etc/init.d/nginx
-​	
-​	#将nginx服务加入chkconfig管理列表
-​	~]# chkconfig --add /etc/init.d/nginx
-​	~]# chkconfig nginx on
-​	~]# service nginx start
+		
+	~]# chmod a+x /etc/init.d/nginx
+	
+	#将nginx服务加入chkconfig管理列表
+	~]# chkconfig --add /etc/init.d/nginx
+	~]# chkconfig nginx on
+	~]# service nginx start
 
 ## 1.2 yum安装 ##
 
@@ -663,6 +661,53 @@ Stream Server:
 	}
 
 # 9.动态模块编译
+
+## 9.1 nginx-module-vts 流量监控模块
+
+注：nginx-mudule-vts是第三方模块，需要单独下载
+
+```c
+# 下载模块源码包
+~]# git clone git://github.com/vozlt/nginx-module-vts.git
+
+# 重新编译
+~]# nginx -v		#查看当前模块，在编译时加上这些参数
+~]# ./configure --add-module=/data/nginx-module-vts 	#带着原来的模块，再添加nginx-module-vts模块，进行编译。
+~]# make && make install
+    
+# 修改配置
+    http {
+        vhost_traffic_status_zone;	# 需在http模块中添加此参数
+        vhost_traffic_status_filter_by_host on; # 根据host分别进行流量统计,即按照每个server来进行统计
+        ...
+        server {
+            listen 8800;
+            server_name localhost;
+            location /status {
+                vhost_traffic_status_display;
+                vhost_traffic_status_display_format html;
+            }
+        }
+    }   
+
+注：在不想监控的server中，可以单独关闭监控
+    server {
+        vhost_traffic_status off;
+    }
+
+# 访问
+http://ip:port/status
+
+一般此监控通过prometheus与grafana 配合使用
+```
+
+**暴露接口给prometheus：/status/format/promtheus**
+
+![](./picture/4.png)
+
+
+
+参考链接：https://blog.csdn.net/weixin_42674359/article/details/105208403
 
 # 10.版本平稳切换
 

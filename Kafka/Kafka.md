@@ -113,9 +113,39 @@ CLIENT-ID:客户端id
 ~]# ./kafka-producer-perf-test.sh --topic test --num-records 100 --record-size 1 --throughput 100 --producer-props bootstrap.servers=localhost:9092 
 ```
 
+**9.手动指定分区分片**
 
+```c
+1.设置分区重分配计划
+    ~]# cat topic.json		# topic 就是需要重新分配的topic名称
+    	{
+  			"topics":
+     			[
+       				{
+         				"topic": "history-topic"
+       				}
+     			],     
+    			"version":1
+		}
 
-
+	~]# /data/server/kafka/bin/kafka-reassign-partitions.sh --topics-to-move-json-file topic.json --broker-list "0,1,2" --zookeeper localhost:2181 --generate > new_part.json
+ 
+    ~]# cat new_part.json    
+    	{"version":1,"partitions":[{"topic":"history-topic","partition":1,"replicas":[2]},{"topic":"history-topic","partition":2,"replicas":[0]},{"topic":"history-topic","partition":0,"replicas":[1]}]}
+        
+2.生成分区重分配计划
+     ~]# /data/server/kafka/bin/kafka-reassign-partitions.sh --reassignment-json-file new_part.json --zookeeper localhost:2181 --execute
+         
+3.验证分区重分配计划         
+     #--reassignment-json-file 指定JSON格式配置文件，第一步生成的重分配计划
+	~]# /data/server/kafka/bin/kafka-reassign-partitions.sh --reassignment-json-file new_part.json --zookeeper localhost:2181 --verify
+        
+注：
+    这个脚本提供3个命令：
+        --generate: 根据给予的Topic列表和Broker列表生成迁移计划。generate并不会真正进行消息迁移，而是将消息迁移计划计算出来，供execute命令使用。
+        --execute: 根据给予的消息迁移计划进行迁移。
+        --verify: 检查消息是否已经迁移完成。
+```
 
 ## 2.kafka server.properties 配置文件
 

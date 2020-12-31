@@ -559,11 +559,13 @@ rs.reconfig(cfg)
     ~]# rm -f /usr/local/mongodb/db/mongod.lock		#若是集群中途添加认证功能，需删除此文件，否则报错
  
 3.重启服务
-    ~]# systemctl restart mongod    
+    ~]# systemctl restart mongod   
+    ~]# ./mongod --shutdown --dbpath /data/mongo/db		
+    ~]# db.shutdownServer();		#mongo shell里使用
         
 说明：可以先开启认证重启后再添加用户。但是只能在admin库添加一次，所以如果忘记了，或者权限分配不恰当就无法再更改，所以建议先添加用户再开启认证重启，并且集群不建议在每个单节点添加用户，并且建议单节点关闭初始添加账号的权限，详情见enableLocalhostAuthBypass)
    
-4.创建账号
+4.创建账号		#primary节点添加即可
    > db.createUser(
   	{
     user: "root",
@@ -689,6 +691,322 @@ rs.reconfig(cfg)
 ```
 
 参考文档：https://www.cnblogs.com/clsn/archive/2004/01/13/8214345.html#auto-id-22
+
+## 6.1 MongoDB分片集群搭建
+
+**架构图：**
+
+![](./picture/1.jpg)
+
+**1. 搭建 mongo sh1:**
+
+```c
+~]# tar -zxvf mongodb-linux-x86_64-4.0.1.tgz 
+~]# mkdir /data/mongo_shard/ -pv
+~]# mv mongodb-linux-x86_64-4.0.1 /data/mongo_shard/mongodb_29017
+~]# cd /data/mongo_shard/mongodb_29017
+~]# mkdir db logs
+~]# cat mongodb.conf		#所有节点都需要配置此配置
+    systemLog:
+      destination: file
+      path: /data/mongo_shard/mongodb_29017/logs/mongodb.log
+      logAppend: true
+    storage:
+      journal:
+        enabled: true
+      dbPath: /data/mongo_shard/mongodb_29017/db
+      directoryPerDB: true
+      #engine: wiredTiger
+      wiredTiger:
+        engineConfig:
+          cacheSizeGB: 1
+          directoryForIndexes: true
+        collectionConfig:
+          blockCompressor: zlib
+        indexConfig:
+          prefixCompression: true
+    net:
+	#从节点配置需修改此参数
+      bindIp: 192.168.183.129
+      port: 29017
+    #开启集群认证请看5.2
+    #security:
+    #  authorization: enabled
+    #  keyFile: /data/mongo_shard/mongodb_29017/mongokey.file
+    processManagement: 
+      fork: true
+      pidFilePath: /data/mongo_shard/mongodb_29017/mongod_27017.pid
+    replication:
+      oplogSizeMB: 128
+      replSetName: shard1
+    sharding:
+      clusterRole: shardsvr
+    
+~]# cat startup.sh 
+/data/mongo_shard/mongodb_29017/bin/mongod -f /data/mongo_shard/mongodb_29017/mongod.conf
+          
+~]# cat stop.sh 
+/data/mongo_shard/mongodb_29017/bin/mongod --shutdown --dbpath /data/mongo_shard/mongodb_29017/db
+          
+#主节点配置复制集
+~]# /usr/local/mongodb/bin/mongo --host 192.168.183.129 --port 29017 		#随便登录一个节点
+    > config = {_id:'shard1',members:[
+        {_id:0,host: '192.168.183.129:29017'},
+        {_id:1,host: '192.168.183.130:29017'},
+        {_id:2,host: '192.168.183.131:29017'}
+    ]}
+
+    > rs.initiate(config)           
+    {
+            "ok" : 1,
+            "operationTime" : Timestamp(1562308842, 1),
+            "$clusterTime" : {
+                    "clusterTime" : Timestamp(1562308842, 1),
+                    "signature" : {
+                            "hash" : BinData(0,"AAAAAAAAAAAAAAAAAAAAAAAAAAA="),
+                            "keyId" : NumberLong(0)
+                    }
+            }
+    }           
+
+#从节点确认ok
+~]# /usr/local/mongodb/bin/mongo --host 192.168.183.130 --port 29017	#从节点登录
+	> rs.slaveOk()
+       
+```
+
+**2. 搭建 mongo sh2:**
+
+```c
+~]# tar -zxvf mongodb-linux-x86_64-4.0.1.tgz 
+~]# mkdir /data/mongo_shard/ -pv
+~]# mv mongodb-linux-x86_64-4.0.1 /data/mongo_shard/mongodb_29018
+~]# cd /data/mongo_shard/mongodb_29018
+~]# mkdir db logs
+~]# cat mongodb.conf		#所有节点都需要配置此配置
+    systemLog:
+      destination: file
+      path: /data/mongo_shard/mongodb_29018/logs/mongodb.log
+      logAppend: true
+    storage:
+      journal:
+        enabled: true
+      dbPath: /data/mongo_shard/mongodb_29018/db
+      directoryPerDB: true
+      #engine: wiredTiger
+      wiredTiger:
+        engineConfig:
+          cacheSizeGB: 1
+          directoryForIndexes: true
+        collectionConfig:
+          blockCompressor: zlib
+        indexConfig:
+          prefixCompression: true
+    net:
+	#从节点配置需修改此参数
+      bindIp: 192.168.183.129
+      port: 29018
+    #开启集群认证请看5.2
+    #security:
+    #  authorization: enabled
+    #  keyFile: /data/mongo_shard/mongodb_29018/mongokey.file
+    processManagement: 
+      fork: true
+      pidFilePath: /data/mongo_shard/mongodb_29018/mongod_27018.pid
+    replication:
+      oplogSizeMB: 128
+      replSetName: shard1
+    sharding:
+      clusterRole: shardsvr
+    
+~]# cat startup.sh 
+/data/mongo_shard/mongodb_29018/bin/mongod -f /data/mongo_shard/mongodb_29018/mongod.conf
+          
+~]# cat stop.sh 
+/data/mongo_shard/mongodb_29018/bin/mongod --shutdown --dbpath /data/mongo_shard/mongodb_29018/db
+```
+
+**3. configServer集群搭建**
+
+```c
+~]# tar -zxvf mongodb-linux-x86_64-4.0.1.tgz 
+~]# mkdir /data/config_server -pv
+~]# mv mongodb-linux-x86_64-4.0.1 /data/config_server/mongodb_28017
+~]# cd /data/config_server/mongodb_28017
+~]# mkdir db logs
+~]# cat mongodb.conf		#所有节点都需要配置此配置
+    systemLog:
+      destination: file
+      path: /data/config_server/mongodb_28017/logs/mongodb.log
+      logAppend: true
+    storage:
+      journal:
+        enabled: true
+      dbPath: /data/config_server/mongodb_28017/db
+      directoryPerDB: true
+      #engine: wiredTiger
+      wiredTiger:
+        engineConfig:
+          cacheSizeGB: 1
+          directoryForIndexes: true
+        collectionConfig:
+          blockCompressor: zlib
+        indexConfig:
+          prefixCompression: true
+    net:
+      bindIp: 192.168.183.129
+      port: 28017
+    replication:
+      oplogSizeMB: 2048
+      replSetName: configReplSet
+    sharding:
+      clusterRole: configsvr
+    processManagement: 
+      fork: true
+          
+~]# cat startup.sh 
+/data/config_server/mongodb_28017/bin/mongod -f /data/config_server/mongodb_28017/mongod.conf
+          
+~]# cat stop.sh 
+/data/config_server/mongodb_28017/bin/mongod --shutdown --dbpath /data/config_server/mongodb_28017/db
+          
+注：config server 使用复制集不用有arbiter节点。3.4版本以后config必须为复制集 
+         
+```
+
+**4. mongos节点配置**
+
+```c
+~]# tar -zxvf mongodb-linux-x86_64-4.0.1.tgz 
+~]# mkdir /data/mongo_route -pv
+~]# mv mongodb-linux-x86_64-4.0.1 /data/mongo_route/mongodb_27017
+~]# cd /data/mongo_route/mongodb_27017
+~]# mkdir db logs
+~]# cat mongos.conf		#所有节点都需要配置此配置
+    systemLog:
+	  destination: file
+      path: /data/mongo_route/mongodb_27017/logs/mongos.log
+      logAppend: true
+    net:
+      bindIp: 192.168.183.129
+      port: 27017
+    sharding:
+      configDB: configReplSet/192.168.183.129:28017,192.168.183.130:28017,192.168.183.131:28017
+    processManagement: 
+      fork: true
+
+#启动mongos
+~]# /data/mongo_route/mongodb_27017/bin/mongos -f /data/mongo_route/mongodb_27017/mongos.conf 
+
+#登录mongos          
+~]# /data/mongo_route/mongodb_27017/bin/mongo 192.168.183.129:27017/admin
+
+#添加分片节点
+> db.runCommand({ addshard : "shard1/192.168.183.129:29017,192.168.183.130:29017,192.168.183.131:29017",name:"mongo_shard1"})
+> db.runCommand({ addshard : "shard2/192.168.183.129:29018,192.168.183.130:29018,192.168.183.131:29018",name:"mongo_shard2"})
+    
+#列出分片
+> db.runCommand( { listshards : 1 } )
+    
+#整体状态查看
+> sh.status()
+```
+
+## 6.2 MongoDB分片库操作
+
+**1.激活需要分片的库**
+
+```c
+mongos> db.runCommand( { enablesharding : "test" } )		#test库使用分片
+```
+
+**2.指定分片建对集合分片，范围片键--创建索引**
+
+```c
+mongos> use test 
+mongos> db.vast.ensureIndex( { id: 1 } )
+mongos> use admin
+mongos> db.runCommand( { shardcollection : "test.vast",key : {id: 1} } )
+```
+
+**3.集合分片验证**
+
+```c
+mongos> use test
+mongos> for(i=0;i<20000;i++){ db.vast1.insert({"id":i,"name":"clsn","age":70,"date":new Date()}); }
+mongos> db.vast.stats()
+```
+
+注：分片集合需指定分片类型(范围片键、hash片键)，然后为集合指定分片键列并创建索引,如下：
+
+**范围片键：**
+
+```c
+1.为分片键创建索引
+    mongos> use test 
+	mongos> db.vast.ensureIndex( { id: 1 } )
+
+2.创建范围片键，需在admin库
+    admin> sh.shardCollection("test.vast",key : { id: 1}  )
+	admin> db.runCommand( { shardcollection : "test.vast",key : { id: 1} } )
+```
+
+**hash片键：**
+
+```c
+1.为分片键创建hash索引
+    mongos> use test 
+	mongos> db.vast.ensureIndex( { name: "hashed" } )
+    
+2.创建hash片键，需在admin库
+    admin> sh.shardCollection( "test.vast", { name: "hashed" } )
+```
+
+## 6.3 分片集群操作
+
+**1.判断是否分片集群**
+
+```c
+mongos> use admin 
+mongos> db.runCommand({ isdbgrid : 1})
+```
+
+**2.列出所有分片信息**
+
+```c
+mongos> use admin
+mongos> db.runCommand({ listshards : 1})
+```
+
+**3.列出开启分片的数据库**
+
+```c
+admin> use config
+config> db.databases.find( { "partitioned": true } )
+config> db.databases.find() //列出所有数据库分片情况
+```
+
+**4.查看开启分片的片键**
+
+```c
+admin> use config
+config> db.collections.find()
+```
+
+**5.查看分片的详细信息**
+
+```c
+admin> db.printShardingStatus()
+admin> sh.status()
+```
+
+**6.删除分片节点**
+
+```c
+mongos> db.runCommand( { removeShard: "shard2" } )
+```
+
+
 
 # 7. MongoDB的备份与恢复
 

@@ -1,6 +1,35 @@
 # 1. Redis搭建
 
+https://www.cnblogs.com/chenmh/p/5121849.html
+
 # 2. Redis常用操作
+
+## 2.1 Redis 主从添加密码认证
+
+```c
+1.从库添加密码
+    ~]# config set requirepass MzJiMGE1YzRm
+    
+2.主库添加密码
+    ~]# config set requirepass MzJiMGE1YzRm
+    
+3.从库设置与主库使用密码认证同步
+    ~]# config set masterauth MzJiMGE1YzRm
+    
+4.修改主从库配置文件
+   主库: 
+   		requirepass MzJiMGE1YzRm
+            
+   从库:
+		requirepass MzJiMGE1YzRm
+		masterauth MzJiMGE1YzRm
+            
+注：
+  1.使用中的按照此步骤，新建集群可以添加密码认证后在进行主从同步
+  2.主从认证添加完成后，master会重新 sync ,所以要保证主库内存空间足够，否则会同步失败
+```
+
+
 
 # 3. Redis集群构建
 
