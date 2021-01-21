@@ -644,7 +644,7 @@ rs.reconfig(cfg)
 
 
 ```
-1.在slave查看同步信息,与db.printReplicationInfo()相似
+1.在slave查看同步信息,与db.printReplicationInfo() 相似，这个是在主库执行
 ~]# db.printSlaveReplicationInfo()   
     
 2.如果长时间没有同步上master
@@ -670,9 +670,43 @@ rs.reconfig(cfg)
 	4.启动mongo
 ```
 
+## 6.2 主从同步失败处理
+
+```c
+如果同步失败，可使用如下命令同步所有数据：
+
+同步出现问题，日志会有如下记录:
+TueFeb 19 16:31:45 [replslave] all sources dead: data too stale haltedreplication, sleeping for 5 seconds
+
+	都是每5秒重试，一直在重试，那么如果要解决只能执行下面的命令全部同步一下
+
+	> Use admin
+
+	> db.runCommand ( { "resync": 1 } )
+
+	也可在启动从库时添加--autoresync参数
+
+ 
+
+同步原理：
+	同步就是master上把对数据的更改操作记录到oplog中，然后slave抓取master的oplog执行。从这点看Oplog的功能和mysql的mysql-bin.的功能类似。Mysql-bin以二进制日志的形式存在，但是oplog是以一个mongodb的表的形式存在，该表在local库表名为oplog.$main，该表为循环写入形，所以不用定时清理。
+
+ 
+修改oplog大小：
+	我们在首次启动mongodb服务的时候如果没有设置oplog的大小，那么它的默认值将是所在硬盘的5%，那么如果我们想要改变大小呢，必须重启，然后在启动的时候设置oplogsize，不过还有个小问题，因为之前的oplog已经存在了，所以修改完大小启动会报错，Tue Feb 19 15:43:19[initandlisten] cmdline oplogsize (10) different than existing (1779)，解决方法就是将mongodb数据目录下的local.*删除，参见：http://api.mongodb.org/wiki/current/Halted%20Replication.html
+
+由于删除后oplog是重建的，slave的时间点信息比master上oplog的开始时间点要小，所以从库只能做全同步才能继续同步。但是有个问题，如果主库数据非常多的话，做一次全同步是一件非常耗时的事，况且数据也没有丢失。那么现在有个小技巧：
+
+    1.关闭slave的mongo服务
+
+    2.Master上在我们删除local.*之后，不要急着启动服务，先用linux的date命令更改系统时间，让时间小于slave上同步的最后时间，也就是slave执行db.printSlaveReplicationInfo()看到的时间
+
+    3.然后启动主库和从库方能继续同步
+```
 
 
-# 6. MongoDB分片
+
+# 7. MongoDB分片
 
 ```c
 分片架构中的角色：
@@ -692,7 +726,11 @@ rs.reconfig(cfg)
 
 参考文档：https://www.cnblogs.com/clsn/archive/2004/01/13/8214345.html#auto-id-22
 
-## 6.1 MongoDB分片集群搭建
+### 
+
+
+
+## 7.1 MongoDB分片集群搭建
 
 **架构图：**
 
@@ -912,7 +950,7 @@ rs.reconfig(cfg)
 > sh.status()
 ```
 
-## 6.2 MongoDB分片库操作
+## 7.2 MongoDB分片库操作
 
 **1.激活需要分片的库**
 
@@ -962,7 +1000,7 @@ mongos> db.vast.stats()
     admin> sh.shardCollection( "test.vast", { name: "hashed" } )
 ```
 
-## 6.3 分片集群操作
+## 7.3 分片集群操作
 
 **1.判断是否分片集群**
 
@@ -1008,9 +1046,9 @@ mongos> db.runCommand( { removeShard: "shard2" } )
 
 
 
-# 7. MongoDB的备份与恢复
+# 8. MongoDB的备份与恢复
 
-## 7.1 mongoexport/mongoimport
+## 8.1 mongoexport/mongoimport
 
 ### 1.mongoexport导出
 
@@ -1092,7 +1130,7 @@ Mongodb中的mongoimport工具可以把一个特定格式文件中的内容导�
 ~]# mongoimport -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin -d stu -c student --type=csv --headerline --file student.csv
 ```
 
-## 7.2 mongodump/mongorestore
+## 8.2 mongodump/mongorestore
 
 ### 1.mongodump导出
 
@@ -1213,7 +1251,7 @@ mongodump -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin  -d t
 ~]# mongorestore -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin -d stu -c student --drop /root/backup/coll/stu/student.bson
 ```
 
-## 7.3 mongoexport/mongoimport与mongodump/mongorestore的对比
+## 8.3 mongoexport/mongoimport与mongodump/mongorestore的对比
 
 * mongoexport/mongoimport导入/导出的是JSON格式，而mongodump/mongorestore导入/导出的是BSON格式。
 
@@ -1225,14 +1263,14 @@ mongodump -h 10.0.0.152:27017 -uroot -proot --authenticationDatabase admin  -d t
 
 * mongoexport/mongoimport只适用导入导出collection，而mongodump/mongorestore适用于全库、单库、集合的备份与恢复。
 
-## 7.4 参考文档
+## 8.4 参考文档
 
 https://www.cnblogs.com/clsn/p/8244206.html
 
-# 8. MongoDB监控
+# 9. MongoDB监控
 
 https://www.cnblogs.com/clsn/p/8244206.html
 
-# 9. MongoDB集群性能优化
+# 10. MongoDB集群性能优化
 
 https://www.cnblogs.com/clsn/p/8244206.html

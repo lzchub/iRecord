@@ -209,6 +209,11 @@ Stream Server:
 		                      '$status $body_bytes_sent $request_time $http_referer '
 		                      '"$http_user_agent" "$upstream_addr" '
 		                      '"$upstream_cache_status" "$request_body"';
+		                      
+		            log_format ystenlog ' $remote_addr - $remote_user [$time_iso8601] "$request" '
+	                            ' "$status" $body_bytes_sent "$http_range" "$http_referer" '
+	                            ' "$http_user_agent" $http_x_forwarded_for "$request_time" '
+	                            ' "$host" "$server_port" "$sent_http_location" "$upstream_cache_status" ';
 	
 			# $remote_addr：客户端地址 
 			# $remote_user：提供基本身份验证的用户名
@@ -709,5 +714,134 @@ http://ip:port/status
 
 参考链接：https://blog.csdn.net/weixin_42674359/article/details/105208403
 
-# 10.版本平稳切换
+# 10. 版本平稳切换
 
+# 11. nginx启用压缩及测试
+
+**前言：**
+
+```c
+Nginx开启Gzip压缩功能， 可以使网站的css、js 、xml、html 文件在传输时进行压缩，提高访问速度, 进而优化Nginx性能!  Web网站上的图片，视频等其它多媒体文件以及大文件，因为压缩效果不好，所以对于图片没有必要支压缩，如果想要优化，可以图片的生命周期设置长一点，让客户端来缓存。 开启Gzip功能后，Nginx服务器会根据配置的策略对发送的内容, 如css、js、xml、html等静态资源进行压缩, 使得这些内容大小减少，在用户接收到返回内容之前对其进行处理，以压缩后的数据展现给客户。这样不仅可以节约大量的出口带宽，提高传输效率，还能提升用户快的感知体验, 一举两得; 尽管会消耗一定的cpu资源，但是为了给用户更好的体验还是值得的。
+
+经过Gzip压缩后页面大小可以变为原来的30%甚至更小，这样，用户浏览页面的时候速度会快得多。Gzip 的压缩页面需要浏览器和服务器双方都支持，实际上就是服务器端压缩，传到浏览器后浏览器解压并解析。浏览器那里不需要我们担心，因为目前的巨大多数浏览器 都支持解析Gzip过的页面。
+```
+
+```
+Nginx静态压缩(ngx_http_gzip_module、ngx_http_gzip_static_module 、ngx_http_gunzip_module )
+ngx_http_gzip_static_module
+ngx_http_gunzip_module
+上面两个模块都是对ngx_http_gzip_module的补充，默认ngx_http_gzip_module模块会自动安装，其余两个模块需要手动指定
+```
+
+**1.http_gzip_static_module - 预读gzip功能**
+
+```c
+nginx实现静态压缩这种做法其实就像apache gzip压缩 ，这种压缩是我们常见的一些事情了 , 它的功能就是:  比如我们要读取1.html文件,它会在家目录里面先去找1.html.zg这个文件是否存在,因为1.html.zg这个文件是gzip的预压缩文件,如果有的话直接返回1.html.zg这个文件,没有过没有的话返回1.html , 所以它是先去磁盘目录找同名的.gz文件是否存在,相比gzip节省了gzip压缩时间和对于CPU处理压缩的性能损耗,但是它对硬盘有要求,因为需要预先把文件进行压缩(生产环境压缩文件时建议保留原文件,相当于备份)
+```
+
+**2.http_gunzip_module - 应用支持gunzip的压缩方式**
+
+```c
+这个模块一般用的很少很少,它是为了解决很少的一部分浏览器无法支持gzip压缩文件而需要用到的,如果有部分浏览器没法用gzip压缩文件的话就要用gunzip这种方式来解决问题,但是现实场景很少有用到
+```
+
+**Gzip压缩作用：**将响应报⽂发送⾄客户端之前可以启⽤压缩功能，这能够有效地节约带宽，并提⾼响应⾄客户端的速度。Gzip压缩可以配置http,server和location模块下。Nginx开启Gzip压缩功能的配置如下:
+
+```c
+#修改配置为
+gzip on;                    #开启gzip压缩功能
+gzip_min_length 10k;      #设置允许压缩的页面最小字节数; 这里表示如果文件小于10个字节，就不用压缩，因为没有意义，本来就很小. 
+gzip_buffers 4 16k;       #设置压缩缓冲区大小，此处设置为4个16K内存作为压缩结果流缓存
+gzip_http_version 1.1;    #压缩版本
+gzip_comp_level 2;   #设置压缩比率，最小为1，处理速度快，传输速度慢；9为最大压缩比，处理速度慢，传输速度快; 这里表示压缩级别，可以是0到9中的任一个，级别越高，压缩就越小，节省了带宽资源，但同时也消耗CPU资源，所以一般折中为6
+gzip types  text/plain application/x-javascript text/css application/xml text/javascript application/x-httpd-php application/javascript application/json;      #制定压缩的类型,线上配置时尽可能配置多的压缩类型!
+gzip_disable "MSIE [1-6]\.";       #配置禁用gzip条件，支持正则。此处表示ie6及以下不启用gzip（因为ie低版本不支持）
+gzip vary on;    #选择支持vary header；改选项可以让前端的缓存服务器缓存经过gzip压缩的页面; 这个可以不写，表示在传送数据时，给客户端说明我使用了gzip压缩
+```
+
+## 11.1 静态文件压缩
+
+**测试压缩是否启用成功：**
+
+```c
+~]# curl -I -H "Accept-Encoding: gzip, deflate" "http://www.slyar.com/blog/"
+     
+    HTTP/1.1 200 OK
+    Server: nginx/1.0.15
+    Date: Sun, 26 Aug 2012 18:13:09 GMT
+    Content-Type: text/html; charset=UTF-8
+    Connection: keep-alive
+    X-Powered-By: PHP/5.2.17p1
+    X-Pingback: http://www.slyar.com/blog/xmlrpc.php
+    Content-Encoding: gzip
+     
+    页面成功压缩
+     
+     
+     
+~]# curl -I -H "Accept-Encoding: gzip, deflate" "http://www.slyar.com/blog/wp-content/plugins/photonic/include/css/photonic.css"
+     
+    HTTP/1.1 200 OK
+    Server: nginx/1.0.15
+    Date: Sun, 26 Aug 2012 18:21:25 GMT
+    Content-Type: text/css
+    Last-Modified: Sun, 26 Aug 2012 15:17:07 GMT
+    Connection: keep-alive
+    Expires: Mon, 27 Aug 2012 06:21:25 GMT
+    Cache-Control: max-age=43200
+    Content-Encoding: gzip
+     
+    css文件成功压缩
+     
+~]# curl -I -H "Accept-Encoding: gzip, deflate" "http://www.slyar.com/blog/wp-includes/js/jquery/jquery.js"
+     
+    HTTP/1.1 200 OK
+    Server: nginx/1.0.15
+    Date: Sun, 26 Aug 2012 18:21:38 GMT
+    Content-Type: application/x-javascript
+    Last-Modified: Thu, 12 Jul 2012 17:42:45 GMT
+    Connection: keep-alive
+    Expires: Mon, 27 Aug 2012 06:21:38 GMT
+    Cache-Control: max-age=43200
+    Content-Encoding: gzip
+     
+    js文件成功压缩
+     
+~]# curl -I -H "Accept-Encoding: gzip, deflate" "http://www.slyar.com/blog/wp-content/uploads/2012/08/2012-08-23_203542.png"
+     
+    HTTP/1.1 200 OK
+    Server: nginx/1.0.15
+    Date: Sun, 26 Aug 2012 18:22:45 GMT
+    Content-Type: image/png
+    Last-Modified: Thu, 23 Aug 2012 13:50:53 GMT
+    Connection: keep-alive
+    Expires: Tue, 25 Sep 2012 18:22:45 GMT
+    Cache-Control: max-age=2592000
+    Content-Encoding: gzip
+     
+    图片成功压缩
+     
+~]# curl -I -H "Accept-Encoding: gzip, deflate" "http://www.slyar.com/blog/wp-content/plugins/wp-multicollinks/wp-multicollinks.css"
+     
+    HTTP/1.1 200 OK
+    Server: nginx/1.0.15
+    Date: Sun, 26 Aug 2012 18:23:27 GMT
+    Content-Type: text/css
+    Content-Length: 180
+    Last-Modified: Sat, 02 May 2009 08:46:15 GMT
+    Connection: keep-alive
+    Expires: Mon, 27 Aug 2012 06:23:27 GMT
+    Cache-Control: max-age=43200
+    Accept-Ranges: bytes
+     
+    最后来个不到1K的文件，由于我的阈值是1K，所以没压缩
+```
+
+## 11.2 动态接口压缩
+
+`代码改造`：
+ **在接口请求返回信息的头部需要接口加入content-type，这样nginx才能实现压缩**
+
+**gzip_types一定要加上 "application/json"**
+
+**返回有： Content-Encoding: gzip  就说明压缩成功了**

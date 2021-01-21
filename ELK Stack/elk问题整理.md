@@ -39,3 +39,6 @@
 ~]# curl -XDELETE http://IP:PORT/INDICES_NAME
 ```
 
+知识点整理 
+
+https://blog.csdn.net/laoyang360/article/details/106464359
