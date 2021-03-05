@@ -54,6 +54,8 @@
 	5. -m MODULE_NAME，--module-name=MODULE_NAME：指定要执行的模块名，默认的模块为"command"。
 	6. -o，--one-line：简化输出(一行输出模式)。
 	7. --syntax-check：检查playbook的语法，不会执行。
+	8. -k, --ask-pass：登录密码，提示输入SSH密码而不是假设基于密钥的验证（当没有使用秘要认证的时候）
+	9. -K, --ask-sudo-pass：提示密码使用sudo,sudo表示提权操作，会要求输入一次密码
 
 ### 1.查看所有匹配到的主机
 

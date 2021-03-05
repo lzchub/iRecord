@@ -874,8 +874,8 @@ mysql> select @@session.tx_isolation;
 ​	设置慢查询的时间定义
 ​	set global long_query_time=1;
 ​	
-	show variables like "long_query_time";
-	
+​	show variables like "long_query_time";
+​	
 	查看慢查询记录功能是否开启
 	show variables like "slow%";
 	
@@ -1392,26 +1392,7 @@ mysql> source /data/backup/binlog.sql;
 mysql> set sql_log_bin=on;
 
 恢复完成
-
-    
-    
-    
-  
 ```
-
-
-
-```c
-
-```
-
-
-
-
-
-
-
-
 
 # 11. 主从复制
 ## 11.1 主从复制原理
