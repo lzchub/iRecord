@@ -16,6 +16,11 @@
 		    	}
 		    }
 		}
+		
+	命令行：
+		~]# curl -XPUT -H "Content-Type: application/json" http://170.100.104.47:9200/_all/_settings -d '{"index.blocks.read_only_allow_delete": null}'
+		
+		 如果单个索引的话可以使用 “索引名/setting” 
 	
 		#磁盘低水位线为90%（不再分配分片），高水位线为95%（将分片分配到其他节点）
 		PUT _cluster/settings

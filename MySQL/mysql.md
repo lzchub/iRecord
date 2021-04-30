@@ -105,7 +105,27 @@ InnoDB引擎参数：
 	2.修改my.cnf永久生效
 		prompt=\\u@chuan \r:\m:\s->
 
+# 3. SQL数据类型
+
+| 类型       | 含义                                                         |
+| ---------- | ------------------------------------------------------------ |
+| tinyint    | 1字节，带符号的范围是-128到127，无符号的范围是0到255。bool或boolean，就是tinyint，0表示假，非0表示真 |
+| smaillint  | 2字节，带符号的范围是-32768到32767。无符号的范围是0到65535   |
+| int        | 整形，4字节，通integer，带符号的范围是-2147483648到2147473647。无符号的范围是0到4294967295 |
+| bigint     | 长整形，8字节，带符号的范围是 -9223372036854775808 到 9223372036854775807。无符号的范围是0到18446744073709551615 |
+| float      | 单精度浮点数精确到大约7位小数位                              |
+| double     | 双精度浮点数精确到大约15位小数位                             |
+| DATE       | 日期，支持的范围为'1000-01-01'到'9999-12-31'                 |
+| DATETIME   | 支持的范围是'1000-01-01 00:00:00'到'9999-12-31 23:59:59'     |
+| char(M)    | 固定长度，右边填充空格已达到长度要求。M为长度，范围为0-255。M指的是字符个数 |
+| varchar(M) | 变长字符串。M表示最大列长度。M的范围是0-65535。但不能突破行最大字节数65535 |
+| text       | 大文本。最大长度为65535个字符                                |
+| BLOB       | 大字节。最大长度为65535个字节的BLOB列                        |
+
+
+
 # 3. SQL语句
+
 ## 3.1 DML-数据操作语言
 
 ### 1. insert
@@ -148,17 +168,19 @@ mysql> select id,name from student;
 mysql> select id,name from student limit 2;	#限制看哪几条数据	分页查询
 mysql> select id,name from student limit 0,2; # 跳过0条查2条
 mysql> select id,name from student limit 2 offset 5;	#跳过5条，查看两条
-mysql> select id,name from student where id between 0 and 2; 
+mysql> select id,name from student where id between 0 and 2; #等价于[0,2]
 mysql> select * from student where id=1;
 mysql> select * from student where name='chuan';
 mysql> select * from student where id=1 and name='chuan';
 mysql> select * from student where id=1 or name='chuan';
 mysql> select * from student where id>5 and id<10;
 mysql> select * from test order by id asc/desc;		# asc升序(默认)，desc降序 
-mysql> select * from student where id>5 order by id desc;	#
-mysql> select ClassID from students where age  > (select avg(age) from students); # 子查询，查询结果作为新查询条件
+mysql> select * from student where id>5 order by id desc;	#降序
+mysql> select id,CONCAT(name,age) as name from student;	# 将name与age列合并成一列显示,列名为name    
+mysql> select * from student where id in (1,2,3);
+mysql> select ClassID from students where age  > (select avg(age) from students); # 子查询，查询结果作为新查询条件。子查询不能使用order by
 mysql> select ClassID，avg(age) FROM students GROUP BY ClassID;
-mysql> select ClassID,avg(age) from students GROUP BY ClassID HANVING avg(age) > 25;
+mysql> select ClassID,avg(age) from students GROUP BY ClassID HANVING avg(age) > 25;	# having类似于where，但只能在group by后使用
 mysql> explain select * from student where age='20'\G; 		#查询是否走索引
 mysql > select name from student where name like 'zhang%';
 mysql > select name from student where name like 'zhang_';	# _ 只表示一个字符
@@ -170,6 +192,8 @@ mysql> select name from student where name is not null;
 mysql> select distinct date from student;	# distinct 去重
 mysql> select sex,count(sex) from student group by sex;	#分组与聚合函数，常用max/min/avg/sum/count,会忽略null
 mysql> select id as 学号,avg(mark) as 平均分 from student group by id having 平均分>=90; # 分组后的筛选通过having子句  
+mysql> select * from student cross join class;	# 笛卡尔乘集，student表和class表相乘  3*3=9    
+    
 多表查询：
 	mysql> select stuname,couname,scmark from student t1,course t2,score t3 where t1.id=t2.id and t2.couid=t3.couid and mark is not null;	
 
@@ -177,15 +201,14 @@ mysql> select id as 学号,avg(mark) as 平均分 from student group by id havin
     mysql> select stuname,couname,scmark from student t1 inner join score t3 on t1.id = t3.id inner join course t2 on t2.couid=t3.couid where scmark is not null;	
     
 外连接：
-    左外连接：join左边的不需要按照条件，全表进行查询 left outer join
-    右外连接：join右边的不需要按照条件，全表进行查询 right outer join
+    左外连接：join左边的不需要按照条件，全表进行查询 left outer join，a,b两个表 a全表显示，b只显示符合条件的，不足的地方用null填充
+    右外连接：join右边的不需要按照条件，全表进行查询 right outer join，a,b两个表 b全表显示，a只显示符合条件的，不足的地方用null填充
     全外连接：mysql不支持 full outer join
     mysql> select name,ifnull(total,0) from student t1 left outer join (select id,count(id) as total from socre group by id) t2 on t1.id=t2.id;
     
         
     
 查询执行路径：
-	请求 --> 查询缓存
 	请求 --> 查询缓存 --> 解析器 --> 预处理器 --> 优化器 --> 查询执行引擎 --> 存储引擎 --> 数据
     
 select语句的执行流程：
@@ -876,9 +899,9 @@ mysql> select @@session.tx_isolation;
 ​	
 ​	show variables like "long_query_time";
 ​	
-	查看慢查询记录功能是否开启
-	show variables like "slow%";
-	
+​	查看慢查询记录功能是否开启
+​	show variables like "slow%";
+​	
 	开启慢查询记录功能
 	set global slow_query_log=ON;
 

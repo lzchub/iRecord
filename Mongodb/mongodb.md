@@ -96,6 +96,40 @@ find逻辑运算：
 find type查找：https://www.runoob.com/mongodb/mongodb-operators-type.html
     > db.student.find({age:{$type:1}})		#与下条等同
     > db.student.find({age:{$Type:"double"}})
+        
+按照列名进行统计计数，实现mysql groupby
+    > db.student.aggregate([{$group:{_id:"$age",count:{$sum:1}}}])
+    
+        _id : 指明根据哪个字段来进行统计
+        count: 统计完成后的字段名
+            
+        1、$sum分组求和
+
+        2、$avg分组平均值
+
+        3、$min分组最小值
+
+        4、$max分组最大值
+
+        5、$first分组第一条记录
+
+        6、$last分组最后一天记录
+            
+命令行查询mongo数据：
+    # 这样有个问题，就是mongo默认不会将数据显示完全，只是简单查询一下没问题，若要导出数据，还是要下面的方法
+	~]# /data/server/mongodb_27017/bin/mongo  -u root -p '54master@@)@!1234' --authenticationDatabase 'admin' localhost:27017/union_epg --eval "db.getCollection('epgGroupChannel').find({'epgGroupId':1000109})"
+     
+    #使用js文件来查询    
+	~]# /data/server/mongodb_27017/bin/mongo  -u root -p '54master@@)@!1234' --authenticationDatabase 'admin' localhost:27017/union_epg /home/liuzichuan_cmsc18/query.js > /home/liuzichuan_cmsc18/result.log
+        
+    ~]# cat /home/liuzichuan_cmsc18/query.js	# json格式打印
+        rs.slaveOk()
+        # 第一个大括号表示筛选条件，第二个大括号表示显示字段 1 为显示 0 为不显示
+		var c = db.getCollection('epgGroupChannel').find({"epgGroupId":1000109},{"code":1,"_id":0})
+		while(c.hasNext()) {
+    		printjson(c.next());
+		}
+                  
 ```
 
 ## 2.3 Update
@@ -433,10 +467,13 @@ Mongo的数据同步类型：
 #主节点配置复制集
 ~]# /usr/local/mongodb/bin/mongo --host 192.168.183.129 --port 27017 		#随便登录一个节点
     > config = {_id:'my-res',members:[
-        {_id:0,host: '192.168.183.129:27017'},
-        {_id:1,host: '192.168.183.130:27017'},
+        {_id:0,host: '192.168.183.129:27017',priority: 10,votes:1},
+        {_id:1,host: '192.168.183.130:27017',priority: 0,votes:0},
         {_id:2,host: '192.168.183.131:27017'}
     ]}
+
+	注：priority：代表优先级，优先级越高，越有希望成为主，最高优先级的会争抢primary，就算挂掉重启后也会重新成为主
+       votes：代表投票权，一个mongo副本集最多只能有七个节点具有投票权
 
     > rs.initiate(config)           
     {
@@ -569,12 +606,68 @@ rs.reconfig(cfg)
    > db.createUser(
   	{
     user: "root",
-    pwd: "root",
+    pwd: "54master@@)@!1234",
     roles: [ { role: "root", db: "admin" } ]
   	}
   )  
         
 5.重新登录，加入从节点，从节点也要开启认证
+```
+
+## 5.3 集群管理员密码修改
+
+### 1. 忘记管理员密码
+
+**1.修改配置文件，关闭认证，重启服务**
+
+```c
+找到：
+security:
+     authorization: enabled
+修改：
+#security:
+#    authorization: enabled
+```
+
+**2.无密码登录，删除用户**
+
+```c
+PRIMARY> use admin
+
+PRIMARY> db.system.users.find()
+{ "_id" : "admin.root", "user" : "root", "db" : "admin", "credentials" : { "SCRAM-SHA-1" : { "iterationCount" : 10000, "salt" : "qgUsEDIVbutytZML2XIsag==", "storedKey" : "/bb2XmwTrVVdzrKw5jxu8b7UKNo=", "serverKey" : "+Bz/EycBIn6Pu1dV+VIQGQ7NxYo=" }, "SCRAM-SHA-256" : { "iterationCount" : 15000, "salt" : "B29bJExv2GESpmKluC1+SKb03mftMqHUBDqXsA==", "storedKey" : "4hqZoXUAAEfurSkvzmuuONk+iZjGVRGe+mqWgsY6Jic=", "serverKey" : "G71ALyfNg7liTs91PfPBkd7rnQXvO2S3Ydfr9pdpOiM=" } }, "roles" : [ { "role" : "root", "db" : "admin" } ] }
+
+PRIMARY> db.system.users.remove({"_id" : "admin.root"})
+WriteResult({ "nRemoved" : 1 })
+```
+
+**3.创建新用户**
+
+```c
+PRIMARY> db.createUser(
+{
+    user: "epg",
+    pwd: "cosepg0tU#uI7H",
+    roles: [ { role: "readWrite", db: "union_epg" } ]
+  	}
+)  
+```
+
+**4.开启认证，重启服务**
+
+
+
+## 5.4 复制集标签管理
+
+```c
+对于某些副本集，我们希望根据每个节点的一些特殊标签来做一些特殊的操作，我们可以把某些节点打上对应的标签，通过标签来进行对应的处理
+    
+conf = rs.conf()	# 拿到当前配置
+conf.members[0].tags = { "wr": "ncos"}	# 给id号为0的节点打上 wr:ncos的标签
+conf.members[1].tags = { "wr": "ncos"}
+conf.members[2].tags = { "wr": "ncos"}
+conf.members[3].tags = { "wr": "ncos"}
+rs.reconfig(conf)	# 重载配置生效
 ```
 
 
