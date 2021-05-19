@@ -896,6 +896,34 @@ config主要用于存储一些配置文件
 ~]# docker service rollback nginx 
 ```
 
+**13.移除节点**
+
+动离开集群，让节点处于down状态，才能删除
+
+```c
+docker swarm leave
+```
+
+删除指定节点 （管理节点上操作）
+
+```c
+docker node rm g36lvv23ypjd8v7ovlst2n3yt
+```
+
+**14.排空节点上的集群容器** 
+
+drain干跑，不运行容器，状态有 active ,drain, pause 三种
+
+``` 
+docker node update --availability drain g36lvv23ypjd8v7ovlst2n3yt
+```
+
+**15.管理节点，解散集群**
+
+```c
+docker swarm leave --force
+```
+
 
 
 ## 3.4 使用compose文件启动service

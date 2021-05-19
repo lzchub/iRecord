@@ -2,6 +2,42 @@
 
 https://www.cnblogs.com/chenmh/p/5121849.html
 
+## 1.1 Redis集群搭建
+
+```c
+https://github.com/redis/redis/archive/refs/tags/5.0.12.tar.gz		//源码包 5.x以后版本
+
+~]# yum install -y gcc
+~]# mkdir /data/server/{redis-6379,redis-6380} -pv
+~]# mkdir /data/logs/{redis-6379,redis-6380} -pv
+~]# mkdir /data/data/{redis-6379,redis-6380} -pv
+~]# tar xf redis-5.0.11.tar.gz 
+~]# cd redis-5.0.11/
+~]# make MALLOC=libc
+~]# make PREFIX=/data/server/redis install
+~]# cp redis-5.0.11/redis.conf /data/server/redis-6379/redis6379.conf		//其余机器相同操作
+~]# cp redis-5.0.11/redis.conf /data/server/redis-6380/redis6380.conf    	//其余机器相同操作
+~]# 所有配置需要修改如下
+    bind 0.0.0.0
+    port 6379
+    daemonize yes
+    pidfile /data/data/redis-6379/redis_6379.pid
+    logfile /data/logs/redis-6379/redis_6379.log
+    dir /data/server/redis-6379/
+    cluster-enabled yes
+    cluster-config-file redis6370.conf
+    cluster-node-timeout 5000
+    
+    
+/data/server/redis/bin/redis-server /data/server/redis-6379/redis6379.conf 	//启动服务
+/data/server/redis/bin/redis-cli --cluster create 10.25.171.164:6379 10.25.171.164:6380 10.25.171.224:6379 10.25.171.224:6380 172.188.1.164:6379 172.188.1.164:6380 --cluster-replicas 1	//创建集群
+    
+//从库数为1    
+--cluster-replicas 1
+```
+
+
+
 # 2. Redis常用操作
 
 ## 2.1 Redis 主从添加密码认证
@@ -16,7 +52,7 @@ https://www.cnblogs.com/chenmh/p/5121849.html
 3.从库设置与主库使用密码认证同步
     ~]# config set masterauth MzJiMGE1YzRm
     
-4.修改主从库配置文件
+4.修改主从库配置文件(需要重启服务)
    主库: 
    		requirepass MzJiMGE1YzRm
             
@@ -24,9 +60,21 @@ https://www.cnblogs.com/chenmh/p/5121849.html
 		requirepass MzJiMGE1YzRm
 		masterauth MzJiMGE1YzRm
             
+   执行命令：(执行命令即可，不需要在手动执行)
+        config rewrite
 注：
   1.使用中的按照此步骤，新建集群可以添加密码认证后在进行主从同步
   2.主从认证添加完成后，master会重新 sync ,所以要保证主库内存空间足够，否则会同步失败
+```
+
+## 2.2 Redis 集群添加密码认证
+
+```c
+所有机器添加如下：
+config set requirepass MzJiMGE1YzRm		//添加密码认证
+auth MzJiMGE1YzRm
+config set masterauth MzJiMGE1YzRm		//从库设置与主库使用密码认证同步
+config rewrite 	//重载配置 
 ```
 
 
