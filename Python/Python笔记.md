@@ -20,6 +20,7 @@ Python安装：源码
     ~]# tar xf Python-3.7.3.tar.xz
     ~]# cd Python-3.7.3
     ~]# ./configure --prefix=/usr/local/python37 --enable-optimizations
+    ~]# make && make install 
 
 4.配置环境变量
     ~]# cat /etc/profile.d/python37.sh 
@@ -189,6 +190,363 @@ https://www.jetbrains.com
 | \__dict__   | 类或实例的属性，可写的字典                                   |
 | \__dir__    | 返回了类或者对象所有成员列表，dir()函数调用的是_dir_()，如果提供了_dir_()，则返回属性列表，否则尽可能从__dict__属性中收集信息 |
 
+**测试代码：**
+
+### 1. **\_\_name\_\_**   
+
+获取类和函数的名字
+
+```c
+class A:
+    pass
+
+class B:
+    pass
+
+print(A.__name__,B.__name__,sep='\n')
+
+--------------------------------------------------
+A
+B
+```
+
+### 2. **\_\_module\_\_** 	
+
+类定义所在的模块名
+
+```c
+class  A:
+    pass
+class B:
+    pass
+print  (A.__module__,B.__module__)
+
+--------------------------------------------------
+__main__
+__main__
+```
+
+### 3. **\_\_class\_\_**   
+
+对象或类所属的类 
+
+```
+class  A:
+    pass
+class B(A):
+    pass
+a=A()
+b=B()
+print (A.__class__,B.__class__,sep='\n')  #类所属的类是class
+print (a.__class__,b.__class__,sep='\n')  # 对象所属的类是实实在在的类
+
+--------------------------------------------------
+<class 'type'>
+<class 'type'>
+<class '__main__.A'>
+<class '__main__.B'>
+```
+
+### 4. **\_\_bases\_\_**  
+
+ 类的基类的元组，顺序是他们在基类列表中出现的顺序 
+
+```c
+class  A:
+    pass
+class B(A):
+    pass
+class C(B):
+    pass
+class E:
+    pass
+class D(E,C):
+    pass
+print (A.__bases__,B.__bases__,C.__bases__,D.__bases__,sep='\n')
+        
+--------------------------------------------------
+(<class 'object'>,)
+(<class '__main__.A'>,)
+(<class '__main__.B'>,)
+(<class '__main__.E'>, <class '__main__.C'>)
+```
+
+### 5. **\_\_doc\_\_**   
+
+文档字符串，针对类和函数有效，若不存在，则返回为None
+
+```c
+class  A:
+    '''this  is  class'''
+    pass
+def B():
+    '''this is function'''
+    pass
+class C:
+    pass
+print (A.__doc__,B.__doc__,C.__doc__,sep='\n')
+        
+--------------------------------------------------
+this  is  class
+this is  function
+None
+```
+
+### 6. **\_\_mro\_\_**   
+
+类的mro。返回多继承中的查找顺序
+
+```c
+class  A:
+    pass
+class B(A):
+    pass
+class C(B):
+    pass
+class E:
+    pass
+class D(E,C):
+    pass
+print (A.__mro__,B.__mro__,C.__mro__,D.__mro__,sep='\n')
+        
+--------------------------------------------------
+(<class '__main__.A'>, <class 'object'>)
+(<class '__main__.B'>, <class '__main__.A'>, <class 'object'>)
+(<class '__main__.C'>, <class '__main__.B'>, <class '__main__.A'>, <class 'object'>)
+(<class '__main__.D'>, <class '__main__.E'>, <class '__main__.C'>, <class '__main__.B'>, <class '__main__.A'>, <class 'object'>)
+```
+
+### 7. **\_\_dict\_\_** 
+
+类或者实例的属性，可写的字典
+
+```c
+class  A:
+    a=10
+    def  __init__(self,x):
+        self.x=5
+a=A(3)
+
+print (A.__dict__)
+print (a.__dict__)
+            
+--------------------------------------------------
+{'__module__': '__main__', 'a': 10, '__init__': <function A.__init__ at 0x0000017ADCB02B70>, '__dict__': <attribute '__dict__' of 'A' objects>, '__weakref__': <attribute '__weakref__' of 'A' objects>, '__doc__': None}
+{'x': 5}
+```
+
+### 8. **\_\_dir\_\_**  
+
+dir 返回了类或者对象所有成员名称列表，dir()函数调用的是\_\_dir\_\_()，如果提供了\_\_dir\_\_() ,则返回属性的列表，否则会尽量从\_\_dict\_\_属性中收集
+
+dir() 对于不同类型的对象具有不同的行为：
+
+1、如果对象是模块对象，则列表包含模块的属性名
+
+```c
+import  re
+def  foo(x):
+    y=1
+print (dir())  # 输出当前模块信息,此处会打印当前导入的模块和导入的函数
+print (dir(re))
+print ('+'*20)
+print (dir(foo))
+```
+
+```c
+['__annotations__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'foo', 're']
+['A', 'ASCII', 'DEBUG', 'DOTALL', 'I', 'IGNORECASE', 'L', 'LOCALE', 'M', 'MULTILINE', 'RegexFlag', 'S', 'Scanner', 'T', 'TEMPLATE', 'U', 'UNICODE', 'VERBOSE', 'X', '_MAXCACHE', '__all__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', '__version__', '_alphanum_bytes', '_alphanum_str', '_cache', '_compile', '_compile_repl', '_expand', '_locale', '_pattern_type', '_pickle', '_subx', 'compile', 'copyreg', 'enum', 'error', 'escape', 'findall', 'finditer', 'fullmatch', 'functools', 'match', 'purge', 'search', 'split', 'sre_compile', 'sre_parse', 'sub', 'subn', 'template']
+++++++++++++++++++++
+['__annotations__', '__call__', '__class__', '__closure__', '__code__', '__defaults__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__get__', '__getattribute__', '__globals__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__kwdefaults__', '__le__', '__lt__', '__module__', '__name__', '__ne__', '__new__', '__qualname__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__']
+```
+
+2、如果对象是类型或者类对象，列表包含类的属性名，以及其他基类的属性名
+
+```c
+class A:
+    a='1234'
+    def __init__(self):
+        pass
+class  B(A): # 此处调用父类，其dir中会包含父类的属性
+    pass
+print (dir())  # 输出当前模块信息,此处会打印当前导入的模块和导入的函数
+print ('*'*40)
+print (dir(A),dir(B),sep='\n')  # 此中DIR属性父类和子类是完全相同的，但dict中却是不同的
+print (A.__dict__,B.__dict__,sep='\n')
+```
+
+```c
+['A', 'B', '__annotations__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__']
+****************************************
+['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'a']
+['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'a']
+{'__module__': '__main__', 'a': '1234', '__init__': <function A.__init__ at 0x0000022206254C80>, '__dict__': <attribute '__dict__' of 'A' objects>, '__weakref__': <attribute '__weakref__' of 'A' objects>, '__doc__': None}
+{'__module__': '__main__', '__doc__': None}
+```
+
+ 3、如果是对象，列表包含对象的属性名，它的类的属性名和基类的属性名 
+
+```c
+class A:
+    a='1234'
+    def __init__(self):
+        self.x=10
+class  B(A): # 此处调用父类，其dir中会包含父类的属性
+    pass
+a=A()
+print (dir())  # 输出当前模块信息,此处会打印当前导入的模块和导入的函数
+print ('*'*40)
+print (dir(A),dir(B),dir(a),sep='\n') #此处若是打印实例的属性，则会吧类的属性也打印上来
+```
+
+```c
+['A', 'B', '__annotations__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'a']
+****************************************
+['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'a']
+['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'a']
+['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'a', 'x']
+```
+
+ 4、此处对属性名进行了重写操作
+
+```c
+class A:
+    a='1234'
+    def __init__(self):
+        self.x=10
+class  B(A): # 此处调用父类，其dir中会包含父类的属性
+    def __dir__(self): # 此处是针对实例设置的，和类本身并无关系
+        return ['this is class A '] # 此处是dir返回是列表，若使用字符串，则会处理成列表进行返回
+a=A()
+b=B()
+print (dir())  # 输出当前模块信息,此处会打印当前导入的模块和导入的函数，以及实例后的对象
+print ('*'*40)
+print (dir(A),dir(B),dir(a),dir(b),sep='\n') #此处若是打印实例的属性，则会吧类的属性也打印上来
+```
+
+```c
+['A', 'B', '__annotations__', '__builtins__', '__cached__', '__doc__', '__file__', '__loader__', '__name__', '__package__', '__spec__', 'a', 'b']
+****************************************
+['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'a']
+['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'a']
+['__class__', '__delattr__', '__dict__', '__dir__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__gt__', '__hash__', '__init__', '__init_subclass__', '__le__', '__lt__', '__module__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'a', 'x']
+['this is class A ']
+```
+
+### 9. \_\_slots\_\_
+
+**问题引出：**
+
+>  都是字典惹的祸 字典为了提升查询效率，必须用空间换时间  一般来说一个对象，属性多一点，都存储在字典中便于查询，问题不大，但是数百万个对象，那么字典就占得有点大了，这个时候，python便提供了\_\_slots\_\_  
+
+**测试代码：**
+
+```c
+class A:
+    x=123
+    __slots__ = ('p1',)  # 此处只放置了一个槽位，则只能使用p1变量，不能使用其他
+    def __init__(self):
+        self.p1=1
+        self.p2=2
+    def show(self):
+        print ('this is  test1,{}'.format(self.p1))
+print (A().__dict__)
+```
+
+```c
+Traceback (most recent call last):
+  File "D:/python-scripts/scripts/test.py", line 625, in <module>
+    print (A().__dict__)
+  File "D:/python-scripts/scripts/test.py", line 622, in __init__
+    self.p2=2
+AttributeError: 'A' object has no attribute 'p2'
+```
+
+```c
+class A:
+    x=123
+    __slots__ = ('p1','p2')  # 此处只放置了一个槽位，则只能使用p1变量，不能使用其他
+    def __init__(self):
+        self.p1=1
+        self.p2=2
+    def show(self):
+        print ('this is  test1,{}'.format(self.p1))
+print ('slots',A().__slots__)  #实例的此属性可以被打印出来，但实例的字典属性却不存在
+print (A.__dict__)  # 类的字典属性不受影响
+print ('dict',A().__dict__)
+```
+
+```c
+slots ('p1', 'p2')
+{'__module__': '__main__', 'x': 123, '__slots__': ('p1', 'p2'), '__init__': <function A.__init__ at 0x000001CBDBAD2B70>, 'show': <function A.show at 0x000001CBDBAE4C80>, 'p1': <member 'p1' of 'A' objects>, 'p2': <member 'p2' of 'A' objects>, '__doc__': None}
+Traceback (most recent call last):
+  File "D:/python-scripts/scripts/test.py", line 637, in <module>
+    print ('dict',A().__dict__)
+AttributeError: 'A' object has no attribute '__dct__'
+```
+
+```c
+class A:
+    x=123
+    __slots__ = 'p1','p2'  # 此处只放置了一个槽位，则只能使用p1变量，不能使用其他
+    def __init__(self):
+        self.p1=1
+        self.p2=2
+    def show(self):
+        print ('this is  test1,{}'.format(self.p1))
+print ('slots',A().__slots__)  #实例的此属性可以被打印出来，但实例的字典属性却不存在
+print (A.__dict__)  # 类的字典属性不受影响
+A.p4=300  #类添加属性，只会影响类的__dict__，实例中不会显示，而__slots__ 不会对类造成影响
+try:
+    setattr(A(),'p5',30)
+except  AttributeError  as  a:
+    print (A(),'不能添加属性')
+finally:
+    print (A().__slots__) #查看
+
+try:
+    A().P3=300
+except  AttributeError  as  a:
+    print (A(),'不能添加属性')
+finally:
+    print (A().__slots__) #查看
+```
+
+```c
+slots ('p1', 'p2')
+{'__module__': '__main__', 'x': 123, '__slots__': ('p1', 'p2'), '__init__': <function A.__init__ at 0x000001C7BDEB2B70>, 'show': <function A.show at 0x000001C7BDEC4C80>, 'p1': <member 'p1' of 'A' objects>, 'p2': <member 'p2' of 'A' objects>, '__doc__': None}
+<__main__.A object at 0x000001C7BDEC6780> 不能添加属性
+('p1', 'p2')
+<__main__.A object at 0x000001C7BDEC67B8> 不能添加属性
+('p1', 'p2')
+```
+
+**继承：**
+
+```c
+class A:
+    x=123
+    __slots__ = 'p1','p2'  # 此处只放置了一个槽位，则只能使用p1变量，不能使用其他
+    def __init__(self):
+        self.p1=1
+        self.p2=2
+    def show(self):
+        print ('this is  test1,{}'.format(self.p1))
+class B(A):
+    def __init__(self):
+        super().__init__()
+        self.b1=200
+b=B()
+b.b2=300
+print (b.__dict__)  # 继承则失效 
+```
+
+```c
+{'b1': 200, 'b2': 300}
+```
+
+
+
 ## 4.2 魔术方法
 
 | 描述                                           | 方法                                                         |
@@ -205,6 +563,376 @@ https://www.jetbrains.com
 | 描述器                                         | Object._get_(self,instance,owner)Object._set_(self,instance,value)Object._delete_(self,instance) |
 
 实例参考：https://cloud.tencent.com/developer/article/1566261
+
+### 1. \_\_init\_\_ 、\_\_del\_\_
+
+```c
+class X:
+    def __init__(self,name):
+        self.name=name
+        self.x=10
+        print ("init  instance")
+    def __del__(self):
+        print ('delete {}'.format(self.name))
+a=X('a')
+del  a  # 因为python自身的垃圾回收机制，而del删除实例的操作不确定何时执行，因此需要使用del进行清除处理
+```
+
+```c
+init  instance
+delete a
+```
+
+### 2. \_\_hash__
+
+hash 中最基础的hash就是取模运算。 list 不能hash的原因  list 源码： 其中hash=None,在调用None的时候自然是不能hash的
+
+**判断是否可以hash：**
+
+```c
+from collections import Hashable
+class X:
+    def __init__(self,x):
+        self.x=x
+    def __hash__(self):
+        return 1
+print (isinstance(X(1),Hashable))
+print (isinstance([],Hashable))
+```
+
+```c
+True
+False
+```
+
+**定义不可hash类型：**
+
+```
+from collections import Hashable
+
+class A:
+    def __init__(self,x):
+        self.x = x
+
+    #def __hash__(self):
+    #   return None
+        
+    __hash__ = None
+
+print(hash(A(10)))
+```
+
+```c
+Traceback (most recent call last):
+  File "D:/python-scripts/scripts/test.py", line 679, in <module>
+    print(hash(A(10)))
+TypeError: unhashable type: 'A'
+```
+
+**实例：**
+
+```c
+class X:
+    def __init__(self):
+        self.x=10
+    def __hash__(self):  # 此处是定义的是实例的hash，和类没关系
+        return  None  # 此处设置hash的返回为None,模拟列表
+        # 另一种方式定义不可哈希类型  __hash__=None
+class Y:  #此类未设置相关的hash属性
+    def __init__(self):
+        pass
+class Z: # 此类定义了hash的返回值为1 ，则实例化后调用hash返回为1
+    def __hash__(self):
+        return  1
+print (hash(Y())) # 此处返回整数
+print (hash(Z())) # 此处返回为固定数
+print (hash(X()))  #进行判断是否能够进行hash操作，未进行hash，直接抛出异常
+```
+
+```c
+Traceback (most recent call last):
+  File "D:/python-scripts/scripts/test.py", line 696, in <module>
+    print (hash(X()))  #进行判断是否能够进行hash操作，未进行hash，直接抛出异常
+TypeError: __hash__ method should return an integer
+-9223371912820427818
+1
+```
+
+### 3. \_\_bool__
+
+\_\_bool\_\_ 内建函数bool(), 或者对象放在逻辑表达式的位置，调用这个函数返回布尔值，没有定义\_\_bool\_\_，就找\_\_len\_\_ 返回长度，非0为真，如果\_\_len\_\_也没有定义，则所有的实例都返回是真。
+
+```c
+class Point:  # 此类未定义len和bool，因此其返回值为恒真
+    def  __init__(self):
+        self.x=3
+        self.y=4
+    # def __bool__(self):
+    #     return False
+
+print (bool(Point()))
+
+class Point2:
+    def  __init__(self):
+        self.x=3
+        self.y=4
+    def __bool__(self):
+        return False
+
+print (bool(Point2()))
+
+class Point3:
+    def  __init__(self):
+        self.x=3
+        self.y=4
+    # def __bool__(self):
+    #     return False
+
+    def __len__(self):
+        return 0
+print (bool(Point3()))
+
+
+class Point4:
+    def  __init__(self):
+        self.x=3
+        self.y=4
+    # def __bool__(self):
+    #     return False
+
+    def __len__(self):
+        return 1
+print (bool(Point4()))
+
+class Point5:		# 当 bool 与 len 都定义时，以
+    def  __init__(self):
+        self.x=3
+        self.y=4
+    def __bool__(self):
+        return False
+
+    def __len__(self):
+        return 1
+print (bool(Point5()))
+```
+
+```c
+True
+False
+False
+True
+False
+```
+
+### 4. \_\_str___ 、\_\_repr\_\_
+
+\_\_repr\_\_ : 内建函数repr()对一个对象获取字符串表达式，如果一个类定义了\_\_repr\_\_但没有定义\_\_str\_\_，那么在请求该类的实例的"非正式"的字符串也将调用\_\_repr\_\_()
+
+\_\_str___ : str() 函数，内建函数format，print()函数调用，需要返回对象的字符串表达式
+
+当str和repr同时存在时，如果输出结果直接作用于对象上，则调用str方法，否则将调用repr方法
+
+1. `__repr__`正式，`__str__` 非正式。 
+2. `__str__`主要由 `str()`,`format()`和`print()`三个方法调用。
+3.  若定义了`__repr__`没有定义`__str__`，那么本该由`__str__`展示的字符串会由`__repr__`代替。
+4. `__repr__`主要用于调试和开发，而`__str__`用于为最终用户创建输出。 
+5. `__repr__`看起来更像一个有效的 Python 表达式，可用于重新创建具有相同值的对象（给定适当的环境）。
+
+```c
+class Point:
+    def  __init__(self):
+        self.x=3
+        self.y=4
+    def  __repr__(self):
+        return str([self.x,self.y])  #此处的返回必须使用字符串进行包裹，否则会报错
+print (Point())
+print("-"*50)
+
+class Point2:
+    def  __init__(self):
+        self.x=3
+        self.y=4
+    def  __repr__(self):
+        return str([self.x,self.y])  #此处的返回必须使用字符串进行包裹，否则会报错
+    def  __str__(self):  # 若存在此属性，则上述的表达式将不会被调用
+        return  'abcdefg'
+print (Point2())
+print("-"*50)
+
+class Point3:
+    def  __init__(self):
+        self.x=3
+        self.y=4
+    def  __repr__(self):
+        return str([self.x,self.y])  #此处的返回必须使用字符串进行包裹，否则会报错
+    def  __str__(self):  # 若存在此属性，则上述的表达式将不会被调用
+        return  'abcdefg'
+print (Point3())
+p1=Point3()
+p2=Point3()
+lst=[p1,p2]
+for x in  lst:
+    print (x)
+print (lst)
+
+print (*lst)  #进行解包处理，此时是针对于对象上的，此时应该调用的是str
+```
+
+```c
+[3, 4]
+--------------------------------------------------
+abcdefg
+--------------------------------------------------
+abcdefg
+abcdefg
+abcdefg
+[[3, 4], [3, 4]]
+abcdefg abcdefg
+```
+
+### 5. 运算符重载
+
+operator 模块提供以下的特殊方法，可以将类的实例使用下面操作符来进行操作 
+
+| 运算符                 | 特殊方法                                                     | 含义                                   |
+| ---------------------- | ------------------------------------------------------------ | -------------------------------------- |
+| <,<=,==,>,>=,!=        | \_\_lt\_\_ , \_\_le\_\_ , \_\_eq\_\_ , \_\_gt\_\_ , \_\_ge\_\_ , \_\_ne\_\_ | 比较运算符                             |
+| +,-,*,/,%,//,**,divmod | \_\_add\_\_ , \_\_sub\_\_ , \_\_mul\_\_ , \_\_truediv\_\_ , \_\_mod\_\_ , \_\_floordiv\_\_ , \_\_pow\_\_ , \_\_divmod\_\_ | 算数运算符，移位，位运算也有对应的方法 |
+| +=,-=,*=,/=,%=,//=,**= | \_\_iadd\_\_ , \_\_isub\_\_ , \_\_imul\_\_ , \_\_itruediv\_\_ , \_\_imod\_\_ , \_\_ifloordiv\_\_ , \_\_ipow\_\_ |                                        |
+
+```c
+class A():
+    def __init__(self,x):
+        self.x = x
+
+    # <
+    def __lt__(self, other):
+        print("__lt__")
+        return self.x < other.x
+
+    # <=
+    def __le__(self, other):
+        print("__le__")
+        return self.x <= other.x
+
+    # >
+    def __gt__(self, other):
+        print("__gt__")
+        return self.x > other.x
+
+    # >=
+    def __ge__(self, other):
+        print("__ge__")
+        return self.x >= other.x
+
+    # !=
+    def __ne__(self, other):
+        print("__ne__")
+        return self.x != other.x
+
+    # ==
+    def __eq__(self, other):
+        print("__eq__")
+        return self.x == other.x
+
+    # +=
+    def __iadd__(self, other):
+        print("__iadd__")
+        self.x += other.x
+        return self
+
+    # -=
+    def  __isub__(self, other):
+        print ('__isub__')
+        self.x -= other.x
+        return  self
+
+    def __add__(self, other):
+        print("__add__")
+        return self.x + other.x
+
+    # 反向加法
+    def __radd__(self, other):
+        print("__radd__")
+        return self.x + other.x
+
+class B():
+    def __init__(self,x):
+        self.x = x
+
+a1 = A(5)
+a2 = A(10)
+a3 = A(2)
+
+print(a1 > a2)
+print(a1 > a3)
+print(a2 > a3)
+print(a1 == a3)
+print("-"*50)
+
+a1+=a2
+print(a1.x,a2.x)
+print("-"*50)
+
+print(a1+a2)
+print("-"*50)
+
+print(a2+a1)
+print("-"*50)
+
+b1 = B(10)
+print(a1+b1)
+print("-"*50)
+
+print(b1+a1)
+```
+
+```c
+__gt__
+False
+__gt__
+True
+__gt__
+True
+__eq__
+False
+--------------------------------------------------
+__iadd__
+15 10
+--------------------------------------------------
+__add__
+25
+--------------------------------------------------
+__add__
+25
+--------------------------------------------------
+__add__
+25
+--------------------------------------------------
+__radd__
+25
+```
+
+**结论：**
+
+```c
+b+a 等价于 b.add(a),但是B类没有实现add方法，就去找a的__radd__方法 
+
+1+a 等价于1.add(a)，而int 类型实现了__add__放方法，不过这个方法对于这种加法的返回值是NotImplemented，解释器发现了这个值，就会对第二个操作对象执行__radd__进行调用。
+```
+
+### 6. 容器相关方法
+
+| 内建方法         | 含义                                                         |
+| ---------------- | ------------------------------------------------------------ |
+| \_\_len\_\_      | 内建函数len()，返回对象的长度(>=0的整数)，其实即使吧对象当作容器类型来看，就如同list或dict，bool()函数调用的时候，如果没有_bool_()方法，则会看_len_()方法是否存在，存在返回非0为真，第三方库中可能存在size，其和len的含义相同 |
+| \_\_iter\_\_     | 迭代器时，调用，返回一个新的迭代器对象                       |
+| \_\_contains\_\_ | in成员运算符，没有实现，就调用\_\_iter\_\_方法遍历           |
+| \_\_getitem\_\_  | 实现self[key]访问，序列对象，key接受整数为索引，或者切片，对于set和dict，key为hashable，key不存在时引KeyError异常 |
+| \_\_setitem\_\_  | 和\_\_getitem\_\_的访问相似，是设置值的方法                  |
+| \_\_missing\_\_  | 字典使用\_\_getitem\_\_()调用时，key不存在执行该方法         |
+
+
 
 # 5.常用模块
 
@@ -1243,5 +1971,204 @@ ret = re.split(r":| ","info:xiaoZhang 33 shandong")
 print(ret)
     
 ['info', 'xiaoZhang', '33', 'shandong']
+```
+
+## 5.7 json模块
+
+Python是原生态支持json，这点可以从字典和列表结构看出来。
+
+我们可以利用json模块处理json数据。
+
+**1.json.dumps() 与 json.loads()**
+
+dumps：把字典转成json字符串
+
+loads：把json字符串转成字典
+
+```c
+import json
+
+tdict={"name":"liu","age":15,"sex":"M"}
+// 将字典转换为json字符串
+json_txt = json.dumps(tdict)
+print(json_txt)
+print(type(json_txt))
+# print(json_txt["name"])
+    
+<class 'str'>
+{"name": "liu", "age": 15, "sex": "M"}
+
+tjson = """
+{
+    "name":"liu",
+    "age":"15",
+    "sex":"M"
+}
+"""
+// 将 json字符串转换为字典
+json_dict = json.loads(tjson)
+print(type(json_dict))
+print(json_dict)
+print(json_dict["name"])
+    
+<class 'dict'>    
+{'name': 'liu', 'age': '15', 'sex': 'M'}
+liu
+```
+
+最后，再说一个知识点。**如何把json转成有序的字典**。
+
+众所周知，字典是无序的。所以json的loads方法转换得来的字典本来就是无序的。
+
+但出于某种需求，需要确保顺序正常，按照原本json字符串的顺序。
+
+这个需要在解析的时候，把无序字典换成有序字典。如下代码：
+
+```c
+from collections import OrderedDict
+import json
+ 
+json_text = '{ "b": 3, "a": 2, "c": 1}'
+ 
+json_dict = json.loads(json_text)
+print(u"转成普通字典")
+for key, value in json_dict.items():
+    print("key:%s, value:%s" % (key, value))
+    
+json_dict = json.loads(json_text, object_pairs_hook=OrderedDict)
+print(u"\n转成有序字典")
+for key, value in json_dict.items():
+    print("key:%s, value:%s" % (key, value))
+        
+转成普通字典
+key:b, value:3
+key:a, value:2
+key:c, value:1
+
+转成有序字典
+key:b, value:3
+key:a, value:2
+key:c, value:1    
+```
+
+**2.json.dump() 与 json.load()**
+
+dump把字典转成json字符串并写入到文件
+
+load从json文件读取json字符串到字典
+
+```c
+import json
+import codecs
+
+test_dict = {'a':1, 'b':2}
+ 
+#把字典转成json字符串并写入到文件 1.json 中
+with codecs.open('1.json', 'w', 'utf-8') as f:
+    json.dump(test_dict, f)
+        
+#从json文件读取json字符串到字典
+with codecs.open('1.json', 'r', 'utf-8') as f:
+    json_dict = json.load(f)
+```
+
+## 5.8 ipaddress 模块
+
+**1.ip_address**
+
+ipaddress.ip_address() 工厂函数用于创建ip_address对象。它会根据传入的值自动确定是创建IPv4还是IPv6地址
+
+```c
+import ipaddress
+# 点分十进制
+IP = ipaddress.ip_address('192.168.100.100')
+print(IP)
+192.168.100.100 
+    
+print(IP.version)      # 打印IP版本号
+print(str(IP))         # 转换为字符串
+print(int(IP))         # 转换为十进制
+print(hex(int(IP)))    # 转换为十六进制
+print(bin(int(IP)))    # 转换为二进制
+print(oct(int(IP)))    # 转换为八进制
+print(IP.packed)       # 转换为字节    
+    
+4
+192.168.100.100
+3232261220
+0xc0a86464
+0b11000000101010000110010001100100
+0o30052062144
+b'\xc0\xa8dd'
+    
+
+# 二进制，前面需加上0b
+IP = ipaddress.ip_address(0b11000000101010000110010001100100)
+print(IP)
+192.168.100.100
+
+# 十六进制，前面需加上0x
+IP = ipaddress.ip_address(0xC0A86464)
+print(IP)
+192.168.100.100
+   
+# 生成IPv6地址
+IP6 = ipaddress.ip_address('2001:DB8::1')
+print(IP6)
+2001:DB8::1
+    
+IP6 = ipaddress.ip_address(42540766411282592856903984951653826561)
+print(IP6)
+2001:DB8::1
+```
+
+**2.ip_network()**
+
+创建网络——使用格式为：ipaddress.ip_network('网络地址/掩码位数')
+
+```c
+# 创建网络对象，通过list转换为列表
+a=list(ipaddress.ip_network('192.168.1.0/24'))
+print(a[15:25])
+    
+# 设置strict=False实现附加位强制为0    
+ipaddress.ip_network('192.168.1.1/24',strict=False)
+# 查看网络内有多少可用地址
+print(NT.num_addresses)
+
+192.168.1.0/24
+256
+    
+# 打印出所有IP    
+for IP in NT.hosts():
+    print(IP)
+
+# 打印出掩码        
+print(NT.netmask)
+      
+# 排除部分地址        
+NT2=ipaddress.ip_network('192.168.1.0/26')
+list(NT.address_exclude(NT2))
+ 
+[IPv4Network('192.168.1.128/25'), IPv4Network('192.168.1.64/26')]
+
+# 拆分网络段
+list(NT.subnets(new_prefix=25))
+        
+```
+
+**3.ip_interface()**
+
+## 5.9 importlib 模块
+
+**1.import_module()** 
+
+在需要的时候动态导入模块
+
+```c
+import importlib
+
+importlib.import_module('cmdb.type.IP')
+importlib.import_module('cmdb.type')
 ```
 

@@ -128,8 +128,7 @@ find type查找：https://www.runoob.com/mongodb/mongodb-operators-type.html
 		var c = db.getCollection('epgGroupChannel').find({"epgGroupId":1000109},{"code":1,"_id":0})
 		while(c.hasNext()) {
     		printjson(c.next());
-		}
-                  
+		}          
 ```
 
 ## 2.3 Update
@@ -364,6 +363,14 @@ db.dropDatabase()    #删除stu库
 
 ```c
 > db.serverStatus().connections
+```
+
+### 8.修改用户密码
+
+```c
+db.changeUserPassword('tank2','test');
+
+将 tank2账号的密码修改为test
 ```
 
 # 5. MongoDB复制
@@ -1362,7 +1369,151 @@ https://www.cnblogs.com/clsn/p/8244206.html
 
 # 9. MongoDB监控
 
-https://www.cnblogs.com/clsn/p/8244206.html
+## 9.1 Mongostat
+
+```c
+/data/server/mongodb_27017/bin/mongostat -uroot -p '54master@@)@!1234' --authenticationDatabase admin    
+insert query update delete getmore command % dirty % used flushes vsize   res qr|qw ar|aw netIn netOut conn     set repl                      time
+  *199    86     *0     *0       6    37|0     0.1   80.0       0 39.6G 36.4G   0|0   0|0 31.8k   565k  845 epgRepl  SEC 2021-05-26T14:23:08+08:00
+  *234    79    *10     *0       8    37|0     0.2   80.0       0 39.6G 36.4G   0|0   0|0 28.5k  1.08m  844 epgRepl  SEC 2021-05-26T14:23:09+08:00
+    *0    83     *0     *0       3    39|0     0.2   80.0       0 39.6G 36.4G   0|0   0|0 28.7k   900k  844 epgRepl  SEC 2021-05-26T14:23:10+08:00
+    *0    72     *0     *0       3    34|0     0.2   80.0       0 39.6G 36.4G   0|0   0|0 26.1k   339k  844 epgRepl  SEC 2021-05-26T14:23:11+08:00
+    *0    61     *6     *0       6    44|0     0.2   80.0       0 39.6G 36.4G   0|0   0|0 23.5k   576k  844 epgRepl  SEC 2021-05-26T14:23:12+08:00
+    *0    83     *0     *0       6    42|0     0.2   80.0       0 39.6G 36.4G   0|0   0|0 30.9k   591k  844 epgRepl  SEC 2021-05-26T14:23:13+08:00
+    *0    92    *75     *0      10    36|0     0.2   80.0       0 39.6G 36.4G   0|0   1|0 89.3k  22.7m  844 epgRepl  SEC 2021-05-26T14:23:14+08:00
+    *0    82    *49     *0       5    29|0     0.2   80.0       0 39.6G 36.4G   0|0   0|0 30.8k  8.57m  844 epgRepl  SEC 2021-05-26T14:23:15+08:00
+        
+        
+insert/s : 每秒插入数据库的对象数量，如果是slave，则数值前有*,则表示复本集操作
+query/s : 每秒的查询操作次数
+update/s : 每秒的更新操作次数
+delete/s : 每秒的删除操作次数
+getmore/s: 每秒查询cursor(游标)时的getmore操作数
+command/s: primary和secondary的节点指令个数，如果是在从库上执行，则代表从库执行的命令数据以及复制从库的其他实例的命令执行情况，二者通过|分割
+dirty: WiredTiger存储引擎中dirty 数据占缓存百分比
+used: WiredTiger存储引擎中引擎使用缓存占百分比
+flushes/s: 每秒执行fsync将数据写入硬盘的次数, WiredTiger存储引擎中,flushes是指WiredTiger循环创建检查点的时间间隔。每隔一段时间,mongodb就将内存上的数据写入硬盘,如果这个数值比较大的话,会影响性能
+vsize: 虚拟内存使用量，单位MB
+res: 物理内存使用量，单位MB
+qr|qw: 客户端等待从MongoDB实例读数据的队列长度|客户端等待从MongoDB实例写入数据的队列长度
+ar|aw: 正在执行的读取文档个数|正在执行的写入文档个数
+net_in|net_out: 进出的网络流量
+conn: 当前连接数
+set: 复制集的名称
+repl: 当前角色
+    M 或 PRI: master 或 Primary
+    SEC: Secondary
+    REC: recovering
+    UNK: unknow
+    SLV: slave
+    RTR: mongos process(router)
+    ARB: arbiter
+time: 时间戳
+
+```
+
+**监控脚本：**
+
+```c
+#!/usr/bin/env python
+#_*_coding:utf-8_*_
+
+import os,commands,sys
+import datetime,time
+
+Mongodb_mongostat_dir = '/usr/local/zabbix/bin/mongostat'
+Mongodb_master_slave_status = '/usr/local/zabbix/bin/mongo'
+IP = '127.0.0.1'
+#Port = '27017'
+Port = sys.argv[1]
+print('=' * 56)
+
+Date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+ISOTIMEFORMAT = '%Y-%m-%d %X'
+TimeStamp = time.strftime(ISOTIMEFORMAT, time.localtime(time.time()))
+
+Tmp_File_Path = '/tmp/Monitor/MONGODB/status_%s' %Port   #指定监控值输出文件
+print("Tmp_File_Path------>",Tmp_File_Path)
+
+
+def Monitor_MongoDB():
+
+
+    #inserts/s 每秒插入次数
+    Status,Mongodb_Inserts = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $1 }' |grep -v '^$' |sed -n '1p' |awk -F"*" '{ print $2 }' ''' %Mongodb_mongostat_dir)
+
+    #query/s 每秒查询次数
+    Status,Mongodb_Query = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $2 }' |grep -v '^$' |sed -n '1p' ''' %Mongodb_mongostat_dir)
+
+    #update/s 每秒更新次数
+    Status,Mongodb_Update = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $3 }' |grep -v '^$' |sed -n '1p' |awk -F"*" '{ print $2 }' ''' %Mongodb_mongostat_dir)
+
+    #delete/s 每秒删除次数
+    Status,Mongodb_Delete = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $4 }' |grep -v '^$' |sed -n '1p' |awk -F"*" '{ print $2 }' ''' %Mongodb_mongostat_dir)
+
+    #getmore/s 每秒执行getmore次数
+    Status,Mongodb_Getmore = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $5 }' |grep -v '^$' |sed -n '1p' ''' %Mongodb_mongostat_dir)
+
+    #flushes/s 每秒执行fsync将数据写入硬盘的次数。
+    Status,Mongodb_Flushes = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $9 }' |grep -v '^$' |sed -n '1p' ''' %Mongodb_mongostat_dir)
+
+    #res 物理内存使用量，单位MB
+    Status,Mongodb_Res = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $11 }' |grep -v '^$' |sed -n '1p' |awk '{sub(/.$/,"")}1' ''' %Mongodb_mongostat_dir)
+
+    #q t|r|w 当Mongodb接收到太多的命令而数据库被锁住无法执行完成，它会将命令加入队列。这一栏显示了总共、读、写3个队列的长度，都为0的话表示mongo毫无压力。高并发时，一般队列值会升高。
+    Status,Mongodb_Q_T_R_W_qr = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $12 }'|grep -v '^$' |sed -n '1p' |awk -F"|" '{print $1}' ''' %Mongodb_mongostat_dir)
+    Status,Mongodb_Q_T_R_W_qw = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $12 }'|grep -v '^$' |sed -n '1p' |awk -F"|" '{print $2}' ''' %Mongodb_mongostat_dir)
+
+    #ar|aw 活动用户的读|写
+    Status,Mongodb_Ar = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $13 }'|grep -v '^$' |sed -n '1p' |awk -F"|" '{ print $1 }' ''' %Mongodb_mongostat_dir)
+    Status,Mongodb_Aw = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $13 }'|grep -v '^$' |sed -n '1p' |awk -F"|" '{ print $2 }' ''' %Mongodb_mongostat_dir)
+
+    #netIn 网络流入的带宽（bit）
+    Status,Mongodb_NetIn = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $14 }'|grep -v '^$' |sed -n '1p' |awk -F"b" '{ print $1 }' |awk '{sub(/.$/,"")}1' ''' %Mongodb_mongostat_dir)
+
+    #netOut 网络流出的带宽（bit）
+    Status,Mongodb_NetOut = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $15 }'|grep -v '^$' |sed -n '1p' |awk -F"k" '{ print $1 }' |awk '{sub(/.$/,"")}1' ''' %Mongodb_mongostat_dir)
+
+    #conn 当前连接数
+    Status,Mongodb_Conn = commands.getstatusoutput(''' %s -n 1 |sort|awk '{ print $16 }'|grep -v '^$' |sed -n '1p' ''' %Mongodb_mongostat_dir)
+
+    #主从状态
+    Status,Mongodb_Master_Slave_Status = commands.getstatusoutput(''' %s --port %s --eval "db.printReplicationInfo()"|grep secs |tr -s [:space:] |awk '{ print $1 }' ''' %(Mongodb_master_slave_status,Port))
+
+
+    # set start command
+    mkdir_command = "mkdir -p /tmp/Monitor/MONGODB"
+
+    #Run the start_command
+    if os.system(mkdir_command)==0:
+        print('Successful mkdir')
+        print("mkdir command------->>",mkdir_command)
+
+    #把 key值信息写到一个临时文件
+    with open(Tmp_File_Path,'wb') as f:
+        #f.write('=' * 86 + '\n')
+        f.write('%s:%s\n'%('inserts',Mongodb_Inserts))
+        f.write('%s:%s\n'%('query',Mongodb_Query))
+        f.write('%s:%s\n'%('update',Mongodb_Update))
+        f.write('%s:%s\n'%('delete',Mongodb_Delete))
+        f.write('%s:%s\n'%('getmore',Mongodb_Getmore))
+        f.write('%s:%s\n'%('flushes',Mongodb_Flushes))
+        f.write('%s:%s\n'%('res',Mongodb_Res))
+        f.write('%s:%s\n'%('qr',Mongodb_Q_T_R_W_qr))
+        f.write('%s:%s\n'%('qw',Mongodb_Q_T_R_W_qw))
+        f.write('%s:%s\n'%('ar',Mongodb_Aw))
+        f.write('%s:%s\n'%('aw',Mongodb_Aw))
+        f.write('%s:%s\n'%('netIn',Mongodb_NetIn))
+        f.write('%s:%s\n'%('netOut',Mongodb_NetOut))
+        f.write('%s:%s\n'%('conn',Mongodb_Conn))
+        f.write('%s:%s\n'%('msstat',Mongodb_Master_Slave_Status))
+
+
+if __name__=='__main__':
+  Monitor_MongoDB()
+```
+
+
 
 # 10. MongoDB集群性能优化
 

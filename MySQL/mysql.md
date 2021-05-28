@@ -902,8 +902,8 @@ mysql> select @@session.tx_isolation;
 ​	查看慢查询记录功能是否开启
 ​	show variables like "slow%";
 ​	
-	开启慢查询记录功能
-	set global slow_query_log=ON;
+​	开启慢查询记录功能
+​	set global slow_query_log=ON;
 
 ## 9.4 二进制日志
 
@@ -1839,5 +1839,263 @@ mysql> show slave status\G;
 ~]# mysqladmin -u root -p shutdown 
 ~]# service mysql start 
 ~]# mysql -V  #查看版本
+```
+
+# 15. MySQL 监控指标
+
+## 15.1 监控指标
+
+```c
+-- 查看MySQL本次启动后的运行时间(单位：秒)
+show status like 'uptime';
+
+--查看insert语句的执行数
+show [global] status like 'com_insert';
+
+--查看update语句的执行数
+show [global] status like 'com_update';
+
+--查看delete语句的执行数
+show [global] status like 'com_delete';
+
+--查看切换db的执行数
+show global status like '^Com_change_db'
+
+--查看试图连接到MySQL(不管是否连接成功)的连接数
+show status like 'connections';
+
+--查看线程缓存内的线程的数量。
+show status like 'threads_cached';
+
+--查看当前打开的连接的数量。
+show status like 'threads_connected';
+
+--查看当前打开的连接的数量。
+show status like 'threads_connected';
+
+--查看创建用来处理连接的线程数。如果Threads_created较大，你可能要增加thread_cache_size值。
+show status like 'threads_created';
+
+--查看激活的(非睡眠状态)线程数。
+show status like 'threads_running';
+
+--查看立即获得的表的锁的次数。
+show status like 'table_locks_immediate';
+
+-- 查看不能立即获得的表的锁的次数。如果该值较高，并且有性能问题，你应首先优化查询，然后拆分表或使用复制。
+show status like 'table_locks_waited';
+
+-- 查看创建时间超过slow_launch_time秒的线程数。
+show status like 'slow_launch_threads';
+
+-- 查看查询时间超过long_query_time秒的查询的个数。
+show status like 'slow_queries';
+
+-- TPS(每秒事务量)
+-- TPS = (Com_commit + Com_rollback) / seconds
+
+ show global status like 'Com_commit';
+ show global status like 'Com_rollback';
+
+-- key Buffer 命中率
+show global  status like   'key%';
+
+key_buffer_read_hits = (1-key_reads / key_read_requests) * 100%
+key_buffer_write_hits = (1-key_writes / key_write_requests) * 100%
+
+-- InnoDB Buffer命中率
+ show status like 'innodb_buffer_pool_read%';
+
+innodb_buffer_read_hits = (1 - innodb_buffer_pool_reads / innodb_buffer_pool_read_requests) * 100%
+
+-- Table Cache状态量
+ show global  status like 'open%';
+比较 open_tables  与 opend_tables 值
+
+-- Thread Cache 命中率
+show global status like 'Thread%';
+show global status like 'Connections';
+
+Thread_cache_hits = (1 - Threads_created / connections ) * 100%
+ 
+-- 锁定状态
+mysql> show global  status like '%lock%';
+
+Table_locks_waited/Table_locks_immediate=0.3% 如果这个比值比较大的话，说明表锁造成的阻塞比较严重
+Innodb_row_lock_waits innodb行锁，太大可能是间隙锁造成的
+
+-- Tmp Table 状况(临时表状况)
+show status like 'Create_tmp%';
+
+Created_tmp_disk_tables/Created_tmp_tables比值最好不要超过10%，如果Created_tmp_tables值比较大，
+可能是排序句子过多或者是连接句子不够优化
+
+-- Binlog Cache 使用状况
+ show status like 'Binlog_cache%';
+
+如果Binlog_cache_disk_use值不为0 ，可能需要调大 binlog_cache_size大小
+
+-- Innodb_log_waits 量
+ show status like 'innodb_log_waits';
+
+Innodb_log_waits值不等于0的话，表明 innodb log buffer 因为空间不足而等待
+    
+-- 从库IO线程与sql线程延迟时间，一般用于查看主从同步延迟。（但是分情况，当从库IO线程能及时同步主库数据到从库时，这个数据能反应主从同步的延迟，但是当主从间网络有延迟时，IO线程拉取很慢，但是sql线程很快把中继日志执行完，这时这个延迟就不准确）    
+show status like '%Seconds_Behind_Master%';
+-- 主从同步状态
+show status like 'Slave_running';
+-- 主从同步线程状态
+show slave status\G; | egrep "Slave_SQL_Running|Slave_IO_Running"
+       
+--server执行过的所有语句，计数包含存储存储程序(存储过程)里面的sql条数
+show global status like '^Queries'
+    
+--只包含由client发过来的sql语句数量（包括use语句，show语句等），不包括存储过程里的sql语句（一个存储过程作为一条语句）
+show global status like '^Questions'    
+    
+-- QPS(每秒Query量)
+-- QPS = Questions(or Queries) / seconds
+    
+--select语句执行的次数，如果结果从查询缓存里得来，就增加Qcache_hits，而不增加Com_select
+show [global] status like 'com_select';
+
+-- Query Cache命中率
+show status like 'Qcache_hits%';
+
+Query_cache_hits = (Qcahce_hits / (Qcache_hits + Qcache_inserts )) * 100%;
+
+-- 加入到查询缓存的次数
+show status like 'Qcache_inserts%';
+
+-- 不可缓存的查询数量
+show status like 'Qcache_not_cached';
+
+-- 在查询缓存中‘注册’过的查询语句的条数
+show status like 'Qcache_queries_in_cache';
+```
+
+## 15.2 监控脚本
+
+```c
+#!/usr/bin/env python
+# _*_coding:utf-8_*_
+
+import os, commands, sys
+import datetime, time
+
+IP = 'localhost'
+# Username = 'zabbix'
+# Password = 'zabbix_201#ysT_sY'
+Port = sys.argv[1]
+Username = 'zabbixmonitor'
+Password = 'ysten@32123'
+print
+'=' * 56
+
+Date = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+ISOTIMEFORMAT = '%Y-%m-%d %X'
+TimeStamp = time.strftime(ISOTIMEFORMAT, time.localtime(time.time()))
+
+Tmp_File_Path = '/tmp/Monitor/MYSQL/status_%s' % Port  # 指定监控值输出文件
+print("Tmp_File_Path------>", Tmp_File_Path)
+
+
+def Monitor_MySQL():
+    # 查询change_db
+    Status, MySQL_Change_Db = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show global status" |grep '^Com_change_db' | awk -F' ' '{ print $2 }' ''' % (
+        Username, Password))
+
+    # 查询select
+    Status, MySQL_Select = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show global status" |grep '^Com_select' |awk -F' ' '{ print $2 }' ''' % (
+        Username, Password))
+
+    # 查询insert
+    Status, MySQL_Insert = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show global status" |grep '^Com_insert' | grep -v '^Com_insert_'|awk -F' ' '{ print $2 }' ''' % (
+        Username, Password))
+    print
+    "MySQL_Insert", MySQL_Insert
+
+    # 查询update
+    Status, MySQL_Update = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show global status" |grep '^Com_update' | grep -v '^Com_update_'|awk -F' ' '{ print $2 }' ''' % (
+        Username, Password))
+
+    # 查询delete
+    Status, MySQL_Delete = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show global status" |grep '^Com_delete' | grep -v '^Com_delete_'|awk -F' ' '{ print $2 }' ''' % (
+        Username, Password))
+
+    # 每秒钟获得的查询数量
+    Status, MySQL_Queries = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show global status" |grep '^Queries' | awk -F' ' '{ print $2 }' ''' % (
+        Username, Password))
+
+    # 查询缓存被访问的次数
+    Status, MySQL_Qcache_Hits = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show global status" |grep '^Qcache_hits'| awk -F' ' '{ print $2 }' ''' % (
+        Username, Password))
+
+    # 查询缓存被访问的次数
+    Status, MySQL_Qcache_Inserts = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show global status" |grep '^Qcache_inserts'| awk -F' ' '{ print $2 }' ''' % (
+        Username, Password))
+
+    # 查询主从延迟时间
+    Status, MySQL_mysqlslave_delaytime = commands.getstatusoutput(
+        ''' mysql  -u%s -p%s -e "show slave status\G;" | egrep "Seconds_Behind_Master" | awk -F' ' '{print $2}' ''' % (
+        Username, Password))
+
+    # 创建用来处理连接的线程数
+    Status, MySQL_Threads_created = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show global status" |grep '^Threads_created'| awk -F' ' '{ print $2 }' ''' % (
+        Username, Password))
+
+    # 试图连接到(不管是否成功)MySQL服务器的连接数
+    Status, MySQL_Connections = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show global status" |grep '^Connections'| awk -F' ' '{ print $2 }' ''' % (
+        Username, Password))
+
+    # 数据库主从状态
+    Status, MySQL_Slave_Running = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show status like 'Slave_running';" ''' % (Username, Password))
+    Status, MySQL_Slave_Status = commands.getstatusoutput(
+        ''' mysql -N -u%s -p%s -e "show slave status\G;" | egrep "Slave_SQL_Running|Slave_IO_Running" ''' % (
+        Username, Password))
+    if ("ON" in MySQL_Slave_Running) and ("NO" not in MySQL_Slave_Status):
+        MySQL_Master_Slave_Status = 1
+    else:
+        MySQL_Master_Slave_Status = 0
+
+    # set start command 
+    mkdir_command = "mkdir -p /tmp/Monitor/MYSQL"
+
+    # Run the start_command
+    if os.system(mkdir_command) == 0:
+        print
+        'Successful mkdir'
+        print
+        "mkdir command------->>", mkdir_command
+        # 把 key值信息写到一个临时文件
+        with open(Tmp_File_Path, 'wb') as f:
+            # f.write('=' * 86 + '\n')
+            f.write('%s:%s\n' % ('change_db', MySQL_Change_Db))
+            f.write('%s:%s\n' % ('select', MySQL_Select))
+            f.write('%s:%s\n' % ('insert', MySQL_Insert))
+            f.write('%s:%s\n' % ('update', MySQL_Update))
+            f.write('%s:%s\n' % ('mysqlslave_delaytime', MySQL_mysqlslave_delaytime))
+            f.write('%s:%s\n' % ('delete', MySQL_Delete))
+            f.write('%s:%s\n' % ('queries', MySQL_Queries))
+            f.write('%s:%s\n' % ('qcache_hits', MySQL_Qcache_Hits))
+            f.write('%s:%s\n' % ('qcache_inserts', MySQL_Qcache_Inserts))
+            f.write('%s:%s\n' % ('threads_created', MySQL_Threads_created))
+            f.write('%s:%s\n' % ('connections', MySQL_Connections))
+            f.write('%s:%s\n' % ('master_slave_status', MySQL_Master_Slave_Status))
+
+
+if __name__ == '__main__':
+    Monitor_MySQL()
 ```
 

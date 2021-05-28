@@ -1588,6 +1588,12 @@ netstat -r
 		如果该IP地址对应的节点已缓存该资源，则会将数据直接返回给用户，例如，图中步骤7和8，请求结束。
 		如果该IP地址对应的节点未缓存该资源，则节点向源站发起对该资源的请求。获取资源后，结合用户自定义配置的缓存策略，将资源缓存至节点，
 
+## MongoDB
+
+
+
+
+
 ## Redis
 
 ### 1.redis一共有多少个库，常用的数据类型?
@@ -1941,6 +1947,21 @@ https://www.cnblogs.com/jay-huaxiao/p/13599519.html
 	service：管理服务
 	script：在远程主机上执行脚本
 	...
+
+## SaltStack
+
+1.saltstack state.sls 与 highstate 的区别
+
+```c
+1. state.highstate会读取所有环境（包括base环境）的top.sls文件，并且执行top.sls文件内容里面定义的sls文件，不在top.sls文件里面记录的sls则不会被执行；
+2. state.sls默认读取base环境，但是它并不会读取top.sls文件。你可以指定state.sls执行哪个sls文件，只要这个sls文件在base环境下存在；
+3. state.sls也可以指定读取哪个环境：state.sls salt_env='prod' xxx.sls，这个xxx.sls可以不在top.sls中记录。
+4. state.sls执行的xxx.sls会被下发到minion端，而state.highstate则不会
+
+其实这些都不是重点，我认为重点在于state.sls执行指定模块的前提是，该模块存在init.sls文件。
+```
+
+
 
 ## ELK Stack
 
