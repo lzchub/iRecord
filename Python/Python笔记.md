@@ -932,7 +932,776 @@ b+a 等价于 b.add(a),但是B类没有实现add方法，就去找a的__radd__�
 | \_\_setitem\_\_  | 和\_\_getitem\_\_的访问相似，是设置值的方法                  |
 | \_\_missing\_\_  | 字典使用\_\_getitem\_\_()调用时，key不存在执行该方法         |
 
+```c
+class Item:
+    def __init__(self,*args):
+        self.lst = list(args)
 
+    # 返回列表长度
+    def __len__(self):
+        return len(self.lst)
+
+    # 返回一个迭代器
+    def __iter__(self):
+        return iter(self.lst)
+
+    # 重新add方法
+    def __add__(self, other):
+        self.lst.append(other)
+        return self
+
+    # 返回索引对象值
+    def __getitem__(self, index):
+        if index >= len(self.lst):
+            return "index error..."
+        else:
+            return self.lst[index]
+
+    # 动态设置索引对象值
+    def __setitem__(self, index, value):
+        if index >= len(self.lst):
+            return "index error..."
+        else:
+            self.lst[index] = value
+            return self
+
+    # 可视化
+    def __repr__(self):
+        return str(self.lst)
+
+item = Item(5,10,15,20)
+# 调用 __len__方法
+print(len(item))
+print("-"*50)
+
+# 未实现__contains__,将会调用__iter__方法
+for i in item:
+    print(i)
+print("-"*50)
+
+# 调用了 __add__ 方法 和 __repr__ 方法
+print(item + 55)
+print("-"*50)
+
+# 调用了 __getitem__ 方法
+print(item[5])
+print(item[2])
+print("-"*50)
+
+# 调用了 __setitem__ 、__getitem__ 方法
+item[2] = 222
+print(item[2])
+```
+
+```c
+4
+--------------------------------------------------
+5
+10
+15
+20
+--------------------------------------------------
+[5, 10, 15, 20, 55]
+--------------------------------------------------
+index error...
+15
+--------------------------------------------------
+222
+```
+
+### 7. \_\_call\_\_
+
+在python中一切皆对象，函数也不例外  
+
+可调用对象 方法 \_\_call\_\_类中出现该方法，实例就可以像函数一样调用， 可调用对象： 定义一个类，并实例化得到其实例，将实例像函数一样调用。调用是实例的，不是类的
+
+```c
+在函数中
+def foo():
+	pass
+
+# 这两种调用方法效果相同，函数对象默认实现了__call__        
+foo()
+foo.__call__()
+        
+# 可以通过dir来查看        
+print(dir(foo))
+        
+# 通过类实现斐波拉契序列
+class  A:
+    def __init__(self):
+        pass
+    
+    def  __call__(self,num):
+        a,b=0,1
+        for  i in  range(num):
+            print (b)
+            a,b=b,a+b
+A()(10)
+```
+
+```c
+1
+1
+2
+3
+5
+8
+13
+21
+34
+55
+```
+
+### 8. 上下文管理
+
+文件IO操作可以对文件对象进行上下文管理，使用with...as语法 
+
+| 方法          | 意义                                                         |
+| ------------- | ------------------------------------------------------------ |
+| \_\_enter\_\_ | 进入于此对象相关的上下文，如果存在该方法，with语法会把该方法的返回值作为绑定到as字句中指定的变量上 |
+| \_\_exit\_\_  | 退出与此对象的上下文                                         |
+
+exit 中变量的含义： 
+
+​		1、exc_type：异常类型，如果没有异常，则返回是None 
+
+​		2、exc_tb：异常追踪信息，如果没有异常，则是None 
+
+​		3、exc_va：异常对应的值，如果没异常，则是None   此处的return 用于压制异常，若此处是False,则会抛出异常，等效True 或 False 缺少了enter 进不去，缺少了exitc出不来
+
+**基础语法：**
+
+```c
+class A:
+    def __init__(self):
+        print("__init__")
+
+    def __enter__(self):
+        print("__enter__")
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("__exit__")
+
+with A() as f:
+    pass
+```
+
+```c
+__init__
+__enter__
+__exit__
+```
+
+```c
+class A:
+    def __init__(self):
+        print("__init__")
+
+    def __enter__(self):
+        print("__enter__")
+        return 1
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("__exit__")
+
+a = A()
+# 此处的f是__enter__的返回值，是a的参数，若此处__enter__无return，则默认返回为None，无意义
+with a as f:
+	# 即使是抛出异常，仍然会执行exit操作
+	# raise Exception('error')	
+    print(a==f)
+    print(a is f)
+    print(a)
+    print(f)
+```
+
+```c
+__init__
+__enter__
+False
+False
+<__main__.A object at 0x000002040C573BA8>
+1
+__exit__
+```
+
+```c
+class A:
+    def  __init__(self):
+        print ('init instance')
+
+    def  __enter__(self):
+        print ('__enter__')
+        return self
+
+    def  __exit__(self, exc_type, exc_val, exc_tb):
+        print ('__exit__')
+        print (exc_tb) #追踪信息
+        print (exc_type)  # 类型
+        print (exc_val)  # 值
+        return  1  # 此处设置为1 是压制异常，不让其出现
+
+p=A()
+with  p  as  f:  # 此处的f是__enter__的返回值，若此处__enter__无return，则默认返回为None，无意义
+    #raise   Exception('Error1234454')
+    print (p==f) # 此处用于比较p和f的关系
+    print (p is f)
+    print (p)
+    print (f)
+```
+
+```c
+init instance
+__enter__
+True
+True
+<__main__.A object at 0x000002F6D4E93BE0>
+<__main__.A object at 0x000002F6D4E93BE0>
+__exit__
+None
+None
+None
+```
+
+### 9. 反射
+
+反射：python中，能够通过一个对象，找出其type,class,attribute或method的能力，称为反射或自醒。
+
+```javascript
+object 可以是类或实例 
+语法格式:
+	getattr(object,name[,default]) : 通过name 返回object的属性值，当属性不存在时，将使用default返回，如果没有default，则抛出attributeError，name 必须位字符串 
+
+	setattr(object,name,value) object 的属性存在，则覆盖，若不存在，则新增。
+
+	hasattr(object,name)  判断对象是否有这个名字属性，name必须时字符串
+```
+
+```c
+class A:
+    x = 10
+    def __init__(self):
+        self.x = 5
+
+setattr(A,'y',20)
+print(getattr(A,'x'))
+print(getattr(A,'y'))
+print(A.__dict__)
+print("-"*50)
+a = A()
+print(getattr(a,'x'))
+print(getattr(a,'y'))
+setattr(a,'z',55)
+print(getattr(a,'z'))
+print(a.__dict__)
+```
+
+```c
+10
+20
+{'__module__': '__main__', 'x': 10, '__init__': <function A.__init__ at 0x000001AF5A192B70>, '__dict__': <attribute '__dict__' of 'A' objects>, '__weakref__': <attribute '__weakref__' of 'A' objects>, '__doc__': None, 'y': 20}
+--------------------------------------------------
+5
+20
+55
+{'x': 5, 'z': 55}
+```
+
+```c
+class A:
+    x = 10
+    def __init__(self,y):
+        self.x = 5
+        self.y = y
+
+a=A(20)
+# 类添加一个函数属性
+setattr(A,'printf',lambda self: 1)
+
+# 实例添加一个属性
+setattr(a,'myclass',lambda : 10)
+
+print(getattr(a,'printf')())
+print(getattr(a,'myclass')())
+
+if not hasattr(A,'sub'):
+    setattr(A,'sub',lambda self,other: self.y - other.y)
+
+if not hasattr(A,'add'):
+    setattr(A,'add',lambda self,other: self.y + other.y)
+
+print(A.__dict__)
+print(a.__dict__)
+
+b1 = A(20)
+b2 = A(30)
+
+print(b1.sub(b2))
+print(b1.add(b2))
+```
+
+```c
+1
+10
+{'__module__': '__main__', 'x': 10, '__init__': <function A.__init__ at 0x0000028FDD972B70>, '__dict__': <attribute '__dict__' of 'A' objects>, '__weakref__': <attribute '__weakref__' of 'A' objects>, '__doc__': None, 'printf': <function <lambda> at 0x0000028FDD7A2EA0>, 'sub': <function <lambda> at 0x0000028FDD984E18>, 'add': <function <lambda> at 0x0000028FDD984D08>}
+{'x': 5, 'y': 20, 'myclass': <function <lambda> at 0x0000028FDD984C80>}
+<__main__.A object at 0x0000028FDD986898>
+50
+```
+
+**运行时注册：**
+
+```c
+class Dispatcher:
+    def __init__(self):
+        pass
+
+    def cmd1(self):
+        print("cmd1.........")
+
+    def reg(self,cmd,fn):
+        if isinstance(cmd,str):
+            setattr(self.__class__,cmd.strip(),fn)
+        else:
+            print("type error...")
+
+    def run(self):
+        while True:
+            cmd = input("please input str:")
+            if cmd.strip() == 'q' or cmd.strip() == 'quit':
+                return
+            getattr(self,cmd.strip(),self.defaultrun())()
+
+    def defaultrun(self):
+        print("defaultrun...")
+
+dsp = Dispatcher()
+dsp.reg("cmd2",lambda self: print("cmd2"))
+dsp.reg("cmd3",lambda self: print("cmd3"))
+dsp.run()
+```
+
+```c
+please input str:cmd1
+cmd1.........
+please input str:cmd2
+cmd2
+please input str:cmd3
+cmd3
+please input str:q
+```
+
+**反射相关魔术方法：**
+
+| 魔术方法               | 意义                                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| \_\_getattr\_\_()      | 当通过搜索实例，实例的类以及祖先类查不到的属性，就会调用此方法 |
+| \_\_setattr\_\_()      | 通过访问实例属性，进行增加，修改都要调用它                   |
+| \_\_delattr\_\_()      | 当通过实例删除属性的时候调用此方法                           |
+| \_\_getattribute()\_\_ | 实例所有的属性调用都是此方法开始                             |
+
+```c
+class A():
+    m=6
+    def __init__(self,x):
+        print ('init')
+        self.x=x  #此处定义了属性，所以下面的__setattr__被执行了一次，初始化先执行，之后__setattr__这个属性再执行一次
+
+    def __getattr__(self, item):#针对上述无法查找到的属性，则执行此属性，可配置其值为None来弥补此属性值
+        print ('__getattr__',item)
+        self.__dict__[item]=None
+
+    def __setattr__(self, key, value): #设置一个属性时，一定要执行，至于是否生效，则另当别论
+        print ('__setattr__',key,value)
+
+    def __delattr__(self, item): #此处在删除一个实例的属性进行的操作，只要实例能找到，都能够删除
+        print ('__delattr__',item)
+
+A.n=50 # 此处是正常的添加类属性，不会产生其他的报错
+print(A.__dict__)
+print("-"*50)
+
+a=A(20)
+print (a.__dict__)
+print("-"*50)
+
+print(a.b)  # 针对不存在的属性进行调用
+print("-"*50)
+
+print(a.m)  # 针对存在的属性进行调用
+print("-"*50)
+
+print(a.x)  # 针对实例属性
+print("-"*50)
+
+a.x=30  # 设置实例的属性变化
+print("-"*50)
+
+a.c=200     # 添加一个不存在的属性
+print("-"*50)
+
+del  a.m    # 删除一个实例的属性
+print("-"*50)
+
+print (a.__dict__)
+```
+
+```c
+{'__module__': '__main__', 'm': 6, '__init__': <function A.__init__ at 0x0000022B42D32B70>, '__getattr__': <function A.__getattr__ at 0x0000022B42D44C80>, '__setattr__': <function A.__setattr__ at 0x0000022B42D44E18>, '__delattr__': <function A.__delattr__ at 0x0000022B42D44D08>, '__dict__': <attribute '__dict__' of 'A' objects>, '__weakref__': <attribute '__weakref__' of 'A' objects>, '__doc__': None, 'n': 50}
+--------------------------------------------------
+init
+__setattr__ x 20
+{}
+--------------------------------------------------
+__getattr__ b
+None
+--------------------------------------------------
+6
+--------------------------------------------------
+__getattr__ x
+None
+--------------------------------------------------
+__setattr__ x 30
+--------------------------------------------------
+__setattr__ c 200
+--------------------------------------------------
+__delattr__ m
+--------------------------------------------------
+{'b': None, 'x': None}
+```
+
+```c
+class A():
+    m=6
+    def __init__(self,x):
+        print ('init')
+        self.x=x  # 此处定义了属性，所以下面的__setattr__被执行了一次，初始化先执行，之后__setattr__这个属性再执行一次
+
+    def __getattr__(self, item):# 针对上述无法查找到的属性，则执行此属性，可配置其值为None来弥补此属性值
+        print ('__getattr__',item)
+        self.__dict__[item]=None
+
+    def __setattr__(self, key, value): # 设置一个属性时，一定要执行，至于是否生效，则另当别论
+        print ('__setattr__',key,value)
+
+    def __delattr__(self, item): # 此处在删除一个实例的属性进行的操作，只要实例能找到，都能够删除
+        print ('__delattr__',item)
+
+    def __getattribute__(self, item):  # 此处是在字典属性之前进行拦截执行
+        print ('__getattribute__',item)
+a=A(20)
+print("-"*50)
+print(a.x)
+print("-"*50)
+print(a.m)
+```
+
+```c
+init
+__setattr__ x 20
+--------------------------------------------------
+__getattribute__ x
+None
+--------------------------------------------------
+__getattribute__ m
+None
+```
+
+**结论：**
+
+```c
+实例的所有属性的访问，第一个都会调用__getattribute__方法，其阻止了属性查找，该方法应该返回(计算后)值或者抛出一个attributeError 异常，他的return 值将作为属性查找的结果，如果抛出attributeError 异常，则会直接调用__getattr__方法，因为表示属性没有找到，如下
+```
+
+```c
+class A():
+    m=6
+    def __init__(self,x):
+        print ('init')
+        self.x=x  #此处定义了属性，所以下面的__setattr__被执行了一次，初始化先执行，之后__setattr__这个属性再执行一次
+
+    def __getattr__(self, item):#针对上述无法查找到的属性，则执行此属性，可配置其值为None来弥补此属性值
+        print ('__getattr__',item)
+        # self.__dict__[item]=None
+
+    def __setattr__(self, key, value): #设置一个属性时，一定要执行，至于是否生效，则另当别论
+        print ('__setattr__',key,value)
+
+    def __delattr__(self, item): #此处在删除一个实例的属性进行的操作，只要实例能找到，都能够删除
+        print ('__delattr__',item)
+
+    def __getattribute__(self, item):  #此处是在字典属性之前进行拦截执行
+        print ('__getattribute__',item)
+        raise  AttributeError(item)  # 此处若属性不存在，抛出异常，则直接进入getattr中机型处理
+        #return object.__getattribute__(self, item)  # 此处表示若不存在，则直接去object中进行查找，并得到其访问的值
+a=A(20)
+
+print(a.x)
+```
+
+```c
+init
+__setattr__ x 20
+__getattribute__ x
+__getattr__ x
+None
+```
+
+**注意：\_\_getattribute\_\_ 方法中为了避免在该方法中无限递归，实现了应该永久调用基类的同名方法以访问需要的任何属性，除非你明确知道\_\_getattribute\_\_方法用来做什么，否则不要使用它。**
+
+**总结：**
+
+**属性查找顺序** **实例调用----> \_\_getattribute\_\_()----> instance.dict---->instance.class----> 继承的祖先类(知道object)的\_\_dict\_\_调用\_\_getattr\_\_()**
+
+### 10. 描述器
+
+在python中，一个类实现了一下三种方式中的任何一种，就是描述器
+
+```c
+object.__get__(self,instance,owner)
+object.__set__(self,instance,value)
+object.__delete__(self,instance)
+```
+
+**如果仅实现了\_\_get\_\_，就是非数据描述器 non-data descriptor**   
+
+**同时实现了\_\_get\_\_和\_\_set\_\_或者\_\_get\_\_和\_\_delete\_\_ 或者三个都实现，则称为数据描述符  data  descriptor**  
+
+**如果一个类的类属性设置为描述器，那么那被称为owner属主。**
+
+**实例：非数据描述器**
+
+```c
+class A:
+    def  __init__(self):
+        print ('A,init')
+        self.a1='a1'
+
+class B:
+    x=A()  # 调用上述的类形成实例
+    def __init__(self):
+        print ('B,init')
+        self.x=100  # 此处B类实例的属性为x=100
+
+print  (B.x.a1)  # 此处通过调用B类而调用B类的类属性x，进而调用A类的实例的a1方法.必须是先初始化，然后再进行相关的调用
+
+b=B()  # 此处调用从类开始，会执行A和B的init方法
+print  (b.x)   #此处调用的是实例B的x属性，其值是100，此处对x.a1没有属性，因为其被self.x=100覆盖了
+```
+
+```c
+A,init
+a1
+B,init
+100
+```
+
+**默认查找顺序： 类加载时，类变量需要先生成，而类B的x属性是类A的实例，因此需要先执行类A的初始化，进而执行B的初始化操作。**
+
+```c
+class A:
+    def  __init__(self):
+        print ('A,init')
+        self.a1='a1'
+            
+    def __get__(self, instance, owner): #加入此方法,行为被拦截，执行了init后执行了此方法，返回为None,因此后面调用的None
+        return (self,instance,owner)
+
+class B:
+    x=A()  # 调用上述的类形成实例
+    def __init__(self):
+        print ('B,init')
+        self.x=100  # 此处B类实例的属性为x=100
+
+print(B.x)  # 此处x对应的a1的属性被拦截，上述返回为x实例，instance为B类实例的返回，owner为B类，及就是属性所属的类，self为A类的实例
+b=B()  # 对类B进行实例化
+print(b.x)  # 对类b的属性进行调用
+```
+
+```c
+A,init
+(<__main__.A object at 0x00000205A6383BE0>, None, <class '__main__.B'>)
+B,init
+100
+```
+
+```c
+class A:
+    def  __init__(self):
+        print ('A,init')
+        self.a1='a1'
+    def __get__(self, instance, owner): #加入此方法，行为被拦截，执行了init后执行了此方法，返回为None,因此后面调用的None
+        return (self,instance,owner)
+
+class B:
+    x=A()  # 调用上述的类形成实例
+    def __init__(self):
+        print ('B,init')
+        self.x=A()  # 此处B类实例的属性为调用A类的属性
+
+b=B()  # 对类B进行实例化
+print("-"*50)
+print (b.x.a1)  # 对类b的属性进行调用,此处调用的是A类的属性，此处没有触动__get__魔术方法，进而说明__get__和实例无关
+```
+
+```c
+A,init
+B,init
+A,init
+--------------------------------------------------
+a1
+```
+
+**结论： \_\_get\_\_()魔术方法只对调用的类有拦截作用，对类B下的实例无任何作用，此\_\_get\_\_是在调用子类的类属性时会执行此方法。**
+
+```c
+class A:
+    def  __init__(self):
+        print ('A,init')
+        self.a1='a1'
+
+    def __get__(self, instance, owner): #加入此方法,行为被拦截,执行了init后执行了此方法，返回为None,因此后面调用的None
+        return   self # 此处返回self,则表示A的实例，A的实例当然可以调用a1方法
+
+class B:
+    x=A()  # 调用上述的类形成实例
+    def __init__(self):
+        print ('B,init')
+        self.x=A()  # 此处B类实例的属性为调用A类的属性
+
+print(B.x.a1)# 此处因为返回的是self,及A的实例，因此此处可以调用A实例的a1方法，自然是成功的
+B.x.a1=30 #通过描述器来修改属主的状态
+print("-"*50)
+print(B.x.a1)  # 打印状态
+```
+
+```c
+A,init
+a1
+--------------------------------------------------
+30
+```
+
+**实例：数据描述器**
+
+```c
+class A:
+    def  __init__(self):
+        print ('A,init')
+        self.a1='a1'
+
+    def __get__(self, instance, owner): #加入此方法，行为被拦截，执行了init后执行了此方法，返回为None,因此后面调用的None
+        print ('__get__',self,instance,owner)
+        return   self # 此处返回self,则表示A的实例，A的实例当然可以调用a1方法
+
+    # def __set__(self, instance, value): #实例化B类时需要调用此方法，
+    #     print ('__set__',self,instance,value)
+
+class B:
+    x=A()  # 调用上述的类形成实例
+    def __init__(self):
+        print ('B,init')
+        self.x=100  # 此处B类实例的属性为调用A类的属性
+b=B()
+print("-"*50)
+print(b.__dict__)  # 打印实例b对应的属性字典
+print('+'*30)
+print(b.x.a1)  #此处默认的a1方法是不存在于b实例中，使用set方法将跳过b中定义的self.x方法
+```
+
+```c
+A,init
+B,init
+--------------------------------------------------
+{'x': 100}
+++++++++++++++++++++++++++++++
+Traceback (most recent call last):
+  File "D:/python-scripts/scripts/test.py", line 1272, in <module>
+    print(b.x.a1)  #此处默认的a1方法是不存在于b实例中，使用set方法将跳过b中定义的self.x方法
+AttributeError: 'int' object has no attribute 'a1'
+```
+
+```c
+class A:
+    def  __init__(self):
+        print ('A,init')
+        self.a1='a1'
+
+    def __get__(self, instance, owner): #加入此方法，行为被拦截，执行了init后执行了此方法，返回为None,因此后面调用的None
+        print ('__get__',self,instance,owner)
+        return   self # 此处返回self,则表示A的实例，A的实例当然可以调用a1方法
+
+    def __set__(self, instance, value): #实例化B类时需要调用此方法，
+        print ('__set__',self,instance,value)
+
+class B:
+    x=A()  # 调用上述的类形成实例
+    def __init__(self):
+        print ('B,init')
+        self.x=100  # 此处B类实例的属性为调用A类的属性
+b=B()
+print("-"*50)
+print(b.__dict__)  # 打印实例b对应的属性字典
+print('+'*30)
+print(b.x.a1)  #此处默认的a1方法是不存在于b实例中，使用set方法将跳过b中定义的self.x方法
+```
+
+```c
+A,init
+B,init
+__set__ <__main__.A object at 0x000001375E736748> <__main__.B object at 0x000001375E7367B8> 100
+--------------------------------------------------
+{}
+++++++++++++++++++++++++++++++
+__get__ <__main__.A object at 0x000001375E736748> <__main__.B object at 0x000001375E7367B8> <class '__main__.B'>
+a1
+```
+
+```c
+class A:
+    def  __init__(self):
+        print ('A,init')
+        self.a1='a1'
+
+    def __get__(self, instance, owner): #加入此方法，行为被拦截，执行了init后执行了此方法，返回为None,因此后面调用的None
+        print ('__get__',self,instance,owner)
+        return self # 此处返回self,则表示A的实例，A的实例当然可以调用a1方法
+
+    def  __set__(self, instance, value): #实例化B类时需要调用此方法，
+        print ('__set__',self,instance,value)
+        self.a1=value  # 若此处定义a1的返回值为value,及类B对应的实例属性x的值，则此处在访问时，其结果便是100
+
+class B:
+    x=A()  # 调用上述的类形成实例
+    def __init__(self):
+        print ('B,init')
+        self.x=100  # 此处B类实例的属性为调用A类的属性
+b=B()
+print (b.__dict__)  # 打印实例b对应的属性字典
+print ('+'*30)
+print (b.x.a1)  # 此处最终访问__get__的原因是此处调用的是类的属性，而不是实例的属性，因此__get__会生效
+```
+
+```c
+A,init
+B,init
+__set__ <__main__.A object at 0x000001D8FA426710> <__main__.B object at 0x000001D8FA426780> 100
+{}
+++++++++++++++++++++++++++++++
+__get__ <__main__.A object at 0x000001D8FA426710> <__main__.B object at 0x000001D8FA426780> <class '__main__.B'>
+100
+```
+
+**结论：**
+
+**当一个类的类属性是一个数据描述器时（及除了\_\_get\_\_方法外还有至少一种方法），对他的实例属性描述器的操作相当与对应的类的属性进行操作，及实例的字典优先级会降低，而类的字典的优先级会升高，实际的结果是当其成为数据属性描述器时，其对应的实例的字典中定义的实例属性将会消失**
+
+
+
+**属性查找顺序：** 
+
+**实例的dict优先于非数据描述器(只有\_\_get\_\_方法)，数据描述器优先于实例的\_\_dict\_\_  ,及数据描述器---> 实例的\_\_dict_\_\_---> 非数据描述器---> 类的\_\_dict\_\_**
 
 # 5.常用模块
 
@@ -2170,5 +2939,864 @@ import importlib
 
 importlib.import_module('cmdb.type.IP')
 importlib.import_module('cmdb.type')
+```
+
+# 6.Django框架
+
+## 6.1 安装
+
+ **下载安装：**
+
+```c
+pip3 install django==2.2.29
+```
+
+**手动创建项目:**
+
+```c
+django-admin startproject mydjango   # 项目名
+```
+
+
+
+![](./picture/1.jpg)
+
+```c
+外层的mysite/目录与Django无关，只是你项目的容器，可以任意重命名。
+manage.py：一个命令行工具，用于与Django进行不同方式的交互脚本，非常重要！
+内层的mysite/目录是真正的项目文件包裹目录，它的名字是你引用内部文件的包名，例如：mysite.urls。
+mysite/__init__.py:一个定义包的空文件。
+mysite/settings.py:项目的主配置文件，非常重要！
+mysite/urls.py:路由文件，所有的任务都是从这里开始分配，相当于Django驱动站点的内容表格，非常重要！
+mysite/wsgi.py:一个基于WSGI的web服务器进入点，提供底层的网络通信功能，通常不用关心。
+```
+
+**settings.py：**
+
+```c
+ALLOWED_HOSTS = []			# 允许机器访问，白名单
+
+LANGUAGE_CODE = 'zh-hans'	# 默认界面语言，可选语言
+TIME_ZONE = 'Asia/Shanghai'		# 时区
+USE_TZ = False		#USE_TZ默认为True，因为Mysql存储的时间不能灵活设置时区，不像datetime对象有一项参数专门指定时区，所以为了统一全球的时间，必须使用国际标准时间UTC，否则就会乱套。所以时间在存入数据库前，必须转换成UTC时间。比如北京时间8点，存入mysql变成0点（UTC）。
+```
+
+**运行项目:**
+
+```c
+python manage.py runserver 127.0.0.1 8000
+```
+
+**添加应用:**
+
+```c
+# 在Django项目(my_project)的根目录下执行
+python3 manage.py startapp my_app
+```
+
+
+
+## 6.2 视图 views
+
+### 1. request对象
+
+**1.常用的属性和方法**
+
+```c
+request.path	#请求路径
+request.GET		#获取url中的查询参数
+request.POST	#获取请求提交的数据
+request.GET.get('name')	# 根据键值获取数据
+request.POST.get()	
+request.method	# 请求方法
+request.data
+request.META	#请求头信息
+request.body	#获取http请求消息格式的请求数据部分的内容
+```
+
+### 2. response对象
+
+**1.常用的属性和方法**
+
+**2.添加响应头键值对**
+
+```c
+ret = render(request, "home.html", context={"Title": 'mydjango', "name": "liuzichuan"})
+ret['a'] = 'b'
+```
+
+**3.添加响应状态码**
+
+```c
+# ret = render(request, "home.html", context={"Title": 'mydjango', "name": "liuzichuan"},status=202)
+ret.status_code = 202
+```
+
+### 3. CBV和FBV
+
+CBV：class based view ，就是基于类来写视图
+
+FBV：class based view，就是基于函数来写视图
+
+**1.给FBV添加装饰器**
+
+```c
+"""
+    添加装饰器
+"""
+def outer(f,*args,**kwargs):
+
+    def func(request,*args,**kwargs):
+        print("装饰前")
+        ret = f(request, *args,**kwargs)
+        print("装饰后")
+        return ret
+    return func
+            
+# FBV添加装饰器
+@outer
+def book(request,year,month):
+    print("FBV添加装饰器")
+    return HttpResponse("book is {} year, {} month".format(year,month))
+```
+
+**2.给CBV添加装饰器**
+
+```c
+# CBV添加装饰器
+# 2.给指定的方法添加装饰器
+@method_decorator(outer,name='get')
+class book(View):
+
+    # 1.只是给单独的方法加装饰器
+    @method_decorator(outer)
+    def get(self,request,year,month):
+        print("CBV添加装饰器，get方法")
+        return render(request, 'book.html')
+        #return HttpResponse("book is {} year, {} month".format(year,month))
+
+    def post(self,request,year,month):
+        print("CBV post方法")
+        #return render(request, 'book.html')
+        return HttpResponse("post ok...")
+            
+	#3.重写View父类中的dispatch方法，会给类中所有方法添加装饰器
+    @method_decorator(outer)
+    def dispatch(self,request,*args,**kwargs):
+		print("装饰前")
+        ret = super().dispatch(request, *args,**kwargs)
+        print("装饰后")
+        return ret
+```
+
+### 4.url反向解析
+
+由于将来项目中的不同功能对应的url有可能会发生变化，所以我们在每个url上加上别名，将来通过反向url解析来使用这个对应的路径，所以只要别名不变，应用的url随便变化都能获取
+
+**views使用url反向解析的方式：**
+
+```c
+url中配置name属性(别名)：
+url('^add_book/', views.add_book,name='add_book')
+    
+views中使用：
+from django.urls from reverse		
+# 未使用正则    
+redirect(reverse('add_book'))
+# 使用无名分组
+redirect(reverse('add_book',args=()))
+# 使用有名分组
+redirect(reverse('add_book',kwargs={})
+```
+
+
+
+## 6.3 模板 template
+
+模板渲染：模板指的就是html文件，渲染指的就是字符串替换，将模板中的特殊符号替换成相关数据
+
+模板渲染是在浏览器渲染之前，模板渲染完成后，才交给浏览器渲染，展示
+
+**1.python模板语法:**
+
+```c
+{{ 变量 }}
+{% 语句块 %}
+
+info = {
+    'name':'lzc',
+    'age':25,
+    'hobby':['洗脚','烫头','大保健'],
+    'sex':{'xx':'oo','hello':'world'},
+    'a':A()
+}
+ret = render(request,"home.html",info)
+    
+在html中调用时
+    <p>
+        {{ age }}
+    </p>
+    # 调用字段可以直接.key调用
+    <p>
+        {{ sex.hello }}
+    </p>
+    # 调用列表可直接通过列表下标调用
+    <p>
+    	{{ hobby.0 }}
+    </p>
+    <--!>调用属性或者方法，调用方法不需要加括号，不能传参<-->
+    <p>
+        {{ a.aaa }}
+        {{ a.say }}
+    </p>    
+```
+
+**2.过滤器：**
+
+过滤器就是在对应参数没有数据时，设置一些默认值
+
+**语法：{{ value|filter_name:参数 }}**
+
+1.过滤器支持链式操作，即一个过滤器的输出可以作为另一个过滤器的输入{{ sss|过滤器1|过滤器2 }}
+
+2.过滤器可以接受参数，如{{ sss|truncatewords:30 }}，这将显示sss的前30个词
+
+3.过滤器包含空格的话，必须用"" '' 引起来
+
+4.'|'两边没有空格
+
+示例：都是系统自带的过滤器
+
+```c
+{{ name|default:"zhangsan" }}
+{{ sss|truncatewords:30 }}
+{{ name|length }}		#长度
+{{ msg|slice:'0:2' }}	#切片
+{{ now|date:"Y-m-d H:i:s" }}	#时间格式化
+```
+
+**3.标签**
+
+​	**for标签：**
+
+```c
+<ul>
+	{% for i in hobby %}
+		<li>{{ i }}</li>
+	{% endfor %}
+</ul>
+
+<ul>
+    # 反序
+	{% for i in hobby reversed %}
+		<li>{{ i }}</li>
+	{% endfor %}
+</ul>
+    
+# 字典与python一样,d.values就是循环值，d.items就是key和值
+# 循环还可以使用{{ forloop }} 来显示循环计数，必须循环内使用，具体查看官网    
+
+```
+
+​	**for..empty标签：**
+
+当未查询到数据时，使用empty返回定义信息
+
+```c
+<ul>
+	{% for i in hobby %}
+		<li>{{ i }}</li>
+    {% empty %}
+		<h2>抱歉，没有查询到相关数据</h2>
+	{% endfor %}
+</ul>
+```
+
+​	**if标签：**
+
+```c
+{% if status > 1 %}
+	<a href="">京东</li>
+{% elif status == 1 %}
+	<a href="">百度</li>
+{% else %}
+	<a href="">taobao</li>
+{% endif %}
+
+# 与python判断方式一致
+```
+
+​	**with标签：**
+
+```c
+# 取个别名，只能在with里面使用
+{% with aaaaaa as a %}
+	<li>{{ a }}</li>
+{% endwith %}
+```
+
+**4.自定义标签和过滤器**
+
+**5.模板继承**
+
+当模板需要重复使用时，为了减少冗余代码，可以直接引继承模板
+
+```c
+1. 在新创建的模板文件中,就可以引用模板文件全部代码
+{% extend 'tmp.html' %}
+
+2. 需要修改模板文件html/css代码，需要在模板文件中预留快
+# 模板文件中预留快
+{% block content %}
+...
+{% endblock %}
+
+# 继承模板文件中进行对应修改即可
+{% block content %}
+	...
+	<--!  若想保留模板中的值，可以使用block.super -->
+    {{ block.super }}
+{% endblock %}
+
+```
+
+**6.静态文件配置**
+
+一般会将css,js,img等静态文件，放在一个文件夹下，引用时需指明路径
+
+```
+1.<link rel="stylesheet" href="/abc/css/x.css">		#直接使用静态文件夹路径别名
+2.在html文件中 {% load static %}
+	使用: <link rel="stylesheet" href="{% static 'css/x.css' %}">
+3.在html文件中 {% load static %}
+	使用: <link rel="stylesheet" href="{% get_static_prefix %}css/xx.css">
+        
+        
+注：settings会有两个配置项，一个指定静态文件目录，一个指定静态文件别名，html文件中都是使用静态文件别名
+STATIC_URL  = '/abc/' #静态文件夹别名
+STATICFILES_DIRS = [
+        os.path.join(BASE_DIR,'staticdir')
+]	 #静态文件夹路径
+```
+
+**7.组件**
+
+就是一些写好的html，css等模板文件，可以直接在html中引用
+
+```c
+{% include '组件文件名称'.html %}
+```
+
+
+
+## 6.4 ORM 对象关系映射
+
+### 1.连接数据库
+
+**object relational mapping**
+
+类对象-->sql-->pymysql-->mysql服务端-->磁盘
+
+**1.创建表：**
+
+在models.py文件中：
+
+```c
+class book(models.Model):
+
+    id = models.AutoField(primary_key=True) #自增，主键
+    title = models.CharField(max_length=64,null=True)
+    state = models.BooleanField()
+        
+        
+对应的sql：
+create table book (
+	id int primary key auto_inrcement;
+    title varchar(64);
+    state boolean not null;
+)
+```
+
+**2.同步到数据库**
+
+```c
+python manage.py makemigrations		#生成迁移文件
+python manage.py migrate		#执行对应的迁移文件
+```
+
+**3.连接自定义数据库**
+
+**配置连接mysql：**
+
+```c
+1.在mysql中创建一个库
+> create database orm01 character set utf8mb4; 
+
+2.修改settings配置文件
+# 配置都是固定写法，切必须大写
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'orm01',
+        'HOST': '192.168.183.132',
+        'PORT': 3306,
+        'USER': 'chuan',
+        'PASSWORD': 'chuan'
+    }
+}
+
+3.指定Django连接mysql的python模块
+	a.下载pymysql
+
+    b.指定连接模块，需要在项目主目录下的__init__.py文件中指定
+    
+    	import pymysql
+		pymysql.install_as_MySQLdb()   
+```
+
+**4.执行数据库同步指令**
+
+```c
+python manage.py makemigrations		#生成迁移文件,会将变动更新为一个文件
+python manage.py migrate		#执行对应的迁移文件
+```
+
+### 2.model类的属性参数
+
+```c
+1. null
+如果为True，Django将使用NULL来站在数据库中存储空值。默认是False
+    
+2. blank
+如果为True，该字段允许不填。默认为False
+    
+3. default
+字段的默认值。可以是一个值或者可调用对象。如果可调用，每次新对象被创建它都会被调用，如果你的字段没有设置可以为空，那么将来如果我们后添加一个字段，这个字段就要给一个default值
+    
+4. primary_key
+如果为True，这个字段就是模型的主键。如果你没有指定任何一个字段的primary_key=True，Django就会自动添加一个IntegerField字段作为主键，所以除非你想覆盖默认的主键行为，否则没有必要设置任何一个字段的primary_key=true
+    
+5. unique
+如果该值设置为true，这个数据字段的值在整张表中必须是唯一的，唯一键
+    
+6. choices
+由二元组组成的一个可迭代对象(例如列表或元组)，用来给字段提供选择项。如果设置了choices，默认的表单将是一个选择框而不是标准的文本框，<br>而且这个选择框的选项就是choices中的选项
+    
+7. db_index
+如果db_index=True，则表示此字段设置为数据库索引
+    
+DatetimeField、DateField、TimeField这三个时间字段，都可以设置如下属性
+    
+8.auto_now_add
+配置auto_now_add=True，创建数据记录的时候会把当前时间添加到数据库
+    
+9. auto_now
+配置上auto_now=True，每次更新数据记录的时候会更新该字段，标识这条记录最后一次的修改时间
+    
+```
+
+**ORM字段与数据库实际字段的对应关系:**
+
+可以在db下mysql包里的base文件里面查看
+
+```c
+'AutoField': 'integer AUTO_INCREMENT',
+'BigAutoField': 'bigint AUTO_INCREMENT',
+'BinaryField': 'longblob',
+'BooleanField': 'bool',
+'CharField': 'varchar(%(max_length)s)',
+'CommaSeparatedIntegerField': 'varchar(%(max_length)s)',
+'DateField': 'date',
+'DateTimeField': 'datetime',
+'DecimalField': 'numeric(%(max_digits)s, %(decimal_places)s)',
+'DurationField': 'bigint',
+'FileField': 'varchar(%(max_length)s)',
+'FilePathField': 'varchar(%(max_length)s)',
+'FloatField': 'double precision',
+'IntegerField': 'integer',
+'BigIntegerField': 'bigint',
+'IPAddressField': 'char(15)',
+'GenericIPAddressField': 'char(39)',
+'NullBooleanField': 'bool',
+'OneToOneField': 'integer',
+'PositiveIntegerField': 'integer UNSIGNED',
+'PositiveSmallIntegerField': 'smallint UNSIGNED',
+'SlugField': 'varchar(%(max_length)s)',
+'SmallIntegerField': 'smallint',
+'TextField': 'longtext',
+'TimeField': 'time',
+'UUIDField': 'char(32)',
+```
+
+### 3.ORM增删改查
+
+**1.插入数据**
+
+**插入单条数据：**
+
+```c
+def add_book(request):
+
+    # 插入数据方式一
+    book_obj = apps.models.book(title="鲁滨孙漂流记",state=True,price=55)
+    
+    print(book_obj)
+    print(book_obj.title)     
+    book_obj.save()
+
+    # 插入数据方式二
+    book_obj = apps.models.book.objects.create(title="斗破苍穹",state=True,price=66)
+
+    book_obj.save()
+
+    print(book_obj)
+    print(book_obj.title)
+        
+    return HttpResponse('add_book2 is ok')
+```
+
+**批量插入数据：**
+
+```c
+def add_book(request):
+	
+    book_lst = []
+    for i in range(1,10):
+        obj = apps.models.book(title="水浒传{}".format(i),state=True,price=i*i)
+
+        book_lst.append(obj)
+
+    apps.models.book.objects.bulk_create(book_lst)
+
+    return HttpResponse("add_book3 is ok")
+```
+
+**2.删除数据**
+
+```c
+def delete_book(request):
+
+    # 方式一，根据查询结果对象来更新，只能删除一条记录
+    # obj = apps.models.book.objects.get(id=5).delete()
+
+    # 方式二
+    # obj = apps.models.book.objects.filter(id=5).delete()
+    # 删除所有数据
+    obj = apps.models.book.objects.all().delete()
+
+    print(obj)
+
+
+    return HttpResponse("delete_book is ok")
+```
+
+
+
+**3.修改数据**
+
+```
+def update_book(request):
+
+    # 方式一，根据查询结果对象来更新
+    # obj = apps.models.book.objects.get(id=5)
+    # obj.state = False
+    # obj.save()
+    #
+    # return HttpResponse("update_book is ok")
+
+    # 方式二，根据条件更新
+    # 全量
+    apps.models.book.objects.update(
+        state = False
+    )
+	
+    # apps.models.book.objects.all().update(
+    #     state=False
+    # )
+
+	# 根据条件过滤
+    # apps.models.book.objects.filter(id=5).update(
+    #     state=False
+    # )
+
+    # return HttpResponse("update_book2 is ok")
+
+	# 方式三，查询到就更新，没有就创建，内部调用get方法，查询记录只能一条
+    obj = apps.models.book.objects.update_or_create(
+        id=20,
+        defaults={
+            "title":"西游记",
+            "state":False,
+            "price":22
+        }
+    )
+
+    # 方式四，查询到就返回查询结果，查询不到就添加记录,内部调用get方法，查询记录只能一条
+    obj = apps.models.book.objects.get_or_create(
+        id=20,
+        defaults={
+            "title": "西游记",
+            "state": False,
+            "price": 22
+        }
+    )
+
+```
+
+
+
+**4.查询数据**
+
+```python
+def get_book(request):
+    # print(obj_lst[0])
+    # return HttpResponse("get_book1 all is ok")
+
+    # 查询所有数据
+    # obj_lst = apps.models.book.objects.all()
+    # print(obj_lst)
+    # return render(request, "get_book.html", {"obj_lst": obj_lst})
+
+    # where id=5;
+    # obj = apps.models.book.objects.filter(id=5)
+    # print(obj)
+    # return render(request, "get_book.html", {"obj_lst": obj})
+
+    # filter 与 get 的区别在于：
+    #   1. get返回的是一个对象，且查询的结果只能是一个，不可迭代
+    #   2. get查看不到结果会报错，filter为空
+    obj = apps.models.book.objects.get(id=5)
+    print(obj)
+    return render(request, "get_book.html", {"obj_lst": obj})
+
+```
+
+**查询的多个API接口:**
+
+```c
+def all(self)
+    # 获取所有的数据对象
+
+def filter(self, *args, **kwargs)
+    # 条件查询
+    # 条件可以是：参数，字典，Q
+    apps.models.book.objects.filter(title='linux',price=50)    # select * from table where title='linux' and price=50
+	apps.models.book.objects.filter(**{title='linux',price=50})
+    
+def order_by(self,*fields)
+    # 默认按照参数升序排序，降序参数直接加上一个 - 就行 ，如果没有参数，默认使用id进行排序
+    obj = apps.models.book.objects.order_by("price")	# select * from table order_by price;
+    obj = apps.models.book.objects.order_by("-price")	# select * from table order_by price desc;
+
+    models.UserInfo.objects.all().order_by('-id','age')  # 当有两个参数时，以第一个参数为准，当第一参数值相同时使用第二个参数 
+    
+    
+def exclude(self, *args, **kwargs)
+    # 条件查询
+    # 条件可以是：参数，字典，Q
+        
+def exists(self):
+   # 是否有结果
+	apps.models.book.objects.filter(id=5).exists()	#判断过滤的条件是否是有数据返回
+
+def select_related(self, *fields)
+    性能相关：表之间进行join连表操作，一次性获取关联的数据。
+
+    总结：
+    1. select_related主要针一对一和多对一关系进行优化。
+    2. select_related使用SQL的JOIN语句进行优化，通过减少SQL查询的次数来进行优化、提高性能。
+
+def prefetch_related(self, *lookups)
+    性能相关：多表连表操作时速度会慢，使用其执行多次SQL查询在Python代码中实现连表操作。
+
+    总结：
+    1. 对于多对多字段（ManyToManyField）和一对多字段，可以使用prefetch_related()来进行优化。
+    2. prefetch_related()的优化方式是分别查询每个表，然后用Python处理他们之间的关系。
+
+def annotate(self, *args, **kwargs)
+    # 用于实现聚合group by查询
+
+    from django.db.models import Count, Avg, Max, Min, Sum
+
+    v = models.UserInfo.objects.values('u_id').annotate(uid=Count('u_id'))
+    # SELECT u_id, COUNT(ui) AS `uid` FROM UserInfo GROUP BY u_id
+
+    v = models.UserInfo.objects.values('u_id').annotate(uid=Count('u_id')).filter(uid__gt=1)
+    # SELECT u_id, COUNT(ui_id) AS `uid` FROM UserInfo GROUP BY u_id having count(u_id) > 1
+
+    v = models.UserInfo.objects.values('u_id').annotate(uid=Count('u_id',distinct=True)).filter(uid__gt=1)
+    # SELECT u_id, COUNT( DISTINCT ui_id) AS `uid` FROM UserInfo GROUP BY u_id having count(u_id) > 1
+
+def distinct(self, *field_names)
+    # 用于distinct去重
+    models.UserInfo.objects.values('nid').distinct()
+    # select distinct nid from userinfo
+
+    注：只有在PostgreSQL中才能使用distinct进行去重
+
+def extra(self, select=None, where=None, params=None, tables=None, order_by=None, select_params=None)
+    # 构造额外的查询条件或者映射，如：子查询
+
+    Entry.objects.extra(select={'new_id': "select col from sometable where othercol > %s"}, select_params=(1,))
+    Entry.objects.extra(where=['headline=%s'], params=['Lennon'])
+    Entry.objects.extra(where=["foo='a' OR bar = 'a'", "baz = 'a'"])
+    Entry.objects.extra(select={'new_id': "select id from tb where id > %s"}, select_params=(1,), order_by=['-nid'])
+
+ def reverse(self):
+    # 倒序
+    models.UserInfo.objects.all().order_by('-nid').reverse()
+    # 注：如果存在order_by，reverse则是倒序，如果多个排序则一一倒序
+
+
+ def defer(self, *fields):
+    models.UserInfo.objects.defer('username','id')
+    或
+    models.UserInfo.objects.filter(...).defer('username','id')
+    #映射中排除某列数据
+
+ def only(self, *fields):
+    #仅取某个表中的数据
+     models.UserInfo.objects.only('username','id')
+     或
+     models.UserInfo.objects.filter(...).only('username','id')
+
+ def using(self, alias):
+     指定使用的数据库，参数为别名（setting中的设置）
+
+def raw(self, raw_query, params=None, translations=None, using=None):
+    # 执行原生SQL
+    models.UserInfo.objects.raw('select * from userinfo')
+
+    # 如果SQL是其他表时，必须将名字设置为当前UserInfo对象的主键列名
+    models.UserInfo.objects.raw('select id as nid from 其他表')
+
+    # 为原生SQL设置参数
+    models.UserInfo.objects.raw('select id as nid from userinfo where nid>%s', params=[12,])
+
+    # 将获取的到列名转换为指定列名
+    name_map = {'first': 'first_name', 'last': 'last_name', 'bd': 'birth_date', 'pk': 'id'}
+    Person.objects.raw('SELECT * FROM some_other_table', translations=name_map)
+
+    # 指定数据库
+    models.UserInfo.objects.raw('select * from userinfo', using="default")
+
+    ################### 原生SQL ###################
+    from django.db import connection, connections
+    cursor = connection.cursor()  # cursor = connections['default'].cursor()
+    cursor.execute("""SELECT * from auth_user where id = %s""", [1])
+    row = cursor.fetchone() # fetchall()/fetchmany(..)
+
+
+def values(self, *fields):
+    # 获取每行数据为字典格式
+	# obj = apps.models.book.objects.all().values()
+    obj = apps.models.book.objects.values("id","title")		# 取指定字段，不指定取全部字段
+	# <QuerySet [{'id': 1, 'title': '鲁滨孙漂流记', 'state': False, 'price': 55}, {}>
+        
+def values_list(self, *fields, **kwargs):
+    # 获取每行数据为元祖
+	obj = apps.models.book.objects.values_list("id","title")		# 取指定字段，不指定取全部字段
+	# <QuerySet [( 1, 鲁滨孙漂流记' ), ()>
+
+def dates(self, field_name, kind, order='ASC'):
+    # 根据时间进行某一部分进行去重查找并截取指定内容
+    # kind只能是："year"（年）, "month"（年-月）, "day"（年-月-日）
+    # order只能是："ASC"  "DESC"
+    # 并获取转换后的时间
+        - year : 年-01-01
+        - month: 年-月-01
+        - day  : 年-月-日
+
+    models.DatePlus.objects.dates('ctime','day','DESC')
+
+def datetimes(self, field_name, kind, order='ASC', tzinfo=None):
+    # 根据时间进行某一部分进行去重查找并截取指定内容，将时间转换为指定时区时间
+    # kind只能是 "year", "month", "day", "hour", "minute", "second"
+    # order只能是："ASC"  "DESC"
+    # tzinfo时区对象
+    models.DDD.objects.datetimes('ctime','hour',tzinfo=pytz.UTC)
+    models.DDD.objects.datetimes('ctime','hour',tzinfo=pytz.timezone('Asia/Shanghai'))
+
+    """
+    pip3 install pytz
+    import pytz
+    pytz.all_timezones
+    pytz.timezone(‘Asia/Shanghai’)
+    """
+
+def none(self):
+    # 空QuerySet对象
+
+
+####################################
+# METHODS THAT DO DATABASE QUERIES #
+####################################
+
+def aggregate(self, *args, **kwargs):
+   # 聚合函数，获取字典类型聚合结果
+   from django.db.models import Count, Avg, Max, Min, Sum
+   result = models.UserInfo.objects.aggregate(k=Count('u_id', distinct=True), n=Count('nid'))
+   ===> {'k': 3, 'n': 4}
+
+def count(self):
+   # 获取个数
+
+def get(self, *args, **kwargs):
+   # 获取单个对象
+
+def create(self, **kwargs):
+   # 创建对象
+
+def bulk_create(self, objs, batch_size=None):
+    # 批量插入
+    # batch_size表示一次插入的个数
+    objs = [
+        models.DDD(name='r11'),
+        models.DDD(name='r22')
+    ]
+    models.DDD.objects.bulk_create(objs, 10)
+
+def get_or_create(self, defaults=None, **kwargs):
+    # 如果存在，则获取，否则，创建
+    # defaults 指定创建时，其他字段的值
+    obj, created = models.UserInfo.objects.get_or_create(username='root1', defaults={'email': '1111111','u_id': 2, 't_id': 2})
+
+def update_or_create(self, defaults=None, **kwargs):
+    # 如果存在，则更新，否则，创建
+    # defaults 指定创建时或更新时的其他字段
+    obj, created = models.UserInfo.objects.update_or_create(username='root1', defaults={'email': '1111111','u_id': 2, 't_id': 1})
+
+def first(self):
+   # 获取第一个
+
+def last(self):
+   # 获取最后一个
+
+def in_bulk(self, id_list=None):
+   # 根据主键ID进行查找
+   id_list = [11,21,31]
+   models.DDD.objects.in_bulk(id_list)
+
+def delete(self):
+   # 删除
+
+def update(self, **kwargs):
+    # 更新
+
+
+```
+
+**模糊查询：**
+
+```c
+Book.objects.filter(price__in=[100,200,300]) #price值等于这三个里面的任意一个的对象
+Book.objects.filter(price__gt=100)  #大于，大于等于是price__gte=100，别写price>100，这种参数不支持
+Book.objects.filter(price__lt=100)
+Book.objects.filter(price__range=[100,200])  #sql的between and，大于等于100，小于等于200
+Book.objects.filter(title__contains="python")  #title值中包含python的
+Book.objects.filter(title__icontains="python") #不区分大小写
+Book.objects.filter(title__startswith="py") #以什么开头，istartswith  不区分大小写
+Book.objects.filter(title__endswith="py") #以什么开头，iendswith  不区分大小写
+Book.objects.filter(pub_date__year=2012)
 ```
 
